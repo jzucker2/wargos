@@ -1,6 +1,6 @@
 services:
 
-  skynet:
+  wargos:
     container_name: wargos
     build:
       context: .

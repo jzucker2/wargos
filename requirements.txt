@@ -1,2 +1,3 @@
-fastapi
-pydantic
+fastapi==0.111.1
+pydantic==2.8.2
+wled==0.20.0

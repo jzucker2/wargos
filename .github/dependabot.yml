@@ -38,6 +38,10 @@ updates:
       - jzucker2
     labels:
       - dependencies
-#    allow:
-#      # allow updates for specific clients
-#      - dependency-name: "Flask-RQ2"
+    allow:
+      # allow updates for specific clients
+      - dependency-name: "fastapi"
+      - dependency-name: "pydantic"
+      - dependency-name: "wled"
+      # TODO: need to implement this part
+#      - dependency-name: "prometheus"
