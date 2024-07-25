@@ -5,16 +5,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-#    command: [ 'sh', 'run_prod.sh' ]
     restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
-#    healthcheck:
-#      test: [ "CMD-SHELL", "curl -f http://host.docker.internal:1992/api/v1/health || exit 1" ]
-#      interval: 30s
-#      timeout: 60s
-#      retries: 5
-#      start_period: 80s
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://host.docker.internal:9395/healthz || exit 1" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
     ports:
       - "9395:9395"
 #      - "9200:9200"
