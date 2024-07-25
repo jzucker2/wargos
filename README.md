@@ -18,3 +18,11 @@ For prometheus I have some options:
 * https://github.com/trallnag/prometheus-fastapi-instrumentator
 * https://github.com/prometheus/client_python
 * https://prometheus.github.io/client_python/exporting/http/fastapi-gunicorn/
+
+## fastapi
+
+I am new to fastapi
+
+* https://fastapi.tiangolo.com/tutorial/
+* https://fastapi.tiangolo.com/advanced/
+* https://fastapi.tiangolo.com/how-to/general/
