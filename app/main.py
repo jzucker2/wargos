@@ -7,6 +7,15 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from prometheus_client import Gauge
 
 
+import os
+from wled import WLED
+
+from .utils import get_logger
+
+
+log = get_logger(__name__)
+
+
 class MetricsLabels(object):
     ARCHITECTURE = 'architecture'
     ARDUINO_CORE_VERSION = 'arduino_core_version'
@@ -109,15 +118,6 @@ class Metrics(object):
         'The current state of the WLED instance sync send groups',
         MetricsLabels.basic_udp_sync_labels()
     )
-
-
-import os
-from wled import WLED
-
-from .utils import get_logger
-
-
-log = get_logger(__name__)
 
 
 class WLEDClient(object):
