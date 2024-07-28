@@ -17,6 +17,7 @@ For prometheus I have some options:
 
 * https://github.com/trallnag/prometheus-fastapi-instrumentator
 * https://github.com/prometheus/client_python
+* https://prometheus.github.io/client_python/
 * https://prometheus.github.io/client_python/exporting/http/fastapi-gunicorn/
 
 ## fastapi
@@ -40,6 +41,10 @@ curl -i "http://localhost:9395/healthz" \
 
 # simple WLED test
 curl -i "http://localhost:9395/test" \
+    -H "Content-Type: application/json"
+
+# now test with prometheus metrics too WLED test
+curl -i "http://localhost:9395/prometheus/test" \
     -H "Content-Type: application/json"
 ```
 

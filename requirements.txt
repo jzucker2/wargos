@@ -25,6 +25,8 @@ mashumaro==3.13.1
 mdurl==0.1.2
 multidict==6.0.5
 orjson==3.10.6
+prometheus-fastapi-instrumentator==7.0.0
+prometheus_client==0.20.0
 pydantic==2.8.2
 pydantic_core==2.20.1
 Pygments==2.18.0
