@@ -20,6 +20,21 @@ For prometheus I have some options:
 * https://prometheus.github.io/client_python/
 * https://prometheus.github.io/client_python/exporting/http/fastapi-gunicorn/
 
+### Add to Prometheus for Metrics Collection
+
+Add this to your `prometheus.yml`
+
+```yaml
+- job_name: 'wargos'
+
+  # metrics_path defaults to '/metrics'
+  # scheme defaults to 'http'.
+  static_configs:
+    - targets: [ '<host_ip>:9395' ]
+      labels:
+        instance: 'host_machine'
+```
+
 ## fastapi
 
 I am new to fastapi
