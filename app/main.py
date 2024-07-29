@@ -4,135 +4,16 @@ from fastapi import FastAPI
 from .version import version
 
 from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_client import Gauge
 
 
 import os
 from wled import WLED
 
-from .utils import get_logger
+from .utils import LogHelper
+from .metrics import Metrics
 
 
-log = get_logger(__name__)
-
-
-class MetricsLabels(object):
-    ARCHITECTURE = 'architecture'
-    ARDUINO_CORE_VERSION = 'arduino_core_version'
-    BRAND = 'brand'
-    BUILD = 'build'
-    FREE_HEAP = 'free_heap'
-    IP = 'ip'
-    MAC_ADDRESS = 'mac_address'
-    NAME = 'name'
-    PRODUCT = 'product'
-    VERSION = 'version'
-
-    @classmethod
-    def instance_info_labels(cls):
-        return list([
-            cls.ARCHITECTURE,
-            cls.ARDUINO_CORE_VERSION,
-            cls.BRAND,
-            cls.BUILD,
-            cls.IP,
-            cls.MAC_ADDRESS,
-            cls.NAME,
-            cls.PRODUCT,
-            cls.VERSION,
-        ])
-
-    @classmethod
-    def basic_info_labels(cls):
-        return list([
-            cls.NAME,
-            cls.IP,
-        ])
-
-    @classmethod
-    def basic_state_labels(cls):
-        return list([
-            cls.NAME,
-            cls.IP,
-        ])
-
-    @classmethod
-    def basic_udp_sync_labels(cls):
-        return list([
-            cls.NAME,
-            cls.IP,
-        ])
-
-
-class Metrics(object):
-    INSTANCE_INFO = Gauge(
-        'wargos_wled_instance_basic_info',
-        'Details about the WLED instance info, mostly hw and build info',
-        MetricsLabels.instance_info_labels())
-
-    INSTANCE_FREE_HEAP = Gauge(
-        'wargos_wled_instance_free_heap',
-        'The current free heap of the WLED instance (in MB?)',
-        MetricsLabels.basic_info_labels())
-
-    INSTANCE_WIFI_CHANNEL = Gauge(
-        'wargos_wled_instance_wifi_channel',
-        'The current wifi channel of the WLED instance',
-        MetricsLabels.basic_info_labels())
-
-    INSTANCE_WIFI_RSSI = Gauge(
-        'wargos_wled_instance_wifi_rssi',
-        'The current wifi RSSI of the WLED instance',
-        MetricsLabels.basic_info_labels())
-
-    INSTANCE_WIFI_SIGNAL = Gauge(
-        'wargos_wled_instance_wifi_signal',
-        'The current wifi signal of the WLED instance',
-        MetricsLabels.basic_info_labels())
-
-    INSTANCE_STATE_BRIGHTNESS = Gauge(
-        'wargos_wled_instance_state_brightness',
-        'The current WLED instance brightness',
-        MetricsLabels.basic_state_labels())
-
-    INSTANCE_STATE_ON = Gauge(
-        'wargos_wled_instance_state_on',
-        'The current WLED instance is on value',
-        MetricsLabels.basic_state_labels())
-
-    INSTANCE_STATE_PLAYLIST_ID = Gauge(
-        'wargos_wled_instance_state_playlist_id',
-        'The current WLED instance playlist_id',
-        MetricsLabels.basic_state_labels())
-
-    INSTANCE_STATE_PRESET_ID = Gauge(
-        'wargos_wled_instance_state_preset_id',
-        'The current WLED instance preset_id',
-        MetricsLabels.basic_state_labels())
-
-    INSTANCE_SYNC_RECEIVE_STATE = Gauge(
-        'wargos_wled_instance_sync_receive_state',
-        'The current state of the WLED instance sync receive setting',
-        MetricsLabels.basic_udp_sync_labels()
-    )
-
-    INSTANCE_SYNC_SEND_STATE = Gauge(
-        'wargos_wled_instance_sync_send_state',
-        'The current state of the WLED instance sync send setting',
-        MetricsLabels.basic_udp_sync_labels()
-    )
-
-    INSTANCE_SYNC_RECEIVE_GROUPS = Gauge(
-        'wargos_wled_instance_sync_receive_groups',
-        'The current state of the WLED instance sync receive groups',
-        MetricsLabels.basic_udp_sync_labels()
-    )
-
-    INSTANCE_SYNC_SEND_GROUPS = Gauge(
-        'wargos_wled_instance_sync_send_groups',
-        'The current state of the WLED instance sync send groups',
-        MetricsLabels.basic_udp_sync_labels()
-    )
+log = LogHelper.get_env_logger(__name__)
 
 
 class WLEDClient(object):
@@ -147,10 +28,10 @@ class WLEDClient(object):
 
     @classmethod
     async def get_wled_instance_device(cls, ip_address):
-        log.info(f"wled connecting to ip_address: {ip_address}")
+        log.debug(f"wled connecting to ip_address: {ip_address}")
         async with WLED(ip_address) as led:
             device = await led.update()
-            log.info(f"wled got device: {device}")
+            log.debug(f"wled got device: {device}")
 
             return device
 
@@ -162,12 +43,9 @@ class WLEDClient(object):
         async with WLED(device_ip) as led:
             device = await led.update()
             log.info(f"wled got device: {device}")
-            print("device.info.version")
-            print(device.info.version)
-            print("device.info")
-            print(device.info)
-            print("device.state")
-            print(device.state)
+            log.info(f"device.info.version => {device.info.version}")
+            log.info(f"device.info => {device.info}")
+            log.info(f"device.state => {device.state}")
 
             # Turn strip on, full brightness
             await led.master(on=True, brightness=255)
@@ -196,7 +74,7 @@ class Scraper(object):
         try:
             return os.environ['WLED_IP_LIST']
         except KeyError as ke:
-            log.info(f"We got no list in the env vars with ke: {ke}")
+            log.error(f"We got no list in the env vars with ke: {ke}")
             return None
 
     @classmethod
@@ -219,8 +97,7 @@ class Scraper(object):
         if not device_state:
             return
         sync_state = device_state.sync
-        # TODO: replace the print
-        print(sync_state)
+        log.debug(f"sync_state: {sync_state}")
         Metrics.INSTANCE_SYNC_RECEIVE_STATE.labels(
             ip=device_info.ip,
             name=device_info.name,
@@ -242,8 +119,7 @@ class Scraper(object):
         if not device_info:
             return
         wifi_info = device_info.wifi
-        # TODO: replace the print
-        print(wifi_info)
+        log.debug(f"wifi_info: {wifi_info}")
         Metrics.INSTANCE_WIFI_CHANNEL.labels(
             ip=device_info.ip,
             name=device_info.name,
@@ -260,11 +136,8 @@ class Scraper(object):
     def scrape_device_info(self, device_info):
         if not device_info:
             return
-        # TODO: replace the print
-        print("dev_info.version")
-        print(device_info.version)
-        print("dev_info")
-        print(device_info)
+        log.debug(f"dev_info.version: {device_info.version}")
+        log.debug(f"dev_info: {device_info}")
 
         Metrics.INSTANCE_INFO.labels(
             architecture=device_info.architecture,
@@ -308,11 +181,10 @@ class Scraper(object):
         await self.scrape_instance(device_ip)
 
     async def scrape_instance(self, device_ip):
-        log.info(f"wled connecting to device_ip: {device_ip}")
+        log.debug(f"wled connecting to device_ip: {device_ip}")
         device = await self.wled_client.get_wled_instance_device(
             device_ip)
-        log.info(f"wled got device: {device}")
-        print(device)
+        log.debug(f"wled got device: {device}")
 
         try:
             dev_info = device.info
@@ -322,16 +194,18 @@ class Scraper(object):
             self.scrape_device_state(dev_info, dev_state)
             self.scrape_device_sync(dev_info, dev_state)
         except Exception as unexp:
-            print(f"Unexpected scrape issue unexp: {unexp}")
+            log.error(f"Unexpected issue for device_ip: {device_ip} "
+                      f"with scrape issue unexp: {unexp}")
 
     async def scrape_all_instances(self):
         wled_ip_list = self.parse_env_wled_ip_list()
         if not wled_ip_list:
             e_m = ('missing wled ip list! must provide '
                    'with env var to use this method')
+            log.error(e_m)
             raise MissingIPListScraperException(e_m)
         for device_ip in wled_ip_list:
-            log.info(f"scraping metrics for device_ip: {device_ip}")
+            log.debug(f"scraping metrics for device_ip: {device_ip}")
             await self.scrape_instance(device_ip)
 
 

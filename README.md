@@ -4,6 +4,8 @@ I plan on using the Home Assistant wled library: `wled` located here: https://py
 
 ## How to Run
 
+### Configure Docker Compose
+
 Example `docker-compose.yml` like:
 
 ```yaml
@@ -26,6 +28,10 @@ services:
     stdin_open: true
     tty: true
 ```
+
+### Set Debug Logging
+
+By default, logging is info level. To set to debug, provide the env `DEBUG=1` flag
 
 ## wled
 
@@ -91,6 +97,12 @@ curl -i "http://localhost:9395/prometheus/default" \
 curl -i "http://localhost:9395/prometheus/all" \
     -H "Content-Type: application/json"
 ```
+
+### Logging
+
+* https://stackoverflow.com/questions/77001129/how-to-configure-fastapi-logging-so-that-it-works-both-with-uvicorn-locally-and
+  * This is the pattern I went with for now
+* https://github.com/tiangolo/fastapi/discussions/7457
 
 ### Notes
 
