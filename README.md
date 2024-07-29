@@ -23,6 +23,8 @@ services:
       timeout: 60s
       retries: 5
       start_period: 80s
+    environment:
+      - WLED_IP_LIST=10.0.1.1,10.0.1.2,10.0.1.3
     ports:
       - "9395:9395"
     stdin_open: true
