@@ -86,6 +86,10 @@ curl -i "http://localhost:9395/test" \
 # now test with prometheus metrics too WLED test
 curl -i "http://localhost:9395/prometheus/test" \
     -H "Content-Type: application/json"
+
+# now test with prometheus metrics for all WLED instances
+curl -i "http://localhost:9395/prometheus/all" \
+    -H "Content-Type: application/json"
 ```
 
 ### Notes

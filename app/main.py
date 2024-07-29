@@ -158,6 +158,14 @@ class WLEDClient(object):
             await led.master(on=True, brightness=255)
 
 
+class ScraperException(Exception):
+    pass
+
+
+class MissingIPListScraperException(ScraperException):
+    pass
+
+
 class Scraper(object):
     @classmethod
     def get_client(cls):
@@ -168,6 +176,21 @@ class Scraper(object):
         return os.environ.get('DEFAULT_WLED_IP',
                               "10.0.1.179")
 
+    @classmethod
+    def get_env_wled_ip_list(cls):
+        try:
+            return os.environ['WLED_IP_LIST']
+        except KeyError as ke:
+            log.info(f"We got no list in the env vars with ke: {ke}")
+            return None
+
+    @classmethod
+    def parse_env_wled_ip_list(cls):
+        raw_ip_list = cls.get_env_wled_ip_list()
+        if not raw_ip_list or not len(raw_ip_list):
+            return None
+        return raw_ip_list.split(',')
+
     def __init__(self, wled_client):
         self._wled_client = wled_client
 
@@ -175,7 +198,7 @@ class Scraper(object):
     def wled_client(self):
         return self._wled_client
 
-    def scrape_sync(self, device_info, device_state):
+    def scrape_device_sync(self, device_info, device_state):
         if not device_info:
             return
         if not device_state:
@@ -202,6 +225,9 @@ class Scraper(object):
 
     async def scrape_default_instance(self):
         device_ip = self.default_wled_ip()
+        await self.scrape_instance(device_ip)
+
+    async def scrape_instance(self, device_ip):
         log.info(f"wled connecting to device_ip: {device_ip}")
         device = await self.wled_client.get_wled_instance_device(
             device_ip)
@@ -250,9 +276,18 @@ class Scraper(object):
             name=dev_info.name,
         ).set(dev_state.preset_id or 0)
         try:
-            self.scrape_sync(dev_info, dev_state)
+            self.scrape_device_sync(dev_info, dev_state)
         except Exception as unexp:
             print(f"Unexpected scrape sync unexp: {unexp}")
+
+    async def scrape_all_instances(self):
+        wled_ip_list = self.parse_env_wled_ip_list()
+        if not wled_ip_list:
+            e_m = ('missing wled ip list! must provide '
+                   'with env var to use this method')
+            raise MissingIPListScraperException(e_m)
+        for device_ip in wled_ip_list:
+            await self.scrape_instance(device_ip)
 
 
 app = FastAPI()
@@ -291,4 +326,10 @@ async def simple_test():
 @app.get("/prometheus/test")
 async def prometheus_test():
     await Scraper.get_client().scrape_default_instance()
+    return {"message": "Hello World"}
+
+
+@app.get("/prometheus/all")
+async def prometheus_test():
+    await Scraper.get_client().scrape_all_instances()
     return {"message": "Hello World"}
