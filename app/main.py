@@ -43,7 +43,7 @@ class MetricsLabels(object):
         ])
 
     @classmethod
-    def free_heap_labels(cls):
+    def basic_info_labels(cls):
         return list([
             cls.NAME,
             cls.IP,
@@ -73,7 +73,22 @@ class Metrics(object):
     INSTANCE_FREE_HEAP = Gauge(
         'wargos_wled_instance_free_heap',
         'The current free heap of the WLED instance (in MB?)',
-        MetricsLabels.free_heap_labels())
+        MetricsLabels.basic_info_labels())
+
+    INSTANCE_WIFI_CHANNEL = Gauge(
+        'wargos_wled_instance_wifi_channel',
+        'The current wifi channel of the WLED instance',
+        MetricsLabels.basic_info_labels())
+
+    INSTANCE_WIFI_RSSI = Gauge(
+        'wargos_wled_instance_wifi_rssi',
+        'The current wifi RSSI of the WLED instance',
+        MetricsLabels.basic_info_labels())
+
+    INSTANCE_WIFI_SIGNAL = Gauge(
+        'wargos_wled_instance_wifi_signal',
+        'The current wifi signal of the WLED instance',
+        MetricsLabels.basic_info_labels())
 
     INSTANCE_STATE_BRIGHTNESS = Gauge(
         'wargos_wled_instance_state_brightness',
@@ -158,6 +173,14 @@ class WLEDClient(object):
             await led.master(on=True, brightness=255)
 
 
+class ScraperException(Exception):
+    pass
+
+
+class MissingIPListScraperException(ScraperException):
+    pass
+
+
 class Scraper(object):
     @classmethod
     def get_client(cls):
@@ -168,6 +191,21 @@ class Scraper(object):
         return os.environ.get('DEFAULT_WLED_IP',
                               "10.0.1.179")
 
+    @classmethod
+    def get_env_wled_ip_list(cls):
+        try:
+            return os.environ['WLED_IP_LIST']
+        except KeyError as ke:
+            log.info(f"We got no list in the env vars with ke: {ke}")
+            return None
+
+    @classmethod
+    def parse_env_wled_ip_list(cls):
+        raw_ip_list = cls.get_env_wled_ip_list()
+        if not raw_ip_list or not len(raw_ip_list):
+            return None
+        return raw_ip_list.split(',')
+
     def __init__(self, wled_client):
         self._wled_client = wled_client
 
@@ -175,7 +213,7 @@ class Scraper(object):
     def wled_client(self):
         return self._wled_client
 
-    def scrape_sync(self, device_info, device_state):
+    def scrape_device_sync(self, device_info, device_state):
         if not device_info:
             return
         if not device_state:
@@ -200,59 +238,101 @@ class Scraper(object):
             name=device_info.name,
         ).set(sync_state.send_groups or 0)
 
+    def scrape_device_wifi(self, device_info):
+        if not device_info:
+            return
+        wifi_info = device_info.wifi
+        # TODO: replace the print
+        print(wifi_info)
+        Metrics.INSTANCE_WIFI_CHANNEL.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(wifi_info.channel or 0)
+        Metrics.INSTANCE_WIFI_RSSI.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(wifi_info.rssi or 0)
+        Metrics.INSTANCE_WIFI_SIGNAL.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(wifi_info.signal or 0)
+
+    def scrape_device_info(self, device_info):
+        if not device_info:
+            return
+        # TODO: replace the print
+        print("dev_info.version")
+        print(device_info.version)
+        print("dev_info")
+        print(device_info)
+
+        Metrics.INSTANCE_INFO.labels(
+            architecture=device_info.architecture,
+            arduino_core_version=device_info.arduino_core_version,
+            brand=device_info.brand,
+            build=device_info.build,
+            ip=device_info.ip,
+            mac_address=device_info.mac_address,
+            name=device_info.name,
+            product=device_info.product,
+            version=device_info.version,
+        ).set(1)
+        Metrics.INSTANCE_FREE_HEAP.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_info.free_heap or 0)
+
+    def scrape_device_state(self, device_info, device_state):
+        if not device_info:
+            return
+
+        Metrics.INSTANCE_STATE_BRIGHTNESS.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_state.brightness or 0)
+        Metrics.INSTANCE_STATE_ON.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_state.on or 0)
+        Metrics.INSTANCE_STATE_PLAYLIST_ID.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_state.playlist_id or 0)
+        Metrics.INSTANCE_STATE_PRESET_ID.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_state.preset_id or 0)
+
     async def scrape_default_instance(self):
         device_ip = self.default_wled_ip()
+        await self.scrape_instance(device_ip)
+
+    async def scrape_instance(self, device_ip):
         log.info(f"wled connecting to device_ip: {device_ip}")
         device = await self.wled_client.get_wled_instance_device(
             device_ip)
         log.info(f"wled got device: {device}")
         print(device)
-        dev_info = device.info
-        print("dev_info.version")
-        print(dev_info.version)
-        print("dev_info")
-        print(dev_info)
 
-        Metrics.INSTANCE_INFO.labels(
-            architecture=dev_info.architecture,
-            arduino_core_version=dev_info.arduino_core_version,
-            brand=dev_info.brand,
-            build=dev_info.build,
-            ip=dev_info.ip,
-            mac_address=dev_info.mac_address,
-            name=dev_info.name,
-            product=dev_info.product,
-            version=dev_info.version,
-        ).set(1)
-        Metrics.INSTANCE_FREE_HEAP.labels(
-            ip=dev_info.ip,
-            name=dev_info.name,
-        ).set(dev_info.free_heap or 0)
-
-        dev_state = device.state
-        print("dev_state")
-        print(dev_state)
-
-        Metrics.INSTANCE_STATE_BRIGHTNESS.labels(
-            ip=dev_info.ip,
-            name=dev_info.name,
-        ).set(dev_state.brightness or 0)
-        Metrics.INSTANCE_STATE_ON.labels(
-            ip=dev_info.ip,
-            name=dev_info.name,
-        ).set(dev_state.on or 0)
-        Metrics.INSTANCE_STATE_PLAYLIST_ID.labels(
-            ip=dev_info.ip,
-            name=dev_info.name,
-        ).set(dev_state.playlist_id or 0)
-        Metrics.INSTANCE_STATE_PRESET_ID.labels(
-            ip=dev_info.ip,
-            name=dev_info.name,
-        ).set(dev_state.preset_id or 0)
         try:
-            self.scrape_sync(dev_info, dev_state)
+            dev_info = device.info
+            dev_state = device.state
+            self.scrape_device_info(dev_info)
+            self.scrape_device_wifi(dev_info)
+            self.scrape_device_state(dev_info, dev_state)
+            self.scrape_device_sync(dev_info, dev_state)
         except Exception as unexp:
-            print(f"Unexpected scrape sync unexp: {unexp}")
+            print(f"Unexpected scrape issue unexp: {unexp}")
+
+    async def scrape_all_instances(self):
+        wled_ip_list = self.parse_env_wled_ip_list()
+        if not wled_ip_list:
+            e_m = ('missing wled ip list! must provide '
+                   'with env var to use this method')
+            raise MissingIPListScraperException(e_m)
+        for device_ip in wled_ip_list:
+            log.info(f"scraping metrics for device_ip: {device_ip}")
+            await self.scrape_instance(device_ip)
 
 
 app = FastAPI()
@@ -288,7 +368,13 @@ async def simple_test():
     return {"message": "Hello World"}
 
 
-@app.get("/prometheus/test")
-async def prometheus_test():
+@app.get("/prometheus/default")
+async def prometheus_default():
     await Scraper.get_client().scrape_default_instance()
+    return {"message": "Hello World"}
+
+
+@app.get("/prometheus/all")
+async def prometheus_scrape_all():
+    await Scraper.get_client().scrape_all_instances()
     return {"message": "Hello World"}
