@@ -29,9 +29,15 @@ services:
     tty: true
 ```
 
-### Set Debug Logging
+### Set Env Vars
 
-By default, logging is info level. To set to debug, provide the env `DEBUG=1` flag
+By default, logging is info level. To set to debug, provide the env `DEBUG=true` flag
+
+|                   Env Var Name                   | Default Value |                 Example Value                  |                                         Description                                          |
+|:------------------------------------------------:|:-------------:|:----------------------------------------------:|:--------------------------------------------------------------------------------------------:|
+|                     `DEBUG`                      |    `false`    |                     `true`                     |                     This determines debug logging and a few other things                     |
+| `DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS`  |     `60`      |                      `30`                      |     This determines how often `wargos` scrapes prometheus metrics from `wled` instances      |
+|                  `WLED_IP_LIST`                  |    `None`     |       `10.0.1.150,10.0.1.179,10.0.1.153`       | This is the list of `,` separated IP addresses of `wled` instances that `wargos` will scrape |
 
 ## wled
 
@@ -65,6 +71,13 @@ Add this to your `prometheus.yml`
       labels:
         instance: 'host_machine'
 ```
+
+## Scheduler
+
+* https://fastapi-utils.davidmontague.xyz/
+  * https://github.com/dmontagu/fastapi-utils
+* https://github.com/amisadmin/fastapi-scheduler
+* https://github.com/amisadmin/fastapi-amis-admin
 
 ## fastapi
 

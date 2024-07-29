@@ -1,6 +1,7 @@
 from typing import Union
 
 from fastapi import FastAPI
+from fastapi_utils.tasks import repeat_every
 from .version import version
 
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -14,6 +15,11 @@ from .metrics import Metrics
 
 
 log = LogHelper.get_env_logger(__name__)
+
+
+DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS = int(os.environ.get(
+    'DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS',
+    60))
 
 
 class WLEDClient(object):
@@ -252,3 +258,10 @@ async def prometheus_default():
 async def prometheus_scrape_all():
     await Scraper.get_client().scrape_all_instances()
     return {"message": "Hello World"}
+
+
+@app.on_event("startup")
+@repeat_every(seconds=DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS)
+async def scrape_all_wled_instances() -> None:
+    log.debug(f"Going to scrape_all_wled_instances =========>")
+    await Scraper.get_client().scrape_all_instances()
