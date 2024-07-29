@@ -263,5 +263,7 @@ async def prometheus_scrape_all():
 @app.on_event("startup")
 @repeat_every(seconds=DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS)
 async def scrape_all_wled_instances() -> None:
-    log.debug(f"Going to scrape_all_wled_instances =========>")
+    log.debug(f"Going to scrape_all_wled_instances "
+              f"(interval: {DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS}) "
+              f"=========>")
     await Scraper.get_client().scrape_all_instances()
