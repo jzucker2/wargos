@@ -323,13 +323,13 @@ async def simple_test():
     return {"message": "Hello World"}
 
 
-@app.get("/prometheus/test")
-async def prometheus_test():
+@app.get("/prometheus/default")
+async def prometheus_default():
     await Scraper.get_client().scrape_default_instance()
     return {"message": "Hello World"}
 
 
 @app.get("/prometheus/all")
-async def prometheus_test():
+async def prometheus_scrape_all():
     await Scraper.get_client().scrape_all_instances()
     return {"message": "Hello World"}
