@@ -13,13 +13,11 @@ class LogHelper(object):
         """For more on logging, see the readme"""
         logger = logging.getLogger(name)
         logger.setLevel(log_level)
-        consoleHandler = logging.StreamHandler(sys.stdout)
-        consoleHandler.setFormatter(logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s'))
-        # log_formatter = logging.Formatter(
-        #     "%(asctime)s [%(processName)s: %(process)d] [%(threadName)s: %(thread)d] [%(levelname)s] %(name)s: %(message)s")
-        # stream_handler.setFormatter(log_formatter)
-        # logger.addHandler(stream_handler)
-        logger.addHandler(consoleHandler)
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_formatter = logging.Formatter(
+            fmt='%(asctime)s - %(levelname)s - %(message)s')
+        console_handler.setFormatter(console_formatter)
+        logger.addHandler(console_handler)
         return logger
 
     @classmethod
