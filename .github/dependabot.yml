@@ -43,5 +43,4 @@ updates:
       - dependency-name: "fastapi"
       - dependency-name: "pydantic"
       - dependency-name: "wled"
-      # TODO: need to implement this part
       - dependency-name: "prometheus-fastapi-instrumentator"

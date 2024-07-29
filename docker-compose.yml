@@ -16,6 +16,5 @@ services:
       start_period: 80s
     ports:
       - "9395:9395"
-#      - "9200:9200"
     stdin_open: true
     tty: true

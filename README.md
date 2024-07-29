@@ -2,6 +2,31 @@
 
 I plan on using the Home Assistant wled library: `wled` located here: https://pypi.org/project/wled/
 
+## How to Run
+
+Example `docker-compose.yml` like:
+
+```yaml
+services:
+
+  wargos:
+    container_name: wargos
+    image: ghcr.io/jzucker2/wargos
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://host.docker.internal:9395/healthz || exit 1" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    ports:
+      - "9395:9395"
+    stdin_open: true
+    tty: true
+```
+
 ## wled
 
 * https://kno.wled.ge/
