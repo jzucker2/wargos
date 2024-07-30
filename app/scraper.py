@@ -112,7 +112,7 @@ class Scraper(object):
             name=device_info.name,
         ).set(device_info.udp_port or 0)
 
-    def scrape_info_nightlight(self, device_info, device_state):
+    def scrape_state_nightlight(self, device_info, device_state):
         dev_nightlight = device_state.nightlight
         log.debug(f"got dev_nightlight: {dev_nightlight}")
         Metrics.INSTANCE_NIGHTLIGHT_DURATION_MINUTES.labels(
@@ -197,10 +197,6 @@ class Scraper(object):
             ip=device_info.ip,
             name=device_info.name,
         ).set(device_info.live or 0)
-        self.scrape_uptime(device_info)
-        self.scrape_udp_port(device_info)
-        self.scrape_info_leds(device_info)
-        self.scrape_info_filesystem(device_info)
 
     def scrape_device_state(self, device_info, device_state):
         if not device_info:
@@ -223,8 +219,6 @@ class Scraper(object):
             name=device_info.name,
         ).set(device_state.preset_id or 0)
 
-        self.scrape_info_nightlight(device_info, device_state)
-
     async def scrape_default_instance(self):
         device_ip = self.default_wled_ip()
         await self.scrape_instance(device_ip)
@@ -239,9 +233,14 @@ class Scraper(object):
             dev_info = device.info
             dev_state = device.state
             self.scrape_device_info(dev_info)
+            self.scrape_uptime(dev_info)
+            self.scrape_udp_port(dev_info)
+            self.scrape_info_leds(dev_info)
+            self.scrape_info_filesystem(dev_info)
             self.scrape_device_wifi(dev_info)
             self.scrape_device_state(dev_info, dev_state)
             self.scrape_device_sync(dev_info, dev_state)
+            self.scrape_state_nightlight(dev_info, dev_state)
         except Exception as unexp:
             log.error(f"Unexpected issue for device_ip: {device_ip} "
                       f"with scrape issue unexp: {unexp}")
