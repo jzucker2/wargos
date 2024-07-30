@@ -1,5 +1,4 @@
 import os
-# from .main import log
 from .utils import LogHelper
 from .metrics import Metrics
 from .wled_client import WLEDClient

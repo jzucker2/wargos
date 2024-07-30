@@ -1,7 +1,6 @@
 import os
 from wled import WLED
 from .utils import LogHelper
-# from .main import log
 from .metrics import Metrics
 
 
