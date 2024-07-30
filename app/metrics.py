@@ -86,6 +86,78 @@ class Metrics(object):
         MetricsLabels.basic_info_labels()
     )
 
+    INSTANCE_UDP_PORT = Gauge(
+        'wargos_wled_instance_udp_port',
+        'The current udp port of the instance',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_UPTIME_SECONDS = Gauge(
+        'wargos_wled_instance_uptime_seconds',
+        'The current uptime of the instance (in seconds)',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_PALETTE_COUNT_VALUE = Gauge(
+        'wargos_wled_instance_palette_count_value',
+        'The current palette count of the instance',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_EFFECT_COUNT_VALUE = Gauge(
+        'wargos_wled_instance_effect_count_value',
+        'The current effect count of the instance',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_LED_COUNT_VALUE = Gauge(
+        'wargos_wled_instance_led_count_value',
+        'The current LED count of the instance',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_LED_FPS_VALUE = Gauge(
+        'wargos_wled_instance_fps_value',
+        'The current fps value of the instance',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_LED_MAX_POWER = Gauge(
+        'wargos_wled_instance_max_power',
+        'The max power value of the instance (in milliamps)',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_LED_CURRENT_POWER = Gauge(
+        'wargos_wled_instance_current_power',
+        'The current power value of the instance (in milliamps)',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_LED_MAX_SEGMENTS = Gauge(
+        'wargos_wled_instance_max_segments',
+        'The max segments value of the instance',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_NIGHTLIGHT_DURATION_MINUTES = Gauge(
+        'wargos_wled_instance_nightlight_duration_minutes',
+        'The duration of the nightlight of the instance (in minutes)',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_NIGHTLIGHT_ON_VALUE = Gauge(
+        'wargos_wled_instance_nightlight_on_value',
+        'The bool value of whether the nightlight of the instance is enabled',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_NIGHTLIGHT_TARGET_BRIGHTNESS_VALUE = Gauge(
+        'wargos_wled_instance_nightlight_target_brightness_value',
+        'The target brightness value of the nightlight of the instance',
+        MetricsLabels.basic_info_labels()
+    )
+
     INSTANCE_WIFI_CHANNEL = Gauge(
         'wargos_wled_instance_wifi_channel',
         'The current wifi channel of the WLED instance',
@@ -102,6 +174,12 @@ class Metrics(object):
         'wargos_wled_instance_wifi_signal',
         'The current wifi signal of the WLED instance',
         MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_LIVE_STATE = Gauge(
+        'wargos_wled_instance_live_state',
+        'The current WLED instance live state bool value',
+        MetricsLabels.basic_state_labels()
     )
 
     INSTANCE_STATE_BRIGHTNESS = Gauge(
