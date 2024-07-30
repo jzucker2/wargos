@@ -82,7 +82,7 @@ class Metrics(object):
 
     INSTANCE_FREE_HEAP = Gauge(
         'wargos_wled_instance_free_heap',
-        'The current free heap of the WLED instance (in MB?)',
+        'The current free heap of the WLED instance (in bytes)',
         MetricsLabels.basic_info_labels()
     )
 
