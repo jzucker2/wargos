@@ -1,4 +1,4 @@
-from prometheus_client import Gauge
+from prometheus_client import Gauge, Counter, Summary
 
 
 class MetricsLabels(object):
@@ -35,6 +35,12 @@ class MetricsLabels(object):
         ])
 
     @classmethod
+    def basic_client_labels(cls):
+        return list([
+            cls.IP,
+        ])
+
+    @classmethod
     def basic_state_labels(cls):
         return list([
             cls.NAME,
@@ -50,50 +56,77 @@ class MetricsLabels(object):
 
 
 class Metrics(object):
+    WLED_CLIENT_SIMPLE_TEST_COUNTER = Counter(
+        'wargos_wled_client_simple_test_total',
+        'Count of times the simple WLED client test is run',
+        MetricsLabels.basic_client_labels()
+    )
+
+    WLED_CLIENT_CONNECT_EXCEPTIONS = Counter(
+        'wargos_wled_client_connect_exceptions_total',
+        'Counts any exceptions attempting to connect to a WLED instance',
+        MetricsLabels.basic_client_labels()
+    )
+
+    WLED_CLIENT_CONNECT_TIME = Summary(
+        'wargos_wled_client_connect_time_seconds',
+        'Tracks the timing for a wled instance connection',
+        MetricsLabels.basic_client_labels()
+    )
+
     INSTANCE_INFO = Gauge(
         'wargos_wled_instance_basic_info',
         'Details about the WLED instance info, mostly hw and build info',
-        MetricsLabels.instance_info_labels())
+        MetricsLabels.instance_info_labels()
+    )
 
     INSTANCE_FREE_HEAP = Gauge(
         'wargos_wled_instance_free_heap',
         'The current free heap of the WLED instance (in MB?)',
-        MetricsLabels.basic_info_labels())
+        MetricsLabels.basic_info_labels()
+    )
 
     INSTANCE_WIFI_CHANNEL = Gauge(
         'wargos_wled_instance_wifi_channel',
         'The current wifi channel of the WLED instance',
-        MetricsLabels.basic_info_labels())
+        MetricsLabels.basic_info_labels()
+    )
 
     INSTANCE_WIFI_RSSI = Gauge(
         'wargos_wled_instance_wifi_rssi',
         'The current wifi RSSI of the WLED instance',
-        MetricsLabels.basic_info_labels())
+        MetricsLabels.basic_info_labels()
+    )
 
     INSTANCE_WIFI_SIGNAL = Gauge(
         'wargos_wled_instance_wifi_signal',
         'The current wifi signal of the WLED instance',
-        MetricsLabels.basic_info_labels())
+        MetricsLabels.basic_info_labels()
+    )
 
     INSTANCE_STATE_BRIGHTNESS = Gauge(
         'wargos_wled_instance_state_brightness',
         'The current WLED instance brightness',
-        MetricsLabels.basic_state_labels())
+        MetricsLabels.basic_state_labels()
+    )
 
     INSTANCE_STATE_ON = Gauge(
         'wargos_wled_instance_state_on',
         'The current WLED instance is on value',
-        MetricsLabels.basic_state_labels())
+        MetricsLabels.basic_state_labels()
+    )
 
     INSTANCE_STATE_PLAYLIST_ID = Gauge(
         'wargos_wled_instance_state_playlist_id',
         'The current WLED instance playlist_id',
-        MetricsLabels.basic_state_labels())
+        MetricsLabels.basic_state_labels()
+    )
 
     INSTANCE_STATE_PRESET_ID = Gauge(
         'wargos_wled_instance_state_preset_id',
         'The current WLED instance preset_id',
-        MetricsLabels.basic_state_labels())
+        MetricsLabels.basic_state_labels()
+    )
 
     INSTANCE_SYNC_RECEIVE_STATE = Gauge(
         'wargos_wled_instance_sync_receive_state',
