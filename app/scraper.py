@@ -128,6 +128,18 @@ class Scraper(object):
             name=device_info.name,
         ).set(dev_nightlight.target_brightness or 0)
 
+    def scrape_info_filesystem(self, device_info):
+        dev_fs = device_info.filesystem
+        log.debug(f"got dev_fs: {dev_fs}")
+        Metrics.INSTANCE_FILESYSTEM_SPACE_TOTAL.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(dev_fs.total or 0)
+        Metrics.INSTANCE_FILESYSTEM_SPACE_USED.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(dev_fs.used or 0)
+
     def scrape_info_leds(self, device_info):
         dev_leds = device_info.leds
         log.debug(f"got dev_leds: {dev_leds}")
@@ -188,6 +200,7 @@ class Scraper(object):
         self.scrape_uptime(device_info)
         self.scrape_udp_port(device_info)
         self.scrape_info_leds(device_info)
+        self.scrape_info_filesystem(device_info)
 
     def scrape_device_state(self, device_info, device_state):
         if not device_info:

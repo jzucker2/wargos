@@ -158,6 +158,18 @@ class Metrics(object):
         MetricsLabels.basic_info_labels()
     )
 
+    INSTANCE_FILESYSTEM_SPACE_TOTAL = Gauge(
+        'wargos_wled_instance_filesystem_space_kb_total',
+        'The total space of the filesystem (in kb)',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_FILESYSTEM_SPACE_USED = Gauge(
+        'wargos_wled_instance_filesystem_space_kb_used',
+        'The used space of the filesystem (in kb)',
+        MetricsLabels.basic_info_labels()
+    )
+
     INSTANCE_WIFI_CHANNEL = Gauge(
         'wargos_wled_instance_wifi_channel',
         'The current wifi channel of the WLED instance',
