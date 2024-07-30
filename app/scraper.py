@@ -100,6 +100,70 @@ class Scraper(object):
             name=device_info.name,
         ).set(wifi_info.signal or 0)
 
+    def scrape_uptime(self, device_info):
+        Metrics.INSTANCE_UPTIME_SECONDS.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_info.uptime.total_seconds() or 0)
+
+    def scrape_udp_port(self, device_info):
+        Metrics.INSTANCE_UDP_PORT.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_info.udp_port or 0)
+
+    def scrape_state_nightlight(self, device_info, device_state):
+        dev_nightlight = device_state.nightlight
+        log.debug(f"got dev_nightlight: {dev_nightlight}")
+        Metrics.INSTANCE_NIGHTLIGHT_DURATION_MINUTES.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(dev_nightlight.duration or 0)
+        Metrics.INSTANCE_NIGHTLIGHT_ON_VALUE.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(dev_nightlight.on or 0)
+        Metrics.INSTANCE_NIGHTLIGHT_TARGET_BRIGHTNESS_VALUE.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(dev_nightlight.target_brightness or 0)
+
+    def scrape_info_filesystem(self, device_info):
+        dev_fs = device_info.filesystem
+        log.debug(f"got dev_fs: {dev_fs}")
+        Metrics.INSTANCE_FILESYSTEM_SPACE_TOTAL.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(dev_fs.total or 0)
+        Metrics.INSTANCE_FILESYSTEM_SPACE_USED.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(dev_fs.used or 0)
+
+    def scrape_info_leds(self, device_info):
+        dev_leds = device_info.leds
+        log.debug(f"got dev_leds: {dev_leds}")
+        Metrics.INSTANCE_LED_COUNT_VALUE.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(dev_leds.count or 0)
+        Metrics.INSTANCE_LED_FPS_VALUE.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(dev_leds.fps or 0)
+        Metrics.INSTANCE_LED_MAX_SEGMENTS.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(dev_leds.max_segments or 0)
+        Metrics.INSTANCE_LED_MAX_POWER.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(dev_leds.max_power or 0)
+        Metrics.INSTANCE_LED_CURRENT_POWER.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(dev_leds.power or 0)
+
     def scrape_device_info(self, device_info):
         if not device_info:
             return
@@ -121,6 +185,18 @@ class Scraper(object):
             ip=device_info.ip,
             name=device_info.name,
         ).set(device_info.free_heap or 0)
+        Metrics.INSTANCE_PALETTE_COUNT_VALUE.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_info.palette_count or 0)
+        Metrics.INSTANCE_EFFECT_COUNT_VALUE.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_info.effect_count or 0)
+        Metrics.INSTANCE_LIVE_STATE.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_info.live or 0)
 
     def scrape_device_state(self, device_info, device_state):
         if not device_info:
@@ -157,9 +233,14 @@ class Scraper(object):
             dev_info = device.info
             dev_state = device.state
             self.scrape_device_info(dev_info)
+            self.scrape_uptime(dev_info)
+            self.scrape_udp_port(dev_info)
+            self.scrape_info_leds(dev_info)
+            self.scrape_info_filesystem(dev_info)
             self.scrape_device_wifi(dev_info)
             self.scrape_device_state(dev_info, dev_state)
             self.scrape_device_sync(dev_info, dev_state)
+            self.scrape_state_nightlight(dev_info, dev_state)
         except Exception as unexp:
             log.error(f"Unexpected issue for device_ip: {device_ip} "
                       f"with scrape issue unexp: {unexp}")
