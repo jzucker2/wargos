@@ -8,9 +8,11 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 
 from .utils import LogHelper
-log = LogHelper.get_env_logger(__name__)
 from .wled_client import WLEDClient
 from .scraper import Scraper
+
+
+log = LogHelper.get_env_logger(__name__)
 
 
 app = FastAPI()

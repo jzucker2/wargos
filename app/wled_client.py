@@ -1,7 +1,11 @@
 import os
 from wled import WLED
-from .main import log
+from .utils import LogHelper
+# from .main import log
 from .metrics import Metrics
+
+
+log = LogHelper.get_env_logger(__name__)
 
 
 class WLEDClient(object):

@@ -1,7 +1,11 @@
 import os
-from .main import log
+# from .main import log
+from .utils import LogHelper
 from .metrics import Metrics
 from .wled_client import WLEDClient
+
+
+log = LogHelper.get_env_logger(__name__)
 
 
 DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS = int(os.environ.get(
