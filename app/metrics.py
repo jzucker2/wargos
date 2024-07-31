@@ -187,7 +187,7 @@ class Metrics(object):
 
     INSTANCE_SEGMENT_INTENSITY_VALUE = Gauge(
         'wargos_wled_instance_segment_intensity_value',
-        'The effect_id for this instance',
+        'The intensity value for this instance',
         MetricsLabels.basic_segment_labels()
     )
 
@@ -205,7 +205,7 @@ class Metrics(object):
 
     INSTANCE_SEGMENT_PALETTE_ID_VALUE = Gauge(
         'wargos_wled_instance_segment_palette_value',
-        'The id value of the palette',
+        'The palette_id value of the segment',
         MetricsLabels.basic_segment_labels()
     )
 
@@ -217,7 +217,7 @@ class Metrics(object):
 
     INSTANCE_SEGMENT_SEGMENT_ID_VALUE = Gauge(
         'wargos_wled_instance_segment_id_value',
-        'The segment id value of the segment',
+        'The segment_id value of the segment',
         MetricsLabels.basic_segment_labels()
     )
 
