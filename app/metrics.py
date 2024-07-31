@@ -99,23 +99,23 @@ class Metrics(object):
     )
 
     WLED_SCRAPER_SCRAPE_ALL_EXCEPTIONS = Counter(
-        'wargos_wled_client_connect_exceptions_total',
+        'wargos_wled_client_scrape_all_exceptions_total',
         'Counts any exceptions attempting to scrape all WLED instances',
     )
 
     WLED_SCRAPER_SCRAPE_ALL_TIME = Summary(
-        'wargos_wled_client_connect_time_seconds',
+        'wargos_wled_client_scrape_all_time_seconds',
         'Tracks the timing for scraping all WLED instances',
     )
 
     WLED_SCRAPER_SCRAPE_INSTANCE_EXCEPTIONS = Counter(
-        'wargos_wled_client_connect_exceptions_total',
+        'wargos_wled_client_scrape_instance_exceptions_total',
         'Counts any exceptions attempting to scrape a single WLED instance',
         MetricsLabels.basic_instance_scraper_labels()
     )
 
     WLED_SCRAPER_SCRAPE_INSTANCE_TIME = Summary(
-        'wargos_wled_client_connect_time_seconds',
+        'wargos_wled_client_scrape_instance_time_seconds',
         'Tracks the timing for scraping a single WLED instances',
         MetricsLabels.basic_instance_scraper_labels()
     )
