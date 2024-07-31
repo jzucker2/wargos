@@ -13,6 +13,8 @@ class MetricsLabels(object):
     PRODUCT = 'product'
     VERSION = 'version'
     SEGMENT = 'segment'
+    BSSID = 'bssid'
+    EXCEPTION_CLASS = 'exception_class'
 
     @classmethod
     def instance_info_labels(cls):
@@ -36,6 +38,14 @@ class MetricsLabels(object):
         ])
 
     @classmethod
+    def wifi_bssid_labels(cls):
+        return list([
+            cls.NAME,
+            cls.IP,
+            cls.BSSID,
+        ])
+
+    @classmethod
     def basic_segment_labels(cls):
         return list([
             cls.NAME,
@@ -47,6 +57,19 @@ class MetricsLabels(object):
     def basic_client_labels(cls):
         return list([
             cls.IP,
+        ])
+
+    @classmethod
+    def basic_instance_scraper_labels(cls):
+        return list([
+            cls.IP,
+        ])
+
+    @classmethod
+    def instance_scraper_exception_labels(cls):
+        return list([
+            cls.IP,
+            cls.EXCEPTION_CLASS,
         ])
 
     @classmethod
@@ -81,6 +104,34 @@ class Metrics(object):
         'wargos_wled_client_connect_time_seconds',
         'Tracks the timing for a wled instance connection',
         MetricsLabels.basic_client_labels()
+    )
+
+    WLED_SCRAPER_SCRAPE_ALL_EXCEPTIONS = Counter(
+        'wargos_wled_scraper_scrape_all_exceptions_total',
+        'Counts any exceptions attempting to scrape all WLED instances',
+    )
+
+    WLED_SCRAPER_SCRAPE_ALL_TIME = Summary(
+        'wargos_wled_scraper_scrape_all_time_seconds',
+        'Tracks the timing for scraping all WLED instances',
+    )
+
+    WLED_SCRAPER_SCRAPE_INSTANCE_EXCEPTIONS = Counter(
+        'wargos_wled_scraper_scrape_instance_exceptions_total',
+        'Counts any exceptions attempting to scrape a single WLED instance',
+        MetricsLabels.basic_instance_scraper_labels()
+    )
+
+    WLED_SCRAPER_SCRAPE_INSTANCE_TIME = Summary(
+        'wargos_wled_scraper_scrape_instance_time_seconds',
+        'Tracks the timing for scraping a single WLED instances',
+        MetricsLabels.basic_instance_scraper_labels()
+    )
+
+    WLED_SCRAPER_SCRAPE_INSTANCE_BY_TYPE_EXCEPTIONS = Counter(
+        'wargos_wled_scraper_scrape_instance_by_type_exceptions_total',
+        'Counts exceptions by type while scraping a single WLED instance',
+        MetricsLabels.instance_scraper_exception_labels()
     )
 
     INSTANCE_INFO = Gauge(
@@ -233,6 +284,12 @@ class Metrics(object):
         MetricsLabels.basic_segment_labels()
     )
 
+    INSTANCE_SEGMENT_CCT_VALUE = Gauge(
+        'wargos_wled_instance_segment_cct_value',
+        'The white spectrum color temperature (0 is warmest, 255 is coldest)',
+        MetricsLabels.basic_segment_labels()
+    )
+
     INSTANCE_SEGMENT_START_VALUE = Gauge(
         'wargos_wled_instance_segment_start_value',
         'For 2-D set up, this determines segment starts (from top left)',
@@ -275,6 +332,12 @@ class Metrics(object):
         MetricsLabels.basic_info_labels()
     )
 
+    INSTANCE_WIFI_BSSID = Gauge(
+        'wargos_wled_instance_wifi_bssid',
+        'The current bssid of the wifi the WLED instance is connected to',
+        MetricsLabels.wifi_bssid_labels()
+    )
+
     INSTANCE_LIVE_STATE = Gauge(
         'wargos_wled_instance_live_state',
         'The current WLED instance live state bool value',
@@ -284,6 +347,12 @@ class Metrics(object):
     INSTANCE_STATE_BRIGHTNESS = Gauge(
         'wargos_wled_instance_state_brightness',
         'The current WLED instance brightness',
+        MetricsLabels.basic_state_labels()
+    )
+
+    INSTANCE_STATE_TRANSITION = Gauge(
+        'wargos_wled_instance_state_transition',
+        'Duration of crossfade between colors/brightness (1 unit is 100ms)',
         MetricsLabels.basic_state_labels()
     )
 
