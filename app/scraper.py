@@ -308,35 +308,43 @@ class Scraper(object):
         await self.scrape_instance(device_ip)
 
     async def scrape_instance(self, device_ip):
-        log.debug(f"wled connecting to device_ip: {device_ip}")
-        device = await self.wled_client.get_wled_instance_device(
-            device_ip)
-        log.debug(f"wled got device: {device}")
+        with Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_EXCEPTIONS.labels(
+            ip=device_ip,
+        ).count_exceptions():
+            with Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_TIME.labels(
+                ip=device_ip,
+            ).time():
+                log.debug(f"wled connecting to device_ip: {device_ip}")
+                device = await self.wled_client.get_wled_instance_device(
+                    device_ip)
+                log.debug(f"wled got device: {device}")
 
-        try:
-            dev_info = device.info
-            dev_state = device.state
-            self.scrape_device_info(dev_info)
-            self.scrape_uptime(dev_info)
-            self.scrape_udp_port(dev_info)
-            self.scrape_info_leds(dev_info)
-            self.scrape_info_filesystem(dev_info)
-            self.scrape_device_wifi(dev_info)
-            self.scrape_device_state(dev_info, dev_state)
-            self.scrape_device_sync(dev_info, dev_state)
-            self.scrape_state_nightlight(dev_info, dev_state)
-            self.scrape_state_segments(dev_info, dev_state)
-        except Exception as unexp:
-            log.error(f"Unexpected issue for device_ip: {device_ip} "
-                      f"with scrape issue unexp: {unexp}")
+                try:
+                    dev_info = device.info
+                    dev_state = device.state
+                    self.scrape_device_info(dev_info)
+                    self.scrape_uptime(dev_info)
+                    self.scrape_udp_port(dev_info)
+                    self.scrape_info_leds(dev_info)
+                    self.scrape_info_filesystem(dev_info)
+                    self.scrape_device_wifi(dev_info)
+                    self.scrape_device_state(dev_info, dev_state)
+                    self.scrape_device_sync(dev_info, dev_state)
+                    self.scrape_state_nightlight(dev_info, dev_state)
+                    self.scrape_state_segments(dev_info, dev_state)
+                except Exception as unexp:
+                    log.error(f"Unexpected issue for device_ip: {device_ip} "
+                              f"with scrape issue unexp: {unexp}")
 
     async def scrape_all_instances(self):
-        wled_ip_list = self.parse_env_wled_ip_list()
-        if not wled_ip_list:
-            e_m = ('missing wled ip list! must provide '
-                   'with env var to use this method')
-            log.error(e_m)
-            raise MissingIPListScraperException(e_m)
-        for device_ip in wled_ip_list:
-            log.debug(f"scraping metrics for device_ip: {device_ip}")
-            await self.scrape_instance(device_ip)
+        with Metrics.WLED_SCRAPER_SCRAPE_ALL_EXCEPTIONS.count_exceptions():
+            with Metrics.WLED_SCRAPER_SCRAPE_ALL_TIME.time():
+                wled_ip_list = self.parse_env_wled_ip_list()
+                if not wled_ip_list:
+                    e_m = ('missing wled ip list! must provide '
+                           'with env var to use this method')
+                    log.error(e_m)
+                    raise MissingIPListScraperException(e_m)
+                for device_ip in wled_ip_list:
+                    log.debug(f"scraping metrics for device_ip: {device_ip}")
+                    await self.scrape_instance(device_ip)
