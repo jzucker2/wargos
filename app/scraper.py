@@ -102,7 +102,7 @@ class Scraper(object):
         Metrics.INSTANCE_WIFI_BSSID.labels(
             ip=device_info.ip,
             name=device_info.name,
-            bssid=device_info.bssid,
+            bssid=wifi_info.bssid,
         ).set(1)
 
     def scrape_uptime(self, device_info):
