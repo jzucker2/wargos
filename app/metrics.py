@@ -204,7 +204,7 @@ class Metrics(object):
     )
 
     INSTANCE_SEGMENT_PALETTE_ID_VALUE = Gauge(
-        'wargos_wled_instance_segment_palette_value',
+        'wargos_wled_instance_segment_palette_id_value',
         'The palette_id value of the segment',
         MetricsLabels.basic_segment_labels()
     )
