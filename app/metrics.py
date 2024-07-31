@@ -242,6 +242,12 @@ class Metrics(object):
         MetricsLabels.basic_segment_labels()
     )
 
+    INSTANCE_SEGMENT_CCT_VALUE = Gauge(
+        'wargos_wled_instance_segment_cct_value',
+        'The white spectrum color temperature (0 is warmest, 255 is coldest)',
+        MetricsLabels.basic_segment_labels()
+    )
+
     INSTANCE_SEGMENT_START_VALUE = Gauge(
         'wargos_wled_instance_segment_start_value',
         'For 2-D set up, this determines segment starts (from top left)',
@@ -299,6 +305,12 @@ class Metrics(object):
     INSTANCE_STATE_BRIGHTNESS = Gauge(
         'wargos_wled_instance_state_brightness',
         'The current WLED instance brightness',
+        MetricsLabels.basic_state_labels()
+    )
+
+    INSTANCE_STATE_TRANSITION = Gauge(
+        'wargos_wled_instance_state_transition',
+        'Duration of crossfade between colors/brightness (1 unit is 100ms)',
         MetricsLabels.basic_state_labels()
     )
 

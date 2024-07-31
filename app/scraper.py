@@ -192,6 +192,11 @@ class Scraper(object):
                 name=device_info.name,
                 segment=segment_name,
             ).set(segment_info.speed or 0)
+            Metrics.INSTANCE_SEGMENT_CCT_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.cct or 0)
             Metrics.INSTANCE_SEGMENT_START_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
@@ -281,6 +286,10 @@ class Scraper(object):
             ip=device_info.ip,
             name=device_info.name,
         ).set(device_state.brightness or 0)
+        Metrics.INSTANCE_STATE_TRANSITION.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_state.transition or 0)
         Metrics.INSTANCE_STATE_ON.labels(
             ip=device_info.ip,
             name=device_info.name,
