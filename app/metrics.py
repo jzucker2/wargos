@@ -12,6 +12,7 @@ class MetricsLabels(object):
     NAME = 'name'
     PRODUCT = 'product'
     VERSION = 'version'
+    SEGMENT = 'segment'
 
     @classmethod
     def instance_info_labels(cls):
@@ -32,6 +33,14 @@ class MetricsLabels(object):
         return list([
             cls.NAME,
             cls.IP,
+        ])
+
+    @classmethod
+    def basic_segment_labels(cls):
+        return list([
+            cls.NAME,
+            cls.IP,
+            cls.SEGMENT,
         ])
 
     @classmethod
@@ -156,6 +165,84 @@ class Metrics(object):
         'wargos_wled_instance_nightlight_target_brightness_value',
         'The target brightness value of the nightlight of the instance',
         MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_SEGMENT_BRIGHTNESS_VALUE = Gauge(
+        'wargos_wled_instance_segment_brightness_value',
+        'The brightness value of the segment of the instance',
+        MetricsLabels.basic_segment_labels()
+    )
+
+    INSTANCE_SEGMENT_CLONES_VALUE = Gauge(
+        'wargos_wled_instance_segment_clones_value',
+        'The segment this segment clones for the instance',
+        MetricsLabels.basic_segment_labels()
+    )
+
+    INSTANCE_SEGMENT_EFFECT_ID_VALUE = Gauge(
+        'wargos_wled_instance_segment_effect_id_value',
+        'The effect_id for this instance',
+        MetricsLabels.basic_segment_labels()
+    )
+
+    INSTANCE_SEGMENT_INTENSITY_VALUE = Gauge(
+        'wargos_wled_instance_segment_intensity_value',
+        'The effect_id for this instance',
+        MetricsLabels.basic_segment_labels()
+    )
+
+    INSTANCE_SEGMENT_LENGTH_VALUE = Gauge(
+        'wargos_wled_instance_segment_length_value',
+        'The length for this segment',
+        MetricsLabels.basic_segment_labels()
+    )
+
+    INSTANCE_SEGMENT_ON_VALUE = Gauge(
+        'wargos_wled_instance_segment_on_value',
+        'The bool value of whether the segment of the instance is enabled',
+        MetricsLabels.basic_segment_labels()
+    )
+
+    INSTANCE_SEGMENT_PALETTE_ID_VALUE = Gauge(
+        'wargos_wled_instance_segment_palette_value',
+        'The id value of the palette',
+        MetricsLabels.basic_segment_labels()
+    )
+
+    INSTANCE_SEGMENT_REVERSE_VALUE = Gauge(
+        'wargos_wled_instance_segment_reverse_value',
+        'Flips the segment (in 2D set up) to change direction',
+        MetricsLabels.basic_segment_labels()
+    )
+
+    INSTANCE_SEGMENT_SEGMENT_ID_VALUE = Gauge(
+        'wargos_wled_instance_segment_id_value',
+        'The segment id value of the segment',
+        MetricsLabels.basic_segment_labels()
+    )
+
+    INSTANCE_SEGMENT_SELECTED_VALUE = Gauge(
+        'wargos_wled_instance_segment_selected_value',
+        'The bool value of whether the segment of the instance is selected',
+        MetricsLabels.basic_segment_labels()
+    )
+
+    INSTANCE_SEGMENT_SPEED_VALUE = Gauge(
+        'wargos_wled_instance_segment_speed_value',
+        'The relative effect speed of the segment',
+        MetricsLabels.basic_segment_labels()
+    )
+
+    INSTANCE_SEGMENT_START_VALUE = Gauge(
+        'wargos_wled_instance_segment_start_value',
+        'For 2-D set up, this determines segment starts (from top left)',
+        MetricsLabels.basic_segment_labels()
+    )
+
+    INSTANCE_SEGMENT_STOP_VALUE = Gauge(
+        'wargos_wled_instance_segment_stop_value',
+        'For 2D set up, this determines segment starts (from top left)',
+        MetricsLabels.basic_segment_labels()
     )
 
     INSTANCE_FILESYSTEM_SPACE_TOTAL = Gauge(

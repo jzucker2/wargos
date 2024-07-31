@@ -128,6 +128,76 @@ class Scraper(object):
             name=device_info.name,
         ).set(dev_nightlight.target_brightness or 0)
 
+    def scrape_state_segments(self, device_info, device_state):
+        dev_segments_list = device_state.segments
+        log.debug(f"got dev_segments_list: {dev_segments_list}")
+        for segment_name, segment_info in dev_segments_list.items():
+            Metrics.INSTANCE_SEGMENT_BRIGHTNESS_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.brightness or 0)
+            Metrics.INSTANCE_SEGMENT_CLONES_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.clones or 0)
+            Metrics.INSTANCE_SEGMENT_EFFECT_ID_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.effect_id or 0)
+            Metrics.INSTANCE_SEGMENT_INTENSITY_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.intensity or 0)
+            Metrics.INSTANCE_SEGMENT_LENGTH_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.length or 0)
+            Metrics.INSTANCE_SEGMENT_ON_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.on or 0)
+            Metrics.INSTANCE_SEGMENT_PALETTE_ID_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.palette_id or 0)
+            Metrics.INSTANCE_SEGMENT_REVERSE_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.reverse or 0)
+            Metrics.INSTANCE_SEGMENT_SEGMENT_ID_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.segment_id or 0)
+            Metrics.INSTANCE_SEGMENT_SELECTED_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.selected or 0)
+            Metrics.INSTANCE_SEGMENT_SPEED_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.speed or 0)
+            Metrics.INSTANCE_SEGMENT_START_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.start or 0)
+            Metrics.INSTANCE_SEGMENT_STOP_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+            ).set(segment_info.stop or 0)
+
     def scrape_info_filesystem(self, device_info):
         dev_fs = device_info.filesystem
         log.debug(f"got dev_fs: {dev_fs}")
@@ -241,6 +311,7 @@ class Scraper(object):
             self.scrape_device_state(dev_info, dev_state)
             self.scrape_device_sync(dev_info, dev_state)
             self.scrape_state_nightlight(dev_info, dev_state)
+            self.scrape_state_segments(dev_info, dev_state)
         except Exception as unexp:
             log.error(f"Unexpected issue for device_ip: {device_ip} "
                       f"with scrape issue unexp: {unexp}")
