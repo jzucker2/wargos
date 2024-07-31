@@ -14,6 +14,7 @@ class MetricsLabels(object):
     VERSION = 'version'
     SEGMENT = 'segment'
     BSSID = 'bssid'
+    EXCEPTION_CLASS = 'exception_class'
 
     @classmethod
     def instance_info_labels(cls):
@@ -62,6 +63,13 @@ class MetricsLabels(object):
     def basic_instance_scraper_labels(cls):
         return list([
             cls.IP,
+        ])
+
+    @classmethod
+    def instance_scraper_exception_labels(cls):
+        return list([
+            cls.IP,
+            cls.EXCEPTION_CLASS,
         ])
 
     @classmethod
@@ -118,6 +126,12 @@ class Metrics(object):
         'wargos_wled_scraper_scrape_instance_time_seconds',
         'Tracks the timing for scraping a single WLED instances',
         MetricsLabels.basic_instance_scraper_labels()
+    )
+
+    WLED_SCRAPER_SCRAPE_INSTANCE_BY_TYPE_EXCEPTIONS = Counter(
+        'wargos_wled_scraper_scrape_instance_by_type_exceptions_total',
+        'Counts exceptions by type while scraping a single WLED instance',
+        MetricsLabels.instance_scraper_exception_labels()
     )
 
     INSTANCE_INFO = Gauge(

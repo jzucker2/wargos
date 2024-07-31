@@ -334,7 +334,16 @@ class Scraper(object):
                     self.scrape_state_segments(dev_info, dev_state)
                 except Exception as unexp:
                     log.error(f"Unexpected issue for device_ip: {device_ip} "
-                              f"with scrape issue unexp: {unexp}")
+                              f"with scrape issue unexp: {unexp} with "
+                              f"type(unexp): {type(unexp)}")
+                    exc_class = str(type(unexp).__name__)
+                    log.debug(f"Unexpected exception unexp: {unexp} with "
+                              f"type(unexp): {type(unexp)} has exc_class: "
+                              f"{exc_class}")
+                    Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_BY_TYPE_EXCEPTIONS.labels(  # noqa: E501
+                        ip=device_ip,
+                        exception_class=exc_class,
+                    ).inc()
 
     async def scrape_all_instances(self):
         with Metrics.WLED_SCRAPER_SCRAPE_ALL_EXCEPTIONS.count_exceptions():
