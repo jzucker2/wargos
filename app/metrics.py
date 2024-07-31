@@ -13,6 +13,7 @@ class MetricsLabels(object):
     PRODUCT = 'product'
     VERSION = 'version'
     SEGMENT = 'segment'
+    BSSID = 'bssid'
 
     @classmethod
     def instance_info_labels(cls):
@@ -33,6 +34,14 @@ class MetricsLabels(object):
         return list([
             cls.NAME,
             cls.IP,
+        ])
+
+    @classmethod
+    def wifi_bssid_labels(cls):
+        return list([
+            cls.NAME,
+            cls.IP,
+            cls.BSSID,
         ])
 
     @classmethod
@@ -273,6 +282,12 @@ class Metrics(object):
         'wargos_wled_instance_wifi_signal',
         'The current wifi signal of the WLED instance',
         MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_WIFI_BSSID = Gauge(
+        'wargos_wled_instance_wifi_bssid',
+        'The current bssid of the wifi the WLED instance is connected to',
+        MetricsLabels.wifi_bssid_labels()
     )
 
     INSTANCE_LIVE_STATE = Gauge(

@@ -99,6 +99,11 @@ class Scraper(object):
             ip=device_info.ip,
             name=device_info.name,
         ).set(wifi_info.signal or 0)
+        Metrics.INSTANCE_WIFI_BSSID.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+            bssid=device_info.bssid,
+        ).set(1)
 
     def scrape_uptime(self, device_info):
         Metrics.INSTANCE_UPTIME_SECONDS.labels(
