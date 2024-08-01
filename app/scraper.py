@@ -143,8 +143,8 @@ class Scraper(object):
             return
         color_position = 0
         for color_value in colors:
-            log.info(f'at color_position: {color_position} '
-                     f'color_value: {color_value}')
+            log.debug(f'at color_position: {color_position} '
+                      f'color_value: {color_value}')
             Metrics.INSTANCE_SEGMENT_COLOR_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
