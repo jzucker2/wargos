@@ -152,7 +152,7 @@ class Scraper(object):
                 segment=segment_name,
                 color_priority=color_priority,
                 color_tuple_position=color_position,
-            )
+            ).set(color_value)
             color_position += 1
 
     def scrape_state_segment_colors(
