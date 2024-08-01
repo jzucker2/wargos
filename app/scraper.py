@@ -133,6 +133,56 @@ class Scraper(object):
             name=device_info.name,
         ).set(dev_nightlight.target_brightness or 0)
 
+    def _scrape_single_priority_color(
+            self,
+            device_info,
+            segment_name,
+            color_priority,
+            colors):
+        if not colors:
+            return
+        color_position = 0
+        for color_value in colors:
+            log.debug(f'color_priority ({color_priority}) ==> at '
+                      f'color_position: {color_position} '
+                      f'color_value: {color_value}')
+            Metrics.INSTANCE_SEGMENT_COLOR_VALUE.labels(
+                ip=device_info.ip,
+                name=device_info.name,
+                segment=segment_name,
+                color_priority=color_priority,
+                color_tuple_position=color_position,
+            ).set(color_value)
+            color_position += 1
+
+    def scrape_state_segment_colors(
+            self,
+            device_info,
+            segment_name,
+            segment_info):
+        dev_colors = segment_info.color
+        log.debug(f"got dev_colors: {dev_colors}")
+        if not dev_colors:
+            return
+        primary_colors = dev_colors.primary
+        self._scrape_single_priority_color(
+            device_info,
+            segment_name,
+            'primary',
+            primary_colors)
+        secondary_colors = dev_colors.secondary
+        self._scrape_single_priority_color(
+            device_info,
+            segment_name,
+            'secondary',
+            secondary_colors)
+        tertiary_colors = dev_colors.tertiary
+        self._scrape_single_priority_color(
+            device_info,
+            segment_name,
+            'tertiary',
+            tertiary_colors)
+
     def scrape_state_segments(self, device_info, device_state):
         dev_segments_list = device_state.segments
         log.debug(f"got dev_segments_list: {dev_segments_list}")
@@ -207,6 +257,12 @@ class Scraper(object):
                 name=device_info.name,
                 segment=segment_name,
             ).set(segment_info.stop or 0)
+            log.debug(f'Now try and scrape colors '
+                      f'from segment_name: {segment_name}')
+            self.scrape_state_segment_colors(
+                device_info,
+                segment_name,
+                segment_info)
 
     def scrape_info_filesystem(self, device_info):
         dev_fs = device_info.filesystem

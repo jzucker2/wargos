@@ -15,6 +15,8 @@ class MetricsLabels(object):
     SEGMENT = 'segment'
     BSSID = 'bssid'
     EXCEPTION_CLASS = 'exception_class'
+    COLOR_PRIORITY = 'color_priority'
+    COLOR_TUPLE_POSITION = 'color_tuple_position'
 
     @classmethod
     def instance_info_labels(cls):
@@ -51,6 +53,16 @@ class MetricsLabels(object):
             cls.NAME,
             cls.IP,
             cls.SEGMENT,
+        ])
+
+    @classmethod
+    def segment_color_labels(cls):
+        return list([
+            cls.NAME,
+            cls.IP,
+            cls.SEGMENT,
+            cls.COLOR_PRIORITY,
+            cls.COLOR_TUPLE_POSITION,
         ])
 
     @classmethod
@@ -216,6 +228,12 @@ class Metrics(object):
         'wargos_wled_instance_nightlight_target_brightness_value',
         'The target brightness value of the nightlight of the instance',
         MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_SEGMENT_COLOR_VALUE = Gauge(
+        'wargos_wled_instance_segment_color_value',
+        'The color value (with priority) of the segment of the instance',
+        MetricsLabels.segment_color_labels()
     )
 
     INSTANCE_SEGMENT_BRIGHTNESS_VALUE = Gauge(
