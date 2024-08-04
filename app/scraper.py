@@ -376,6 +376,12 @@ class Scraper(object):
                     # name=dev_info.name,
                     scrape_event='started',
                 ).inc()
+                # Want to set this _before_ trying to connect
+                # because timeouts haven't been configured yet
+                Metrics.WLED_INSTANCE_ONLINE.labels(
+                    ip=device_ip,
+                    # name=dev_info.name,
+                ).set(0)
                 device = await self.wled_client.get_wled_instance_device(
                     device_ip)
                 log.debug(f"wled got device: {device}")
