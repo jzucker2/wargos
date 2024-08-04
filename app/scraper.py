@@ -384,6 +384,11 @@ class Scraper(object):
                 ).set(0)
                 device = await self.wled_client.get_wled_instance_device(
                     device_ip)
+                Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
+                    ip=device_ip,
+                    # name=dev_info.name,
+                    scrape_event='connected',
+                ).inc()
                 log.debug(f"wled got device: {device}")
 
                 try:
