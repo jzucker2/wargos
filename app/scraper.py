@@ -371,6 +371,11 @@ class Scraper(object):
                 ip=device_ip,
             ).time():
                 log.debug(f"wled connecting to device_ip: {device_ip}")
+                Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
+                    ip=device_ip,
+                    # name=dev_info.name,
+                    scrape_event='started',
+                ).inc()
                 device = await self.wled_client.get_wled_instance_device(
                     device_ip)
                 log.debug(f"wled got device: {device}")
@@ -399,6 +404,17 @@ class Scraper(object):
                     Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_BY_TYPE_EXCEPTIONS.labels(  # noqa: E501
                         ip=device_ip,
                         exception_class=exc_class,
+                    ).inc()
+                    Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
+                        ip=device_ip,
+                        # name=dev_info.name,
+                        scrape_event='failed',
+                    ).inc()
+                else:
+                    Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
+                        ip=device_ip,
+                        # name=dev_info.name,
+                        scrape_event='succeeded',
                     ).inc()
 
     async def scrape_all_instances(self):
