@@ -410,12 +410,20 @@ class Scraper(object):
                         # name=dev_info.name,
                         scrape_event='failed',
                     ).inc()
+                    Metrics.WLED_INSTANCE_ONLINE.labels(
+                        ip=device_ip,
+                        # name=dev_info.name,
+                    ).set(0)
                 else:
                     Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
                         ip=device_ip,
                         # name=dev_info.name,
                         scrape_event='succeeded',
                     ).inc()
+                    Metrics.WLED_INSTANCE_ONLINE.labels(
+                        ip=device_ip,
+                        # name=dev_info.name,
+                    ).set(1)
 
     async def scrape_all_instances(self):
         with Metrics.WLED_SCRAPER_SCRAPE_ALL_EXCEPTIONS.count_exceptions():
