@@ -447,4 +447,10 @@ class Scraper(object):
                     raise MissingIPListScraperException(e_m)
                 for device_ip in wled_ip_list:
                     log.debug(f"scraping metrics for device_ip: {device_ip}")
-                    await self.scrape_instance(device_ip)
+                    try:
+                        await self.scrape_instance(device_ip)
+                    # TODO: why does it throw up here and not within function?
+                    except Exception as unexp:
+                        u_m = (f'Scrape all device_ip: {device_ip} '
+                               f'got unexp: {unexp}')
+                        log.error(u_m)
