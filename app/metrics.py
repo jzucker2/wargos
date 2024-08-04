@@ -17,6 +17,7 @@ class MetricsLabels(object):
     EXCEPTION_CLASS = 'exception_class'
     COLOR_PRIORITY = 'color_priority'
     COLOR_TUPLE_POSITION = 'color_tuple_position'
+    SCRAPE_EVENT = 'scrape_event'
 
     @classmethod
     def instance_info_labels(cls):
@@ -37,6 +38,13 @@ class MetricsLabels(object):
         return list([
             cls.NAME,
             cls.IP,
+        ])
+
+    @classmethod
+    def scrape_events_labels(cls):
+        return list([
+            cls.IP,
+            cls.SCRAPE_EVENT,
         ])
 
     @classmethod
@@ -67,6 +75,12 @@ class MetricsLabels(object):
 
     @classmethod
     def basic_client_labels(cls):
+        return list([
+            cls.IP,
+        ])
+
+    @classmethod
+    def basic_online_labels(cls):
         return list([
             cls.IP,
         ])
@@ -144,6 +158,18 @@ class Metrics(object):
         'wargos_wled_scraper_scrape_instance_by_type_exceptions_total',
         'Counts exceptions by type while scraping a single WLED instance',
         MetricsLabels.instance_scraper_exception_labels()
+    )
+
+    WLED_INSTANCE_SCRAPE_EVENTS_COUNTER = Counter(
+        'wargos_wled_instance_scrape_events_total',
+        'Count of scrape events by type per WLED instance',
+        MetricsLabels.scrape_events_labels()
+    )
+
+    WLED_INSTANCE_ONLINE = Gauge(
+        'wargos_wled_instance_online',
+        'Whether WLED instance is online and available (0 means offline)',
+        MetricsLabels.basic_online_labels()
     )
 
     INSTANCE_INFO = Gauge(

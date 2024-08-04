@@ -16,7 +16,7 @@ services:
       start_period: 80s
     environment:
       - DEBUG=true
-      - WLED_IP_LIST=10.0.1.150,10.0.1.179,10.0.1.153
+      - WLED_IP_LIST=10.0.1.129,10.0.1.150,10.0.1.179,10.0.1.153
     ports:
       - "9395:9395"
     stdin_open: true

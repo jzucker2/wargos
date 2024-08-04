@@ -371,8 +371,24 @@ class Scraper(object):
                 ip=device_ip,
             ).time():
                 log.debug(f"wled connecting to device_ip: {device_ip}")
+                Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
+                    ip=device_ip,
+                    # name=dev_info.name,
+                    scrape_event='started',
+                ).inc()
+                # Want to set this _before_ trying to connect
+                # because timeouts haven't been configured yet
+                Metrics.WLED_INSTANCE_ONLINE.labels(
+                    ip=device_ip,
+                    # name=dev_info.name,
+                ).set(0)
                 device = await self.wled_client.get_wled_instance_device(
                     device_ip)
+                Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
+                    ip=device_ip,
+                    # name=dev_info.name,
+                    scrape_event='connected',
+                ).inc()
                 log.debug(f"wled got device: {device}")
 
                 try:
@@ -400,6 +416,25 @@ class Scraper(object):
                         ip=device_ip,
                         exception_class=exc_class,
                     ).inc()
+                    Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
+                        ip=device_ip,
+                        # name=dev_info.name,
+                        scrape_event='failed',
+                    ).inc()
+                    Metrics.WLED_INSTANCE_ONLINE.labels(
+                        ip=device_ip,
+                        # name=dev_info.name,
+                    ).set(0)
+                else:
+                    Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
+                        ip=device_ip,
+                        # name=dev_info.name,
+                        scrape_event='succeeded',
+                    ).inc()
+                    Metrics.WLED_INSTANCE_ONLINE.labels(
+                        ip=device_ip,
+                        # name=dev_info.name,
+                    ).set(1)
 
     async def scrape_all_instances(self):
         with Metrics.WLED_SCRAPER_SCRAPE_ALL_EXCEPTIONS.count_exceptions():
@@ -412,4 +447,10 @@ class Scraper(object):
                     raise MissingIPListScraperException(e_m)
                 for device_ip in wled_ip_list:
                     log.debug(f"scraping metrics for device_ip: {device_ip}")
-                    await self.scrape_instance(device_ip)
+                    try:
+                        await self.scrape_instance(device_ip)
+                    # TODO: why does it throw up here and not within function?
+                    except Exception as unexp:
+                        u_m = (f'Scrape all device_ip: {device_ip} '
+                               f'got unexp: {unexp}')
+                        log.error(u_m)
