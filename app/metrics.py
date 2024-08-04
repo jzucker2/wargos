@@ -80,6 +80,12 @@ class MetricsLabels(object):
         ])
 
     @classmethod
+    def basic_online_labels(cls):
+        return list([
+            cls.IP,
+        ])
+
+    @classmethod
     def basic_instance_scraper_labels(cls):
         return list([
             cls.IP,
@@ -158,6 +164,12 @@ class Metrics(object):
         'wargos_wled_instance_scrape_events_total',
         'Count of scrape events by type per WLED instance',
         MetricsLabels.scrape_events_labels()
+    )
+
+    WLED_INSTANCE_ONLINE = Gauge(
+        'wargos_wled_instance_online',
+        'Whether WLED instance is online and available (0 means offline)',
+        MetricsLabels.basic_online_labels()
     )
 
     INSTANCE_INFO = Gauge(
