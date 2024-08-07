@@ -88,6 +88,7 @@ I am new to fastapi
 * https://fastapi.tiangolo.com/tutorial/
 * https://fastapi.tiangolo.com/advanced/
 * https://fastapi.tiangolo.com/how-to/general/
+* https://github.com/fastapi/full-stack-fastapi-template/tree/master
 
 ## Development
 
