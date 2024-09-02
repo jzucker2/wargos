@@ -41,7 +41,7 @@ updates:
     allow:
       # allow updates for specific clients
       # or is better to use `fastapi*`
-      - dependency-name: "fastapi[standard]"
+      - dependency-name: "fastapi*"
       - dependency-name: "pydantic"
       - dependency-name: "wled"
       - dependency-name: "prometheus-fastapi-instrumentator"
