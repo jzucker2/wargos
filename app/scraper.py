@@ -1,5 +1,6 @@
 import os
 from .utils import LogHelper
+from .version import version
 from .metrics import Metrics
 from .wled_client import WLEDClient
 
@@ -436,6 +437,14 @@ class Scraper(object):
                         # name=dev_info.name,
                     ).set(1)
 
+    def scrape_self(self):
+        with Metrics.WLED_SCRAPER_SCRAPE_SELF_EXCEPTIONS.count_exceptions():
+            with Metrics.WLED_SCRAPER_SCRAPE_SELF_TIME.time():
+                current_version = version
+                Metrics.WARGOS_INSTANCE_INFO.labels(
+                    version=current_version,
+                ).set(1)
+
     async def scrape_all_instances(self):
         with Metrics.WLED_SCRAPER_SCRAPE_ALL_EXCEPTIONS.count_exceptions():
             with Metrics.WLED_SCRAPER_SCRAPE_ALL_TIME.time():
@@ -454,3 +463,12 @@ class Scraper(object):
                         u_m = (f'Scrape all device_ip: {device_ip} '
                                f'got unexp: {unexp}')
                         log.error(u_m)
+
+    async def perform_full_scrape(self):
+        # first scrape self info for this app
+        log.debug('perform_full_scrape')
+        self.scrape_self()
+        log.debug('done with scrape self now scrape all wled instances')
+        # then scrape all wled instances
+        await self.scrape_all_instances()
+        log.debug('done with scraping all wled instances')

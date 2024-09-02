@@ -1,0 +1,5 @@
+fastapi[standard]
+fastapi-utils[all]
+prometheus-fastapi-instrumentator
+pydantic
+wled

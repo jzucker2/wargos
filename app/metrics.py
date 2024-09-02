@@ -20,6 +20,12 @@ class MetricsLabels(object):
     SCRAPE_EVENT = 'scrape_event'
 
     @classmethod
+    def wargos_instance_info_labels(cls):
+        return list([
+            cls.VERSION,
+        ])
+
+    @classmethod
     def instance_info_labels(cls):
         return list([
             cls.ARCHITECTURE,
@@ -114,6 +120,12 @@ class MetricsLabels(object):
 
 
 class Metrics(object):
+    WARGOS_INSTANCE_INFO = Gauge(
+        'wargos_instance_info',
+        'Details about the actual wargos scraper instance (this app)',
+        MetricsLabels.wargos_instance_info_labels()
+    )
+
     WLED_CLIENT_SIMPLE_TEST_COUNTER = Counter(
         'wargos_wled_client_simple_test_total',
         'Count of times the simple WLED client test is run',
@@ -130,6 +142,16 @@ class Metrics(object):
         'wargos_wled_client_connect_time_seconds',
         'Tracks the timing for a wled instance connection',
         MetricsLabels.basic_client_labels()
+    )
+
+    WLED_SCRAPER_SCRAPE_SELF_EXCEPTIONS = Counter(
+        'wargos_wled_scraper_scrape_self_exceptions_total',
+        'Counts any exceptions attempting to scrape self instance',
+    )
+
+    WLED_SCRAPER_SCRAPE_SELF_TIME = Summary(
+        'wargos_wled_scraper_scrape_self_time_seconds',
+        'Tracks the timing for scraping self instance',
     )
 
     WLED_SCRAPER_SCRAPE_ALL_EXCEPTIONS = Counter(
