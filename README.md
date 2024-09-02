@@ -120,6 +120,10 @@ curl -i "http://localhost:9395/prometheus/all" \
   * This is the pattern I went with for now
 * https://github.com/tiangolo/fastapi/discussions/7457
 
+### Docker Images
+
+* https://www.reddit.com/r/FastAPI/comments/rrwglp/reduce_size_of_the_official_fastapi_image/
+
 ### Notes
 
 ```
