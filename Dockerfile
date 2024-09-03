@@ -1,6 +1,6 @@
 # https://fastapi.tiangolo.com/deployment/docker/
 # TODO: update and pin python version
-FROM python:3.12
+FROM python:3.12-alpine
 
 # TODO: Is this the best workdir?
 WORKDIR /code
