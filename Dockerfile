@@ -1,10 +1,6 @@
 # https://fastapi.tiangolo.com/deployment/docker/
 # TODO: update and pin python version
-FROM python:3.12-slim AS builder
-
-RUN apt-get update -y && apt-get install -y \
-        gcc \
-    && apt-get clean
+FROM python:3.12 AS builder
 
 # TODO: Is this the best workdir?
 WORKDIR /code
