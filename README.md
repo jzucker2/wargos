@@ -123,6 +123,7 @@ curl -i "http://localhost:9395/prometheus/all" \
 ### Docker Images
 
 * https://www.reddit.com/r/FastAPI/comments/rrwglp/reduce_size_of_the_official_fastapi_image/
+* https://www.reddit.com/r/FastAPI/comments/11rfbae/using_docker_for_your_fastapi_apps_considering/
 
 ### Notes
 
