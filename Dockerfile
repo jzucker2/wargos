@@ -1,6 +1,6 @@
 # https://fastapi.tiangolo.com/deployment/docker/
 # TODO: update and pin python version
-FROM python:3.12
+FROM python:3.12 AS builder
 
 # TODO: Is this the best workdir?
 WORKDIR /code
@@ -9,10 +9,27 @@ WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
 
 # This looks good
-RUN pip install --no-cache-dir -r /code/requirements.txt
+RUN pip wheel --no-deps --wheel-dir /code/wheels -r /code/requirements.txt
+
+FROM python:3.12-slim AS runner
+
+RUN apt-get update -y && apt-get install -y \
+        curl \
+    && apt-get clean
+
+COPY --from=builder /code/wheels /wheels
+COPY --from=builder /code/requirements.txt .
+
+RUN pip install --no-cache /wheels/*
+
+WORKDIR /code
 
 # This looks good
 COPY ./app /code/app
+
+# Expose the port on which the application will run
+EXPOSE 9395
+
 
 # TODO: make port configurable and maybe get behind gunicorn
 CMD ["fastapi", "run", "app/main.py", "--port", "9395"]
