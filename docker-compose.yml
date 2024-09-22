@@ -8,12 +8,6 @@ services:
     restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
-#    healthcheck:
-#      test: [ "CMD-SHELL", "curl -f http://host.docker.internal:9395/healthz || exit 1" ]
-#      interval: 30s
-#      timeout: 60s
-#      retries: 5
-#      start_period: 80s
     environment:
       - DEBUG=true
       - WLED_IP_LIST=10.0.1.129,10.0.1.150,10.0.1.179,10.0.1.153
