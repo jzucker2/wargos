@@ -30,6 +30,8 @@ COPY ./app /code/app
 # Expose the port on which the application will run
 EXPOSE 9395
 
+HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
+    CMD curl -f http://0.0.0.0:9395/healthz || exit 1
 
 # TODO: make port configurable and maybe get behind gunicorn
 CMD ["fastapi", "run", "app/main.py", "--port", "9395"]
