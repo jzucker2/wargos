@@ -24,7 +24,7 @@ class MissingIPListScraperException(ScraperException):
 class Scraper(object):
     @classmethod
     def get_client(cls):
-        return Scraper(WLEDClient.get_client())
+        return cls(WLEDClient.get_client())
 
     @classmethod
     def default_wled_ip(cls):
