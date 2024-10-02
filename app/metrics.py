@@ -172,7 +172,7 @@ class Metrics(object):
 
     WLED_SCRAPER_SCRAPE_INSTANCE_TIME = Summary(
         'wargos_wled_scraper_scrape_instance_time_seconds',
-        'Tracks the timing for scraping a single WLED instances',
+        'Tracks the timing for scraping a single WLED instance',
         MetricsLabels.basic_instance_scraper_labels()
     )
 
