@@ -1,7 +1,8 @@
+from enum import Enum
 from prometheus_client import Gauge, Counter, Summary
 
 
-class MetricsLabels(object):
+class MetricsLabels(Enum):
     ARCHITECTURE = 'architecture'
     ARDUINO_CORE_VERSION = 'arduino_core_version'
     BRAND = 'brand'
@@ -22,100 +23,100 @@ class MetricsLabels(object):
     @classmethod
     def wargos_instance_info_labels(cls):
         return list([
-            cls.VERSION,
+            cls.VERSION.value,
         ])
 
     @classmethod
     def instance_info_labels(cls):
         return list([
-            cls.ARCHITECTURE,
-            cls.ARDUINO_CORE_VERSION,
-            cls.BRAND,
-            cls.BUILD,
-            cls.IP,
-            cls.MAC_ADDRESS,
-            cls.NAME,
-            cls.PRODUCT,
-            cls.VERSION,
+            cls.ARCHITECTURE.value,
+            cls.ARDUINO_CORE_VERSION.value,
+            cls.BRAND.value,
+            cls.BUILD.value,
+            cls.IP.value,
+            cls.MAC_ADDRESS.value,
+            cls.NAME.value,
+            cls.PRODUCT.value,
+            cls.VERSION.value,
         ])
 
     @classmethod
     def basic_info_labels(cls):
         return list([
-            cls.NAME,
-            cls.IP,
+            cls.NAME.value,
+            cls.IP.value,
         ])
 
     @classmethod
     def scrape_events_labels(cls):
         return list([
-            cls.IP,
-            cls.SCRAPE_EVENT,
+            cls.IP.value,
+            cls.SCRAPE_EVENT.value,
         ])
 
     @classmethod
     def wifi_bssid_labels(cls):
         return list([
-            cls.NAME,
-            cls.IP,
-            cls.BSSID,
+            cls.NAME.value,
+            cls.IP.value,
+            cls.BSSID.value,
         ])
 
     @classmethod
     def basic_segment_labels(cls):
         return list([
-            cls.NAME,
-            cls.IP,
-            cls.SEGMENT,
+            cls.NAME.value,
+            cls.IP.value,
+            cls.SEGMENT.value,
         ])
 
     @classmethod
     def segment_color_labels(cls):
         return list([
-            cls.NAME,
-            cls.IP,
-            cls.SEGMENT,
-            cls.COLOR_PRIORITY,
-            cls.COLOR_TUPLE_POSITION,
+            cls.NAME.value,
+            cls.IP.value,
+            cls.SEGMENT.value,
+            cls.COLOR_PRIORITY.value,
+            cls.COLOR_TUPLE_POSITION.value,
         ])
 
     @classmethod
     def basic_client_labels(cls):
         return list([
-            cls.IP,
+            cls.IP.value,
         ])
 
     @classmethod
     def basic_online_labels(cls):
         return list([
-            cls.IP,
+            cls.IP.value,
         ])
 
     @classmethod
     def basic_instance_scraper_labels(cls):
         return list([
-            cls.IP,
+            cls.IP.value,
         ])
 
     @classmethod
     def instance_scraper_exception_labels(cls):
         return list([
-            cls.IP,
-            cls.EXCEPTION_CLASS,
+            cls.IP.value,
+            cls.EXCEPTION_CLASS.value,
         ])
 
     @classmethod
     def basic_state_labels(cls):
         return list([
-            cls.NAME,
-            cls.IP,
+            cls.NAME.value,
+            cls.IP.value,
         ])
 
     @classmethod
     def basic_udp_sync_labels(cls):
         return list([
-            cls.NAME,
-            cls.IP,
+            cls.NAME.value,
+            cls.IP.value,
         ])
 
 
