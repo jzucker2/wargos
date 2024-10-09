@@ -43,5 +43,5 @@ updates:
       # or is better to use `fastapi*`
       - dependency-name: "fastapi*"
       - dependency-name: "wled"
-      - dependency-name: "prometheus-fastapi-instrumentator"
+      - dependency-name: "prometheus*"
       - dependency-name: "fastapi-utils*"
