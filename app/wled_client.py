@@ -14,7 +14,6 @@ class WLEDClient(object):
 
     @classmethod
     def default_wled_ip(cls):
-        # TODO: consolidate env imports
         return os.environ.get('DEFAULT_WLED_IP',
                               "10.0.1.179")
 
