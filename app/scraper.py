@@ -110,11 +110,53 @@ class Scraper(object):
             bssid=wifi_info.bssid,
         ).set(1)
 
+    def scrape_device_presets(self, device_info, device):
+        if not device_info:
+            return
+        presets = device.presets
+        preset_info_list = list(presets.values())
+        preset_count = len(preset_info_list)
+        log.debug(f"found preset_count: {preset_count} => presets: {presets}")
+        Metrics.INSTANCE_PRESET_COUNT_VALUE.labels(
+            name=device_info.name,
+            ip=device_info.ip,
+        ).set(preset_count or 0)
+        for preset_info in preset_info_list:
+            log.debug(f'found preset_info: {preset_info}')
+            preset_id = preset_info.preset_id
+            preset_name = preset_info.name
+            final_quick_label = preset_info.quick_label or "missing"
+            Metrics.INSTANCE_PRESET_IS_ON_VALUE.labels(
+                name=device_info.name,
+                ip=device_info.ip,
+                preset_id=preset_id,
+                preset_name=preset_name,
+            ).set(preset_info.on or 0)
+            Metrics.INSTANCE_PRESET_TRANSITION_VALUE.labels(
+                name=device_info.name,
+                ip=device_info.ip,
+                preset_id=preset_id,
+                preset_name=preset_name,
+            ).set(preset_info.transition or 0)
+            Metrics.INSTANCE_PRESET_QUICK_LABEL_INFO.labels(
+                name=device_info.name,
+                ip=device_info.ip,
+                preset_id=preset_id,
+                preset_name=preset_name,
+                preset_quick_label=final_quick_label,
+            ).set(1)
+
     def scrape_uptime(self, device_info):
         Metrics.INSTANCE_UPTIME_SECONDS.labels(
             ip=device_info.ip,
             name=device_info.name,
         ).set(device_info.uptime.total_seconds() or 0)
+
+    def scrape_websocket_clients(self, device_info):
+        Metrics.INSTANCE_WEBSOCKET_CLIENTS.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_info.websocket or 0)
 
     def scrape_udp_port(self, device_info):
         Metrics.INSTANCE_UDP_PORT.labels(
@@ -399,8 +441,10 @@ class Scraper(object):
                 try:
                     dev_info = device.info
                     dev_state = device.state
+                    self.scrape_device_presets(dev_info, device)
                     self.scrape_device_info(dev_info)
                     self.scrape_uptime(dev_info)
+                    self.scrape_websocket_clients(dev_info)
                     self.scrape_udp_port(dev_info)
                     self.scrape_info_leds(dev_info)
                     self.scrape_info_filesystem(dev_info)

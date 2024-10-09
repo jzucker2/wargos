@@ -2,6 +2,14 @@
 
 I plan on using the Home Assistant wled library: `wled` located here: https://pypi.org/project/wled/
 
+Want a [grafana](https://grafana.com/oss/grafana/) dashboard like this?
+
+![Basic Dashboard Quick Look](./images/basic_dashboard.png)
+
+![More Useful Info](./images/useful_info.png)
+
+![Power Overview](./images/power.png)
+
 ## How to Run
 
 ### Configure Docker Compose
@@ -68,6 +76,10 @@ Add this to your `prometheus.yml`
       labels:
         instance: 'host_machine'
 ```
+
+### Simple Prometheus Alerting
+
+For examples of simple `prometheus` alerting, check out [prometheus/wargos_alerting_rules.yml](./prometheus/wargos_alerting_rules.yml)
 
 ## Scheduler
 

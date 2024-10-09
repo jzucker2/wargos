@@ -19,6 +19,9 @@ class MetricsLabels(Enum):
     COLOR_PRIORITY = 'color_priority'
     COLOR_TUPLE_POSITION = 'color_tuple_position'
     SCRAPE_EVENT = 'scrape_event'
+    PRESET_ID = 'preset_id'
+    PRESET_NAME = 'preset_name'
+    PRESET_QUICK_LABEL = 'preset_quick_label'
 
     @classmethod
     def wargos_instance_info_labels(cls):
@@ -119,6 +122,25 @@ class MetricsLabels(Enum):
             cls.IP.value,
         ])
 
+    @classmethod
+    def basic_preset_labels(cls):
+        return list([
+            cls.NAME.value,
+            cls.IP.value,
+            cls.PRESET_ID.value,
+            cls.PRESET_NAME.value,
+        ])
+
+    @classmethod
+    def preset_quick_label_labels(cls):
+        return list([
+            cls.NAME.value,
+            cls.IP.value,
+            cls.PRESET_ID.value,
+            cls.PRESET_NAME.value,
+            cls.PRESET_QUICK_LABEL.value,
+        ])
+
 
 class Metrics(object):
     WARGOS_INSTANCE_INFO = Gauge(
@@ -217,6 +239,36 @@ class Metrics(object):
         'wargos_wled_instance_uptime_seconds',
         'The current uptime of the instance (in seconds)',
         MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_WEBSOCKET_CLIENTS = Gauge(
+        'wargos_wled_instance_websocket_clients',
+        'The number of currently connected websocket clients',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_PRESET_COUNT_VALUE = Gauge(
+        'wargos_wled_instance_preset_count_value',
+        'The current preset count of the instance',
+        MetricsLabels.basic_info_labels()
+    )
+
+    INSTANCE_PRESET_IS_ON_VALUE = Gauge(
+        'wargos_wled_instance_preset_is_on_value',
+        'Whether the preset is on for the current wled instance',
+        MetricsLabels.basic_preset_labels()
+    )
+
+    INSTANCE_PRESET_TRANSITION_VALUE = Gauge(
+        'wargos_wled_instance_preset_transition_value',
+        'The crossfade transition value for the current wled instance',
+        MetricsLabels.basic_preset_labels()
+    )
+
+    INSTANCE_PRESET_QUICK_LABEL_INFO = Gauge(
+        'wargos_wled_instance_preset_quick_label_info',
+        'Info about the quick label for a wled instance preset',
+        MetricsLabels.preset_quick_label_labels()
     )
 
     INSTANCE_PALETTE_COUNT_VALUE = Gauge(
