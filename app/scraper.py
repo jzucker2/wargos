@@ -116,13 +116,13 @@ class Scraper(object):
         presets = device.presets
         preset_info_list = list(presets.values())
         preset_count = len(preset_info_list)
-        log.info(f"found preset_count: {preset_count} => presets: {presets}")
+        log.debug(f"found preset_count: {preset_count} => presets: {presets}")
         Metrics.INSTANCE_PRESET_COUNT_VALUE.labels(
             name=device_info.name,
             ip=device_info.ip,
         ).set(preset_count or 0)
         for preset_info in preset_info_list:
-            log.info(f'found preset_info: {preset_info}')
+            log.debug(f'found preset_info: {preset_info}')
             preset_id = preset_info.preset_id
             preset_name = preset_info.name
             final_quick_label = preset_info.quick_label or "missing"
