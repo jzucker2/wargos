@@ -67,14 +67,14 @@ class WLEDClient(object):
             await led.master(on=True, brightness=255)
 
     async def simple_wled_releases_test(self):
-        log.debug(f"simple wled releases test")
+        log.debug("simple wled releases test")
         async with self._connecting_releases() as releases:
             latest = await releases.releases()
             log.info(f"Latest stable version: {latest.stable}")
             log.info(f"Latest beta version: {latest.beta}")
 
     async def get_wled_latest_releases(self):
-        log.debug(f"wled connecting to releases")
+        log.debug("wled connecting to releases")
         with Metrics.WLED_RELEASES_CONNECT_EXCEPTIONS.count_exceptions():
             with Metrics.WLED_RELEASES_CONNECT_TIME.time():
                 async with self._connecting_releases() as releases:
