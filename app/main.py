@@ -37,7 +37,15 @@ def healthcheck():
 
 @app.get("/test")
 async def simple_test():
-    await WLEDClient.simple_wled_test()
+    client = WLEDClient.get_client()
+    await client.simple_wled_test()
+    return {"message": "Hello World"}
+
+
+@app.get("/test/releases")
+async def simple_releases_test():
+    client = WLEDClient.get_client()
+    await client.simple_wled_releases_test()
     return {"message": "Hello World"}
 
 
