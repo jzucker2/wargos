@@ -219,6 +219,12 @@ class Metrics(object):
         MetricsLabels.basic_info_labels()
     )
 
+    INSTANCE_WEBSOCKET_CLIENTS = Gauge(
+        'wargos_wled_instance_websocket_clients',
+        'The number of currently connected websocket clients',
+        MetricsLabels.basic_info_labels()
+    )
+
     INSTANCE_PALETTE_COUNT_VALUE = Gauge(
         'wargos_wled_instance_palette_count_value',
         'The current palette count of the instance',

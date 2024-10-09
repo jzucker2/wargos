@@ -116,6 +116,12 @@ class Scraper(object):
             name=device_info.name,
         ).set(device_info.uptime.total_seconds() or 0)
 
+    def scrape_websocket_clients(self, device_info):
+        Metrics.INSTANCE_WEBSOCKET_CLIENTS.labels(
+            ip=device_info.ip,
+            name=device_info.name,
+        ).set(device_info.websocket or 0)
+
     def scrape_udp_port(self, device_info):
         Metrics.INSTANCE_UDP_PORT.labels(
             ip=device_info.ip,
@@ -401,6 +407,7 @@ class Scraper(object):
                     dev_state = device.state
                     self.scrape_device_info(dev_info)
                     self.scrape_uptime(dev_info)
+                    self.scrape_websocket_clients(dev_info)
                     self.scrape_udp_port(dev_info)
                     self.scrape_info_leds(dev_info)
                     self.scrape_info_filesystem(dev_info)
