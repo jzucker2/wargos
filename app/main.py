@@ -1,5 +1,3 @@
-from typing import Union
-
 from fastapi import FastAPI
 from fastapi_utils.tasks import repeat_every
 from .version import version
@@ -34,11 +32,6 @@ def healthcheck():
     }
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
-
-
 # real stuff here
 
 
@@ -61,7 +54,11 @@ async def prometheus_scrape_all():
 
 
 @app.on_event("startup")
-@repeat_every(seconds=Scraper.get_default_scrape_interval())
+@repeat_every(
+    seconds=Scraper.get_default_scrape_interval(),
+    wait_first=Scraper.get_default_wait_first_interval(),
+    logger=log,
+)
 async def perform_full_routine_metrics_scrape() -> None:
     log.debug(f"Going to perform full scrape of all metrics "
               f"(interval: {Scraper.get_default_scrape_interval()}) "

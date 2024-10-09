@@ -11,6 +11,9 @@ log = LogHelper.get_env_logger(__name__)
 DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS = int(os.environ.get(
     'DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS',
     60))
+DEFAULT_WLED_FIRST_WAIT_SECONDS = int(os.environ.get(
+    'DEFAULT_WLED_FIRST_WAIT_SECONDS',
+    30))
 
 
 class ScraperException(Exception):
@@ -24,17 +27,18 @@ class MissingIPListScraperException(ScraperException):
 class Scraper(object):
     @classmethod
     def get_client(cls):
-        return Scraper(WLEDClient.get_client())
+        return cls(WLEDClient.get_client())
 
-    @classmethod
-    def default_wled_ip(cls):
-        # TODO: consolidate env imports
-        return os.environ.get('DEFAULT_WLED_IP',
-                              "10.0.1.179")
+    def default_wled_ip(self):
+        return self.wled_client.default_wled_ip()
 
     @classmethod
     def get_default_scrape_interval(cls):
         return int(DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS)
+
+    @classmethod
+    def get_default_wait_first_interval(cls):
+        return int(DEFAULT_WLED_FIRST_WAIT_SECONDS)
 
     @classmethod
     def get_env_wled_ip_list(cls):

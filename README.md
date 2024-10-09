@@ -29,11 +29,12 @@ services:
 
 By default, logging is info level. To set to debug, provide the env `DEBUG=true` flag
 
-|                   Env Var Name                   | Default Value |                 Example Value                  |                                         Description                                          |
-|:------------------------------------------------:|:-------------:|:----------------------------------------------:|:--------------------------------------------------------------------------------------------:|
-|                     `DEBUG`                      |    `false`    |                     `true`                     |                     This determines debug logging and a few other things                     |
-| `DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS`  |     `60`      |                      `30`                      |     This determines how often `wargos` scrapes prometheus metrics from `wled` instances      |
-|                  `WLED_IP_LIST`                  |    `None`     |       `10.0.1.150,10.0.1.179,10.0.1.153`       | This is the list of `,` separated IP addresses of `wled` instances that `wargos` will scrape |
+|                  Env Var Name                   | Default Value |           Example Value            |                                         Description                                          |
+|:-----------------------------------------------:|:-------------:|:----------------------------------:|:--------------------------------------------------------------------------------------------:|
+|                     `DEBUG`                     |    `false`    |               `true`               |                     This determines debug logging and a few other things                     |
+| `DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS` |     `60`      |                `30`                |     This determines how often `wargos` scrapes prometheus metrics from `wled` instances      |
+|        `DEFAULT_WLED_FIRST_WAIT_SECONDS`        |     `30`      |               `120`                |  This determines how long to wait before `wargos` does the first prometheus metrics scrape   |
+|                 `WLED_IP_LIST`                  |    `None`     | `10.0.1.150,10.0.1.179,10.0.1.153` | This is the list of `,` separated IP addresses of `wled` instances that `wargos` will scrape |
 
 ## wled
 

@@ -10,7 +10,7 @@ log = LogHelper.get_env_logger(__name__)
 class WLEDClient(object):
     @classmethod
     def get_client(cls):
-        return WLEDClient()
+        return cls()
 
     @classmethod
     def default_wled_ip(cls):
