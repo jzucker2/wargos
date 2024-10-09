@@ -362,7 +362,7 @@ class Scraper(object):
             mac_address=device_info.mac_address,
             name=device_info.name,
             product=device_info.product,
-            version=device_info.version,
+            version=str(device_info.version),
         ).set(1)
         Metrics.INSTANCE_FREE_HEAP.labels(
             ip=device_info.ip,
@@ -517,8 +517,8 @@ class Scraper(object):
             with Metrics.SCRAPER_SCRAPE_RELEASES_TIME.time():
                 latest = await self.wled_client.get_wled_latest_releases()
                 Metrics.WLED_RELEASES_INFO.labels(
-                    stable=latest.stable,
-                    beta=latest.beta,
+                    stable=str(latest.stable),
+                    beta=str(latest.beta),
                 ).set(1)
 
     async def perform_full_scrape(self):
