@@ -1,0 +1,20 @@
+groups:
+- name: wargos_alerts
+  rules:
+    - alert: WargosWLEDInstanceFreeHeapLow
+      expr: wargos_wled_instance_free_heap < 10000
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Wargos WLED Instance Free Heap Low
+        description: "There is a WLED instance with free heap < 10k (current value: {{ $value }})."
+
+    - alert: WargosWLEDInstanceOffline
+      expr: wargos_wled_instance_online < 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Wargos WLED Instance Offline
+        description: "There is a missing WLED instance (current value: {{ $value }})."

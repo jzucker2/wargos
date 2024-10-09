@@ -77,6 +77,10 @@ Add this to your `prometheus.yml`
         instance: 'host_machine'
 ```
 
+### Simple Prometheus Alerting
+
+For examples of simple `prometheus` alerting, check out [prometheus/wargos_alerting_rules.yml](./prometheus/wargos_alerting_rules.yml)
+
 ## Scheduler
 
 * https://fastapi-utils.davidmontague.xyz/
