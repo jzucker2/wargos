@@ -112,6 +112,10 @@ curl -i "http://localhost:9395/healthz" \
 curl -i "http://localhost:9395/test" \
     -H "Content-Type: application/json"
 
+# simple WLED releases test
+curl -i "http://localhost:9395/test/releases" \
+    -H "Content-Type: application/json"
+
 # now test with prometheus metrics on default WLED instance
 curl -i "http://localhost:9395/prometheus/default" \
     -H "Content-Type: application/json"

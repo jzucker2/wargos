@@ -22,6 +22,15 @@ class MetricsLabels(Enum):
     PRESET_ID = 'preset_id'
     PRESET_NAME = 'preset_name'
     PRESET_QUICK_LABEL = 'preset_quick_label'
+    STABLE = 'stable'
+    BETA = 'beta'
+
+    @classmethod
+    def releases_labels(cls):
+        return list([
+            cls.STABLE.value,
+            cls.BETA.value,
+        ])
 
     @classmethod
     def wargos_instance_info_labels(cls):
@@ -165,6 +174,42 @@ class Metrics(object):
         'wargos_wled_client_connect_time_seconds',
         'Tracks the timing for a wled instance connection',
         MetricsLabels.basic_client_labels()
+    )
+
+    WLED_RELEASES_CONNECT_EXCEPTIONS = Counter(
+        'wargos_wled_releases_connect_exceptions_total',
+        'Counts any exceptions attempting to connect to a WLED releases check',
+    )
+
+    WLED_RELEASES_CONNECT_TIME = Summary(
+        'wargos_wled_releases_connect_time_seconds',
+        'Tracks the timing for a wled releases check connection',
+    )
+
+    SCRAPER_SCRAPE_RELEASES_EXCEPTIONS = Counter(
+        'wargos_wled_scraper_scrape_releases_exceptions_total',
+        'Counts any exceptions attempting to scrape releases',
+    )
+
+    SCRAPER_SCRAPE_RELEASES_TIME = Summary(
+        'wargos_wled_scraper_scrape_releases_time_seconds',
+        'Tracks the timing for scraping releases',
+    )
+
+    WLED_RELEASES_INFO = Gauge(
+        'wargos_wled_releases_basic_info',
+        'Details about the WLED latest releases info',
+        MetricsLabels.releases_labels()
+    )
+
+    SCRAPER_FULL_SCRAPE_EXCEPTIONS = Counter(
+        'wargos_wled_scraper_scrape_full_scrape_exceptions_total',
+        'Counts any exceptions while performing full scrape of all metrics',
+    )
+
+    SCRAPER_FULL_SCRAPE_TIME = Summary(
+        'wargos_wled_scraper_scrape_full_scrape_time_seconds',
+        'Tracks the timing for full scrape of all metrics',
     )
 
     WLED_SCRAPER_SCRAPE_SELF_EXCEPTIONS = Counter(

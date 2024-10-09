@@ -512,11 +512,24 @@ class Scraper(object):
                                f'got unexp: {unexp}')
                         log.error(u_m)
 
+    async def scrape_releases(self):
+        with Metrics.SCRAPER_SCRAPE_RELEASES_EXCEPTIONS.count_exceptions():
+            with Metrics.SCRAPER_SCRAPE_RELEASES_TIME.time():
+                latest = await self.wled_client.get_wled_latest_releases()
+                Metrics.WLED_RELEASES_INFO.labels(
+                    stable=latest.stable,
+                    beta=latest.beta,
+                ).set(1)
+
     async def perform_full_scrape(self):
         # first scrape self info for this app
         log.debug('perform_full_scrape')
-        self.scrape_self()
-        log.debug('done with scrape self now scrape all wled instances')
-        # then scrape all wled instances
-        await self.scrape_all_instances()
-        log.debug('done with scraping all wled instances')
+        with Metrics.SCRAPER_FULL_SCRAPE_EXCEPTIONS.count_exceptions():
+            with Metrics.SCRAPER_FULL_SCRAPE_TIME.time():
+                self.scrape_self()
+                log.debug('done with scrape self, next all wled instances')
+                # then scrape all wled instances
+                await self.scrape_all_instances()
+                log.debug('done scraping all wled instances, now releases')
+                await self.scrape_releases()
+                log.debug('done with perform_full_scrape')
