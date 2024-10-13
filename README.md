@@ -135,6 +135,9 @@ curl -i "http://localhost:9395/prometheus/all" \
 
 * https://www.reddit.com/r/FastAPI/comments/rrwglp/reduce_size_of_the_official_fastapi_image/
 * https://www.reddit.com/r/FastAPI/comments/11rfbae/using_docker_for_your_fastapi_apps_considering/
+* https://stackoverflow.com/questions/78105348/how-to-reduce-python-docker-image-size
+* https://stackoverflow.com/questions/48543834/how-do-i-reduce-a-python-docker-image-size-using-a-multi-stage-build
+* https://www.blogfoobar.com/post/2018/02/10/python-and-docker-multistage-build
 
 ### Notes
 
