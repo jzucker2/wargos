@@ -96,6 +96,7 @@ I am new to fastapi
 * https://fastapi.tiangolo.com/advanced/
 * https://fastapi.tiangolo.com/how-to/general/
 * https://github.com/fastapi/full-stack-fastapi-template/tree/master
+* https://youtubetranscriptoptimizer.com/blog/02_what_i_learned_making_the_python_backend_for_yto
 
 ## Development
 
