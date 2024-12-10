@@ -51,5 +51,5 @@ uvicorn==0.31.0
 uvloop==0.20.0
 watchfiles==0.24.0
 websockets==13.1
-wled==0.20.2
+wled==0.21.0
 yarl==1.14.0
