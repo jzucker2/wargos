@@ -11,7 +11,7 @@ certifi==2025.4.26
 click==8.2.1
 dnspython==2.7.0
 email_validator==2.2.0
-fastapi[standard]==0.115.12
+fastapi[standard]==0.116.0
 fastapi-cli==0.0.7
 fastapi-utils[all]==0.8.0
 frozenlist==1.6.0
