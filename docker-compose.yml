@@ -12,13 +12,15 @@ services:
       - DEBUG=true
       # Replace with your `wled` IP addresses
       - WLED_IP_LIST=10.0.1.129,10.0.1.150,10.0.1.179,10.0.1.153
-      # Gunicorn configuration
-      - PORT=${PORT:-9395}
+      # Enable/disable release checking (optional - defaults to true)
+      - ENABLE_RELEASE_CHECK=true
+      # Gunicorn configuration (optional - defaults shown)
+      - PORT=9395
       - WORKERS=${WORKERS:-4}
-      - TIMEOUT=${TIMEOUT:-120}
-      - KEEPALIVE=${KEEPALIVE:-2}
-      - MAX_REQUESTS=${MAX_REQUESTS:-1000}
-      - MAX_REQUESTS_JITTER=${MAX_REQUESTS_JITTER:-50}
+      - TIMEOUT=120
+      - KEEPALIVE=2
+      - MAX_REQUESTS=1000
+      - MAX_REQUESTS_JITTER=50
       # Prometheus multiprocess configuration
       - PROMETHEUS_MULTIPROC_DIR=/tmp
       - ENABLE_METRICS=true
