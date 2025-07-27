@@ -19,6 +19,9 @@ services:
       - KEEPALIVE=${KEEPALIVE:-2}
       - MAX_REQUESTS=${MAX_REQUESTS:-1000}
       - MAX_REQUESTS_JITTER=${MAX_REQUESTS_JITTER:-50}
+      # Prometheus multiprocess configuration
+      - PROMETHEUS_MULTIPROC_DIR=/tmp
+      - ENABLE_METRICS=true
     ports:
       - "${PORT:-9395}:${PORT:-9395}"
     stdin_open: true

@@ -40,6 +40,9 @@ WORKDIR /code
 # This looks good
 COPY ./app /code/app
 
+# Create Prometheus multiprocess directory
+RUN mkdir -p /tmp
+
 # Set default environment variables for Gunicorn
 ENV PORT=9395
 ENV WORKERS=4
@@ -48,6 +51,10 @@ ENV TIMEOUT=120
 ENV KEEPALIVE=2
 ENV MAX_REQUESTS=1000
 ENV MAX_REQUESTS_JITTER=50
+
+# Prometheus multiprocess configuration
+ENV PROMETHEUS_MULTIPROC_DIR=/tmp
+ENV ENABLE_METRICS=true
 
 # Expose the port on which the application will run
 EXPOSE ${PORT}

@@ -1,15 +1,21 @@
-from fastapi import FastAPI
-from fastapi_utils.tasks import repeat_every
+import os
 from contextlib import asynccontextmanager
-from .version import version
 
+from fastapi import FastAPI
+from fastapi.responses import Response
+from fastapi_utils.tasks import repeat_every
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    CollectorRegistry,
+    generate_latest,
+    multiprocess,
+)
 from prometheus_fastapi_instrumentator import Instrumentator
 
-
-from .utils import LogHelper
-from .wled_client import WLEDClient
 from .scraper import Scraper
-
+from .utils import LogHelper
+from .version import version
+from .wled_client import WLEDClient
 
 log = LogHelper.get_env_logger(__name__)
 
@@ -44,7 +50,58 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-Instrumentator().instrument(app).expose(app)
+# Configure Prometheus for multi-worker environments
+def configure_prometheus():
+    """Configure Prometheus for multi-worker environments"""
+    # Check if we're in a multi-process environment
+    multiproc_dir = os.environ.get("PROMETHEUS_MULTIPROC_DIR")
+
+    if multiproc_dir and os.path.isdir(multiproc_dir):
+        # Use multiprocess registry for Gunicorn workers
+        registry = CollectorRegistry()
+        multiprocess.MultiProcessCollector(registry)
+
+        # Configure instrumentator with custom registry
+        instrumentator = Instrumentator(
+            registry=registry,
+            should_ignore_untemplated=True,
+            should_respect_env_var=True,
+            should_instrument_requests_inprogress=True,
+            excluded_handlers=["/metrics"],
+            env_var_name="ENABLE_METRICS",
+        )
+
+        # Instrument the app
+        instrumentator.instrument(app)
+
+        # Add custom metrics endpoint for multiprocess support
+        @app.get("/metrics")
+        async def metrics():
+            """Custom metrics endpoint that aggregates across all workers"""
+            return Response(
+                generate_latest(registry),
+                media_type=CONTENT_TYPE_LATEST,
+                headers={
+                    "Cache-Control": "no-cache, no-store, must-revalidate"
+                },
+            )
+
+    else:
+        # Use default configuration for single-process environments (like tests)
+        instrumentator = Instrumentator(
+            should_ignore_untemplated=True,
+            should_respect_env_var=True,
+            should_instrument_requests_inprogress=True,
+            excluded_handlers=["/metrics"],
+            env_var_name="ENABLE_METRICS",
+        )
+
+        # Instrument the app
+        instrumentator.instrument(app)
+
+
+# Configure Prometheus
+configure_prometheus()
 
 
 @app.get("/")
