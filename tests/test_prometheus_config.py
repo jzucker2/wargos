@@ -48,7 +48,6 @@ class TestPrometheusConfiguration:
 
                 # Check that standard instrumentator was used
                 mock_instrumentator.assert_called_once_with(
-                    should_ignore_untemplated=True,
                     should_respect_env_var=True,
                     should_instrument_requests_inprogress=True,
                     excluded_handlers=["/metrics"],
@@ -77,7 +76,6 @@ class TestPrometheusConfiguration:
                 # Check that instrumentator was called with registry
                 mock_instrumentator.assert_called_once_with(
                     registry=mock_collector_registry.return_value,
-                    should_ignore_untemplated=True,
                     should_respect_env_var=True,
                     should_instrument_requests_inprogress=True,
                     excluded_handlers=["/metrics"],
@@ -98,7 +96,6 @@ class TestPrometheusConfiguration:
 
                 # Should fall back to single-process configuration
                 mock_instrumentator.assert_called_once_with(
-                    should_ignore_untemplated=True,
                     should_respect_env_var=True,
                     should_instrument_requests_inprogress=True,
                     excluded_handlers=["/metrics"],
@@ -119,7 +116,6 @@ class TestPrometheusConfiguration:
 
                 # Should fall back to single-process configuration
                 mock_instrumentator.assert_called_once_with(
-                    should_ignore_untemplated=True,
                     should_respect_env_var=True,
                     should_instrument_requests_inprogress=True,
                     excluded_handlers=["/metrics"],
@@ -213,7 +209,6 @@ class TestPrometheusConfiguration:
 
                 # Check all the instrumentation settings
                 call_args = mock_instrumentator.call_args
-                assert call_args[1]["should_ignore_untemplated"] is True
                 assert call_args[1]["should_respect_env_var"] is True
                 assert (
                     call_args[1]["should_instrument_requests_inprogress"]

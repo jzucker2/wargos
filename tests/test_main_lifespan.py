@@ -55,7 +55,7 @@ class TestLifespanEvents:
         self, mock_scraper, mock_wled_client
     ):
         async with lifespan(app) as yielded_app:
-            assert yielded_app is app
+            assert yielded_app is None
         async with lifespan(app):
             pass
 
@@ -70,7 +70,7 @@ class TestLifespanEvents:
         with patch("app.main.Scraper.get_client") as mock_get_client:
             mock_get_client.return_value.perform_full_scrape = AsyncMock()
             async with lifespan(app) as _:
-                assert _ is app
+                assert _ is None
 
     @pytest.mark.asyncio
     async def test_lifespan_with_file_lock_mocking(
@@ -83,7 +83,7 @@ class TestLifespanEvents:
             with patch("app.main.Scraper.get_client") as mock_get_client:
                 mock_get_client.return_value.perform_full_scrape = AsyncMock()
                 async with lifespan(app) as _:
-                    assert _ is app
+                    assert _ is None
 
     @pytest.mark.asyncio
     async def test_lifespan_with_lock_already_held(
@@ -96,7 +96,7 @@ class TestLifespanEvents:
                 "Resource temporarily unavailable"
             )
             async with lifespan(app) as _:
-                assert _ is app
+                assert _ is None
 
     @pytest.mark.asyncio
     async def test_lifespan_with_file_system_error(
@@ -106,7 +106,7 @@ class TestLifespanEvents:
             "builtins.open", side_effect=Exception("File system error")
         ), patch("os.getpid", return_value=12345):
             async with lifespan(app) as _:
-                assert _ is app
+                assert _ is None
 
     @pytest.mark.asyncio
     async def test_lifespan_with_scraping_error(
@@ -121,7 +121,7 @@ class TestLifespanEvents:
                     side_effect=Exception("Network error")
                 )
                 async with lifespan(app) as _:
-                    assert _ is app
+                    assert _ is None
 
     @pytest.mark.asyncio
     async def test_lifespan_with_successful_scraping(
@@ -134,7 +134,7 @@ class TestLifespanEvents:
             with patch("app.main.Scraper.get_client") as mock_get_client:
                 mock_get_client.return_value.perform_full_scrape = AsyncMock()
                 async with lifespan(app) as _:
-                    assert _ is app
+                    assert _ is None
 
     @pytest.mark.asyncio
     async def test_worker_pid_logging(
@@ -148,7 +148,7 @@ class TestLifespanEvents:
                         AsyncMock()
                     )
                     async with lifespan(app) as _:
-                        assert _ is app
+                        assert _ is None
 
     @pytest.mark.asyncio
     async def test_lock_file_path(self, mock_scraper, mock_wled_client):
@@ -156,7 +156,7 @@ class TestLifespanEvents:
             with patch("app.main.Scraper.get_client") as mock_get_client:
                 mock_get_client.return_value.perform_full_scrape = AsyncMock()
                 async with lifespan(app) as _:
-                    assert _ is app
+                    assert _ is None
 
     @pytest.mark.asyncio
     async def test_scrape_interval_logging(
@@ -170,7 +170,7 @@ class TestLifespanEvents:
             with patch("app.main.Scraper.get_client") as mock_get_client:
                 mock_get_client.return_value.perform_full_scrape = AsyncMock()
                 async with lifespan(app) as _:
-                    assert _ is app
+                    assert _ is None
 
     @pytest.mark.asyncio
     async def test_lifespan_multiple_workers_coordination(
@@ -187,7 +187,7 @@ class TestLifespanEvents:
             with patch("app.main.Scraper.get_client") as mock_get_client:
                 mock_get_client.return_value.perform_full_scrape = AsyncMock()
                 async with lifespan(app) as _:
-                    assert _ is app
+                    assert _ is None
 
     @pytest.mark.asyncio
     async def test_lifespan_with_different_worker_pids(
@@ -207,7 +207,7 @@ class TestLifespanEvents:
                             AsyncMock()
                         )
                         async with lifespan(app) as _:
-                            assert _ is app
+                            assert _ is None
 
     @pytest.mark.asyncio
     async def test_lifespan_with_different_scrape_intervals(
@@ -225,4 +225,4 @@ class TestLifespanEvents:
                         AsyncMock()
                     )
                     async with lifespan(app) as _:
-                        assert _ is app
+                        assert _ is None

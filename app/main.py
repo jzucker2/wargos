@@ -83,11 +83,8 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             log.error(f"❌ Worker {worker_pid}: Error with scrape locking: {e}")
 
-    # Start the background task
-    await perform_full_routine_metrics_scrape()
-
-    # Yield the app to keep it running
-    yield app
+    # Yield None to keep it running
+    yield
 
     # Shutdown
     log.info("🛑 Shutting down FastAPI application")
@@ -111,7 +108,6 @@ def configure_prometheus():
         # Configure instrumentator with custom registry
         instrumentator = Instrumentator(
             registry=registry,
-            should_ignore_untemplated=True,
             should_respect_env_var=True,
             should_instrument_requests_inprogress=True,
             excluded_handlers=["/metrics"],
@@ -136,7 +132,6 @@ def configure_prometheus():
     else:
         # Use default configuration for single-process environments (like tests)
         instrumentator = Instrumentator(
-            should_ignore_untemplated=True,
             should_respect_env_var=True,
             should_instrument_requests_inprogress=True,
             excluded_handlers=["/metrics"],
