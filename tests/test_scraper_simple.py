@@ -1,6 +1,7 @@
-import unittest
 import os
-from unittest.mock import patch, MagicMock
+import unittest
+from unittest.mock import MagicMock, patch
+
 from app.scraper import Scraper
 
 
@@ -19,10 +20,61 @@ class TestScraperSimple(unittest.TestCase):
         self.assertGreater(result, 0)
 
     def test_get_default_wait_first_interval_default(self):
-        """Test that get_default_wait_first_interval returns a value"""
+        """Test get_default_wait_first_interval returns default value"""
         result = Scraper.get_default_wait_first_interval()
-        self.assertIsInstance(result, int)
-        self.assertGreater(result, 0)
+        self.assertEqual(result, 30)
+
+    def test_should_scrape_releases_default(self):
+        """Test should_scrape_releases returns True by default"""
+        # Clear any existing ENABLE_RELEASE_CHECK from environment
+        if "ENABLE_RELEASE_CHECK" in os.environ:
+            del os.environ["ENABLE_RELEASE_CHECK"]
+
+        result = Scraper.should_scrape_releases()
+        self.assertTrue(result)
+
+    def test_should_scrape_releases_enabled_true(self):
+        """Test should_scrape_releases returns True for various 'true' values"""
+        true_values = [
+            "true",
+            "TRUE",
+            "True",
+            "1",
+            "yes",
+            "YES",
+            "Yes",
+            "on",
+            "ON",
+            "On",
+        ]
+
+        for value in true_values:
+            with self.subTest(value=value):
+                os.environ["ENABLE_RELEASE_CHECK"] = value
+                result = Scraper.should_scrape_releases()
+                self.assertTrue(result, f"Expected True for value: {value}")
+
+    def test_should_scrape_releases_disabled_false(self):
+        """Test should_scrape_releases returns False for various 'false' values"""
+        false_values = [
+            "false",
+            "FALSE",
+            "False",
+            "0",
+            "no",
+            "NO",
+            "No",
+            "off",
+            "OFF",
+            "Off",
+            "anything_else",
+        ]
+
+        for value in false_values:
+            with self.subTest(value=value):
+                os.environ["ENABLE_RELEASE_CHECK"] = value
+                result = Scraper.should_scrape_releases()
+                self.assertFalse(result, f"Expected False for value: {value}")
 
     @patch.dict(os.environ, {"WLED_IP_LIST": "192.168.1.100,192.168.1.101"})
     def test_get_env_wled_ip_list_with_env(self):

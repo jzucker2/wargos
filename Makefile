@@ -1,4 +1,4 @@
-.PHONY: help build run test clean docker-build docker-run docker-stop docker-logs
+.PHONY: help build run run-gunicorn test clean docker-build docker-run docker-stop docker-logs
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -7,8 +7,14 @@ help: ## Show this help message
 build: ## Build the Docker image
 	docker build -t wargos .
 
-run: ## Run the application locally
+run: ## Run the application locally with Gunicorn
+	./scripts/run_gunicorn.sh
+
+run-uvicorn: ## Run the application locally with Uvicorn (development)
 	uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+run-gunicorn: ## Run the application with Gunicorn (production-like)
+	./scripts/run_gunicorn.sh
 
 test: ## Run all tests
 	pytest tests/ -v

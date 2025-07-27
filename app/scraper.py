@@ -1,9 +1,9 @@
 import os
+
+from .metrics import Metrics
 from .utils import LogHelper
 from .version import version
-from .metrics import Metrics
 from .wled_client import WLEDClient
-
 
 log = LogHelper.get_env_logger(__name__)
 
@@ -39,6 +39,16 @@ class Scraper(object):
     @classmethod
     def get_default_wait_first_interval(cls):
         return int(DEFAULT_WLED_FIRST_WAIT_SECONDS)
+
+    @classmethod
+    def should_scrape_releases(cls):
+        """Check if releases should be scraped based on environment variable"""
+        return os.environ.get("ENABLE_RELEASE_CHECK", "true").lower() in (
+            "true",
+            "1",
+            "yes",
+            "on",
+        )
 
     @classmethod
     def get_env_wled_ip_list(cls):
@@ -532,5 +542,9 @@ class Scraper(object):
                 # then scrape all wled instances
                 await self.scrape_all_instances()
                 log.debug("done scraping all wled instances, now releases")
-                await self.scrape_releases()
+                if self.should_scrape_releases():
+                    log.debug("release checking enabled - scraping releases")
+                    await self.scrape_releases()
+                else:
+                    log.debug("release checking disabled - skipping releases")
                 log.debug("done with perform_full_scrape")
