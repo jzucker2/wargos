@@ -10,11 +10,18 @@ build: ## Build the Docker image
 run: ## Run the application locally
 	uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-test: ## Run tests
-	pytest -v
+test: ## Run all tests
+	pytest tests/ -v
 
-test-coverage: ## Run tests with coverage
-	pytest --cov=app --cov-report=html
+test-coverage: ## Run tests with coverage report
+	pytest tests/ --cov=app --cov-report=term-missing
+
+test-file: ## Run specific test file (FILE=path/to/test.py)
+	@if [ -z "$(FILE)" ]; then \
+		echo "Error: FILE parameter is required. Usage: make test-file FILE=tests/test_basic.py"; \
+		exit 1; \
+	fi
+	pytest $(FILE) -v
 
 clean: ## Clean up generated files
 	find . -type f -name "*.pyc" -delete
