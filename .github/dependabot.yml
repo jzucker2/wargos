@@ -45,3 +45,4 @@ updates:
       - dependency-name: "wled"
       - dependency-name: "prometheus*"
       - dependency-name: "fastapi-utils*"
+      - dependency-name: "gunicorn"
