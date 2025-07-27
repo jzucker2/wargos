@@ -210,6 +210,7 @@ class TestYourClass:
 - **Test Structure** - Changed from unittest.TestCase to pure pytest
 - **Mock Configuration** - Fixed async context manager mocking
 - **Test Assertions** - Updated to use pytest assertions
+- **FastAPI Lifespan Warnings** - Updated to use modern lifespan event handlers
 
 ### **✅ Added Features:**
 - **Detailed WLED Tests** - 23 comprehensive tests

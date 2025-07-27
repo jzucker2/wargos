@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi_utils.tasks import repeat_every
+from contextlib import asynccontextmanager
 from .version import version
 
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -13,7 +14,34 @@ from .scraper import Scraper
 log = LogHelper.get_env_logger(__name__)
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for FastAPI application"""
+    # Startup
+    log.debug("Starting up FastAPI application")
+
+    # Start the background task
+    @repeat_every(
+        seconds=Scraper.get_default_scrape_interval(),
+        wait_first=Scraper.get_default_wait_first_interval(),
+        logger=log,
+    )
+    async def perform_full_routine_metrics_scrape() -> None:
+        log.debug(
+            f"Going to perform full scrape of all metrics "
+            f"(interval: {Scraper.get_default_scrape_interval()}) "
+            f"=========>"
+        )
+        await Scraper.get_client().perform_full_scrape()
+
+    # Yield to keep the task running
+    yield
+
+    # Shutdown
+    log.debug("Shutting down FastAPI application")
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 Instrumentator().instrument(app).expose(app)
@@ -59,18 +87,3 @@ async def prometheus_default():
 async def prometheus_scrape_all():
     await Scraper.get_client().scrape_all_instances()
     return {"message": "Hello World"}
-
-
-@app.on_event("startup")
-@repeat_every(
-    seconds=Scraper.get_default_scrape_interval(),
-    wait_first=Scraper.get_default_wait_first_interval(),
-    logger=log,
-)
-async def perform_full_routine_metrics_scrape() -> None:
-    log.debug(
-        f"Going to perform full scrape of all metrics "
-        f"(interval: {Scraper.get_default_scrape_interval()}) "
-        f"=========>"
-    )
-    await Scraper.get_client().perform_full_scrape()
