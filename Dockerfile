@@ -25,6 +25,9 @@ RUN pip wheel --no-deps --wheel-dir /code/wheels -r /code/requirements.txt
 
 FROM python:${PYTHON_VERSION} AS runner
 
+# Ensure Python output is not buffered for better Docker logging
+ENV PYTHONUNBUFFERED=1
+
 RUN set -x \
     && apk update  \
     && apk add --no-cache  \

@@ -24,6 +24,7 @@ log = LogHelper.get_env_logger(__name__)
 async def lifespan(app: FastAPI):
     """Lifespan context manager for FastAPI application"""
     # Startup
+    log.info("🚀 Starting up FastAPI application")
     log.debug("Starting up FastAPI application")
 
     # Start the background task
@@ -33,17 +34,63 @@ async def lifespan(app: FastAPI):
         logger=log,
     )
     async def perform_full_routine_metrics_scrape() -> None:
-        log.debug(
-            f"Going to perform full scrape of all metrics "
-            f"(interval: {Scraper.get_default_scrape_interval()}) "
-            f"=========>"
-        )
-        await Scraper.get_client().perform_full_scrape()
+        import fcntl
+        import os
 
-    # Yield to keep the task running
-    yield
+        worker_pid = os.getpid()
+        lock_file = "/tmp/wargos_scrape.lock"
+
+        try:
+            # Try to acquire a file lock to ensure only one worker scrapes
+            with open(lock_file, "w") as f:
+                try:
+                    # Try to acquire an exclusive lock (non-blocking)
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+                    # We got the lock! This worker will do the scraping
+                    log.info(
+                        f"🔒 Worker {worker_pid}: Acquired scrape lock - performing full scrape"
+                    )
+                    log.info(
+                        f"🔄 Worker {worker_pid}: Performing full scrape of all metrics (interval: {Scraper.get_default_scrape_interval()})"
+                    )
+                    log.debug(
+                        f"Worker {worker_pid}: Going to perform full scrape of all metrics "
+                        f"(interval: {Scraper.get_default_scrape_interval()}) "
+                        f"=========>"
+                    )
+
+                    try:
+                        await Scraper.get_client().perform_full_scrape()
+                        log.info(
+                            f"✅ Worker {worker_pid}: Full scrape completed successfully"
+                        )
+                    except Exception as e:
+                        log.error(
+                            f"❌ Worker {worker_pid}: Error during full scrape: {e}"
+                        )
+
+                    # Release the lock
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+                except (IOError, OSError):
+                    # Another worker already has the lock
+                    log.debug(
+                        f"🔒 Worker {worker_pid}: Scrape lock already held by another worker - skipping"
+                    )
+                    pass
+
+        except Exception as e:
+            log.error(f"❌ Worker {worker_pid}: Error with scrape locking: {e}")
+
+    # Start the background task
+    await perform_full_routine_metrics_scrape()
+
+    # Yield the app to keep it running
+    yield app
 
     # Shutdown
+    log.info("🛑 Shutting down FastAPI application")
     log.debug("Shutting down FastAPI application")
 
 

@@ -1,6 +1,6 @@
 import logging
-import sys
 import os
+import sys
 
 
 class LogHelper(object):
@@ -13,11 +13,17 @@ class LogHelper(object):
         """For more on logging, see the readme"""
         logger = logging.getLogger(name)
         logger.setLevel(log_level)
-        console_handler = logging.StreamHandler(sys.stdout)
+
+        # Use stderr for Docker logging compatibility
+        console_handler = logging.StreamHandler(sys.stderr)
         console_formatter = logging.Formatter(
             fmt="%(asctime)s - %(levelname)s - %(message)s"
         )
         console_handler.setFormatter(console_formatter)
+
+        # Ensure logs are not buffered
+        console_handler.setStream(sys.stderr)
+
         logger.addHandler(console_handler)
         return logger
 
