@@ -68,7 +68,9 @@ async def prometheus_scrape_all():
     logger=log,
 )
 async def perform_full_routine_metrics_scrape() -> None:
-    log.debug(f"Going to perform full scrape of all metrics "
-              f"(interval: {Scraper.get_default_scrape_interval()}) "
-              f"=========>")
+    log.debug(
+        f"Going to perform full scrape of all metrics "
+        f"(interval: {Scraper.get_default_scrape_interval()}) "
+        f"=========>"
+    )
     await Scraper.get_client().perform_full_scrape()
