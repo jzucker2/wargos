@@ -40,11 +40,20 @@ WORKDIR /code
 # This looks good
 COPY ./app /code/app
 
+# Set default environment variables for Gunicorn
+ENV PORT=9395
+ENV WORKERS=4
+ENV WORKER_CLASS=uvicorn.workers.UvicornWorker
+ENV TIMEOUT=120
+ENV KEEPALIVE=2
+ENV MAX_REQUESTS=1000
+ENV MAX_REQUESTS_JITTER=50
+
 # Expose the port on which the application will run
-EXPOSE 9395
+EXPOSE ${PORT}
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=3 \
-    CMD curl -f http://0.0.0.0:9395/healthz || exit 1
+    CMD curl -f http://0.0.0.0:${PORT}/healthz || exit 1
 
-# TODO: make port configurable and maybe get behind gunicorn
-CMD ["fastapi", "run", "app/main.py", "--port", "9395"]
+# Use Gunicorn with Uvicorn workers
+CMD ["sh", "-c", "gunicorn app.main:app --bind 0.0.0.0:${PORT} --workers ${WORKERS} --worker-class ${WORKER_CLASS} --timeout ${TIMEOUT} --keep-alive ${KEEPALIVE} --max-requests ${MAX_REQUESTS} --max-requests-jitter ${MAX_REQUESTS_JITTER}"]

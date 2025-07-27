@@ -21,12 +21,23 @@ services:
 
   wargos:
     container_name: wargos
-    image: ghcr.io/jzucker2/wargos
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      - WLED_IP_LIST=10.0.1.1,10.0.1.2,10.0.1.3
+      - DEBUG=true
+      # Replace with your `wled` IP addresses
+      - WLED_IP_LIST=10.0.1.129,10.0.1.150,10.0.1.179,10.0.1.153
+      # Gunicorn configuration (optional - defaults shown)
+      - PORT=9395
+      - WORKERS=4
+      - TIMEOUT=120
+      - KEEPALIVE=2
+      - MAX_REQUESTS=1000
+      - MAX_REQUESTS_JITTER=50
     ports:
       - "9395:9395"
     stdin_open: true
@@ -43,12 +54,53 @@ By default, logging is info level. To set to debug, provide the env `DEBUG=true`
 | `DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS` |     `60`      |                `30`                |     This determines how often `wargos` scrapes prometheus metrics from `wled` instances      |
 |        `DEFAULT_WLED_FIRST_WAIT_SECONDS`        |     `30`      |               `120`                |  This determines how long to wait before `wargos` does the first prometheus metrics scrape   |
 |                 `WLED_IP_LIST`                  |    `None`     | `10.0.1.150,10.0.1.179,10.0.1.153` | This is the list of `,` separated IP addresses of `wled` instances that `wargos` will scrape |
+|                     `PORT`                      |    `9395`     |               `8080`                | The port on which the Gunicorn server will listen |
+|                   `WORKERS`                     |      `4`      |                `2`                  | Number of Gunicorn worker processes |
+|                  `TIMEOUT`                      |    `120`      |               `60`                  | Worker timeout in seconds |
+|                 `KEEPALIVE`                     |      `2`      |                `5`                  | Keep-alive connection timeout |
+|               `MAX_REQUESTS`                    |   `1000`      |               `500`                 | Maximum requests per worker before restart |
+|           `MAX_REQUESTS_JITTER`                 |     `50`      |               `25`                  | Jitter for max requests to prevent all workers restarting at once |
+
+## Running the Application
+
+### Local Development
+
+**Option 1: Gunicorn (Production-like)**
+```bash
+# Run with default settings
+make run
+
+# Run with custom settings
+PORT=8080 WORKERS=2 make run
+
+# Run directly with script
+./scripts/run_gunicorn.sh
+
+# Run with custom environment variables
+PORT=8080 WORKERS=2 TIMEOUT=60 ./scripts/run_gunicorn.sh
+```
+
+**Option 2: Uvicorn (Development)**
+```bash
+# Run with Uvicorn for development
+make run-uvicorn
+
+# Or directly
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Docker Deployment
+
+The application uses Gunicorn with Uvicorn workers for production deployment. The Docker setup includes:
+
+- **Multi-stage build** for optimized image size
+- **Configurable environment variables** for port, workers, and performance tuning
+- **Health checks** for container monitoring
+- **Alpine Linux base** for security and size efficiency
 
 ## Testing
 
-### Local Testing
-
-The project includes a comprehensive test suite with **48 tests** and **57% code coverage**.
+The project includes a comprehensive test suite with **104 tests** and comprehensive code coverage.
 
 #### Prerequisites
 
