@@ -44,6 +44,142 @@ By default, logging is info level. To set to debug, provide the env `DEBUG=true`
 |        `DEFAULT_WLED_FIRST_WAIT_SECONDS`        |     `30`      |               `120`                |  This determines how long to wait before `wargos` does the first prometheus metrics scrape   |
 |                 `WLED_IP_LIST`                  |    `None`     | `10.0.1.150,10.0.1.179,10.0.1.153` | This is the list of `,` separated IP addresses of `wled` instances that `wargos` will scrape |
 
+## Testing
+
+### Local Testing
+
+The project includes a comprehensive test suite with **48 tests** and **57% code coverage**.
+
+#### Prerequisites
+
+1. **Virtual Environment**: Ensure you have a Python virtual environment set up
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+2. **Install Dependencies**: Install both production and test dependencies
+   ```bash
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt
+   ```
+
+#### Running Tests
+
+**Option 1: Makefile (Recommended)**
+```bash
+# Run all tests
+make test
+
+# Run tests with coverage
+make test-coverage
+
+# Run specific test file
+make test-file FILE=tests/test_basic.py
+```
+
+**Option 2: Pytest (Advanced)**
+```bash
+# Run all tests with verbose output
+pytest tests/ -v
+
+# Run with coverage report
+pytest tests/ --cov=app --cov-report=term-missing
+
+# Run specific test file
+pytest tests/test_basic.py -v
+
+# Run specific test class
+pytest tests/test_basic.py::TestBasicFunctionality -v
+```
+
+**Option 3: Direct Python**
+```bash
+# Run all tests
+python tests/run_tests.py
+
+# Run specific test module
+python tests/run_tests.py basic
+```
+
+#### Test Coverage
+
+Current coverage across modules:
+- **`app/utils.py`**: 100% coverage (28/28 statements)
+- **`app/version.py`**: 100% coverage (1/1 statements)
+- **`app/metrics.py`**: 100% coverage (143/143 statements)
+- **`app/main.py`**: 69% coverage (27/39 statements)
+- **`app/wled_client.py`**: 40% coverage (24/60 statements)
+- **`app/scraper.py`**: 27% coverage (62/231 statements)
+
+### GitHub Actions CI/CD
+
+The project includes GitHub Actions for automated testing. The workflow file is located at `.github/workflows/tests.yml` and includes:
+
+- **Multi-Python Testing**: Tests against Python 3.11 and 3.12
+- **Dependency Caching**: Speeds up builds by caching pip dependencies
+- **Coverage Reporting**: Generates coverage reports and uploads to Codecov
+- **Automatic Triggers**: Runs on push to main/develop and all pull requests
+
+#### Required Files
+
+Ensure these files exist for GitHub Actions:
+
+1. **`.github/workflows/tests.yml`** - The workflow file
+2. **`requirements-dev.txt`** - Test dependencies
+3. **`pytest.ini`** - Pytest configuration
+4. **`Makefile`** - Make targets for testing
+
+#### Optional: Codecov Integration
+
+For enhanced coverage reporting, add a Codecov badge to your README:
+
+```markdown
+[![codecov](https://codecov.io/gh/yourusername/wargos/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/wargos)
+```
+
+### Test Structure
+
+```
+tests/
+├── test_basic.py              # Basic functionality tests (9 tests)
+├── test_version.py            # Version module tests (3 tests)
+├── test_utils.py              # Utility functions tests (12 tests)
+├── test_wled_client_simple.py # WLED client tests (7 tests)
+├── test_scraper_simple.py     # Scraper tests (12 tests)
+├── test_main_simple.py        # FastAPI app tests (5 tests)
+├── run_tests.py               # Custom test runner
+└── README.md                  # Test documentation
+```
+
+### Adding New Tests
+
+When adding new functionality:
+
+1. **Create test file**: `tests/test_<module_name>.py`
+2. **Follow naming**: Test methods should start with `test_`
+3. **Use mocking**: Mock external dependencies with `@patch` and `MagicMock`
+4. **Test edge cases**: Include tests for error conditions and boundary cases
+5. **Add docstrings**: Explain what each test validates
+
+Example test structure:
+```python
+import unittest
+from unittest.mock import patch, MagicMock
+from app.your_module import YourClass
+
+class TestYourClass(unittest.TestCase):
+    """Tests for YourClass"""
+
+    def test_something(self):
+        """Test description"""
+        # Your test code here
+        self.assertTrue(True)
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
 ## wled
 
 * https://kno.wled.ge/

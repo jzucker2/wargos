@@ -14,8 +14,7 @@ class WLEDClient(object):
 
     @classmethod
     def default_wled_ip(cls):
-        return os.environ.get('DEFAULT_WLED_IP',
-                              "10.0.1.179")
+        return os.environ.get("DEFAULT_WLED_IP", "10.0.1.179")
 
     def __init__(self, session=None):
         super().__init__()

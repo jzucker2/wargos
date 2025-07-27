@@ -8,12 +8,12 @@ from .wled_client import WLEDClient
 log = LogHelper.get_env_logger(__name__)
 
 
-DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS = int(os.environ.get(
-    'DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS',
-    60))
-DEFAULT_WLED_FIRST_WAIT_SECONDS = int(os.environ.get(
-    'DEFAULT_WLED_FIRST_WAIT_SECONDS',
-    30))
+DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS = int(
+    os.environ.get("DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS", 60)
+)
+DEFAULT_WLED_FIRST_WAIT_SECONDS = int(
+    os.environ.get("DEFAULT_WLED_FIRST_WAIT_SECONDS", 30)
+)
 
 
 class ScraperException(Exception):
@@ -44,7 +44,7 @@ class Scraper(object):
     def get_env_wled_ip_list(cls):
         try:
             # TODO: consolidate env imports
-            return os.environ['WLED_IP_LIST']
+            return os.environ["WLED_IP_LIST"]
         except KeyError as ke:
             log.error(f"We got no list in the env vars with ke: {ke}")
             return None
@@ -54,7 +54,7 @@ class Scraper(object):
         raw_ip_list = cls.get_env_wled_ip_list()
         if not raw_ip_list or not len(raw_ip_list):
             return None
-        return raw_ip_list.split(',')
+        return raw_ip_list.split(",")
 
     def __init__(self, wled_client):
         self._wled_client = wled_client
@@ -122,7 +122,7 @@ class Scraper(object):
             ip=device_info.ip,
         ).set(preset_count or 0)
         for preset_info in preset_info_list:
-            log.debug(f'found preset_info: {preset_info}')
+            log.debug(f"found preset_info: {preset_info}")
             preset_id = preset_info.preset_id
             preset_name = preset_info.name
             final_quick_label = preset_info.quick_label or "missing"
@@ -181,18 +181,17 @@ class Scraper(object):
         ).set(dev_nightlight.target_brightness or 0)
 
     def _scrape_single_priority_color(
-            self,
-            device_info,
-            segment_name,
-            color_priority,
-            colors):
+        self, device_info, segment_name, color_priority, colors
+    ):
         if not colors:
             return
         color_position = 0
         for color_value in colors:
-            log.debug(f'color_priority ({color_priority}) ==> at '
-                      f'color_position: {color_position} '
-                      f'color_value: {color_value}')
+            log.debug(
+                f"color_priority ({color_priority}) ==> at "
+                f"color_position: {color_position} "
+                f"color_value: {color_value}"
+            )
             Metrics.INSTANCE_SEGMENT_COLOR_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
@@ -203,32 +202,24 @@ class Scraper(object):
             color_position += 1
 
     def scrape_state_segment_colors(
-            self,
-            device_info,
-            segment_name,
-            segment_info):
+        self, device_info, segment_name, segment_info
+    ):
         dev_colors = segment_info.color
         log.debug(f"got dev_colors: {dev_colors}")
         if not dev_colors:
             return
         primary_colors = dev_colors.primary
         self._scrape_single_priority_color(
-            device_info,
-            segment_name,
-            'primary',
-            primary_colors)
+            device_info, segment_name, "primary", primary_colors
+        )
         secondary_colors = dev_colors.secondary
         self._scrape_single_priority_color(
-            device_info,
-            segment_name,
-            'secondary',
-            secondary_colors)
+            device_info, segment_name, "secondary", secondary_colors
+        )
         tertiary_colors = dev_colors.tertiary
         self._scrape_single_priority_color(
-            device_info,
-            segment_name,
-            'tertiary',
-            tertiary_colors)
+            device_info, segment_name, "tertiary", tertiary_colors
+        )
 
     def scrape_state_segments(self, device_info, device_state):
         dev_segments_list = device_state.segments
@@ -304,12 +295,13 @@ class Scraper(object):
                 name=device_info.name,
                 segment=segment_name,
             ).set(segment_info.stop or 0)
-            log.debug(f'Now try and scrape colors '
-                      f'from segment_name: {segment_name}')
+            log.debug(
+                f"Now try and scrape colors "
+                f"from segment_name: {segment_name}"
+            )
             self.scrape_state_segment_colors(
-                device_info,
-                segment_name,
-                segment_info)
+                device_info, segment_name, segment_info
+            )
 
     def scrape_info_filesystem(self, device_info):
         dev_fs = device_info.filesystem
@@ -421,7 +413,7 @@ class Scraper(object):
                 Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
                     ip=device_ip,
                     # name=dev_info.name,
-                    scrape_event='started',
+                    scrape_event="started",
                 ).inc()
                 # Want to set this _before_ trying to connect
                 # because timeouts haven't been configured yet
@@ -430,11 +422,12 @@ class Scraper(object):
                     # name=dev_info.name,
                 ).set(0)
                 device = await self.wled_client.get_wled_instance_device(
-                    device_ip)
+                    device_ip
+                )
                 Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
                     ip=device_ip,
                     # name=dev_info.name,
-                    scrape_event='connected',
+                    scrape_event="connected",
                 ).inc()
                 log.debug(f"wled got device: {device}")
 
@@ -454,13 +447,17 @@ class Scraper(object):
                     self.scrape_state_nightlight(dev_info, dev_state)
                     self.scrape_state_segments(dev_info, dev_state)
                 except Exception as unexp:
-                    log.error(f"Unexpected issue for device_ip: {device_ip} "
-                              f"with scrape issue unexp: {unexp} with "
-                              f"type(unexp): {type(unexp)}")
+                    log.error(
+                        f"Unexpected issue for device_ip: {device_ip} "
+                        f"with scrape issue unexp: {unexp} with "
+                        f"type(unexp): {type(unexp)}"
+                    )
                     exc_class = str(type(unexp).__name__)
-                    log.debug(f"Unexpected exception unexp: {unexp} with "
-                              f"type(unexp): {type(unexp)} has exc_class: "
-                              f"{exc_class}")
+                    log.debug(
+                        f"Unexpected exception unexp: {unexp} with "
+                        f"type(unexp): {type(unexp)} has exc_class: "
+                        f"{exc_class}"
+                    )
                     Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_BY_TYPE_EXCEPTIONS.labels(  # noqa: E501
                         ip=device_ip,
                         exception_class=exc_class,
@@ -468,7 +465,7 @@ class Scraper(object):
                     Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
                         ip=device_ip,
                         # name=dev_info.name,
-                        scrape_event='failed',
+                        scrape_event="failed",
                     ).inc()
                     Metrics.WLED_INSTANCE_ONLINE.labels(
                         ip=device_ip,
@@ -478,7 +475,7 @@ class Scraper(object):
                     Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
                         ip=device_ip,
                         # name=dev_info.name,
-                        scrape_event='succeeded',
+                        scrape_event="succeeded",
                     ).inc()
                     Metrics.WLED_INSTANCE_ONLINE.labels(
                         ip=device_ip,
@@ -498,8 +495,10 @@ class Scraper(object):
             with Metrics.WLED_SCRAPER_SCRAPE_ALL_TIME.time():
                 wled_ip_list = self.parse_env_wled_ip_list()
                 if not wled_ip_list:
-                    e_m = ('missing wled ip list! must provide '
-                           'with env var to use this method')
+                    e_m = (
+                        "missing wled ip list! must provide "
+                        "with env var to use this method"
+                    )
                     log.error(e_m)
                     raise MissingIPListScraperException(e_m)
                 for device_ip in wled_ip_list:
@@ -508,8 +507,10 @@ class Scraper(object):
                         await self.scrape_instance(device_ip)
                     # TODO: why does it throw up here and not within function?
                     except Exception as unexp:
-                        u_m = (f'Scrape all device_ip: {device_ip} '
-                               f'got unexp: {unexp}')
+                        u_m = (
+                            f"Scrape all device_ip: {device_ip} "
+                            f"got unexp: {unexp}"
+                        )
                         log.error(u_m)
 
     async def scrape_releases(self):
@@ -523,13 +524,13 @@ class Scraper(object):
 
     async def perform_full_scrape(self):
         # first scrape self info for this app
-        log.debug('perform_full_scrape')
+        log.debug("perform_full_scrape")
         with Metrics.SCRAPER_FULL_SCRAPE_EXCEPTIONS.count_exceptions():
             with Metrics.SCRAPER_FULL_SCRAPE_TIME.time():
                 self.scrape_self()
-                log.debug('done with scrape self, next all wled instances')
+                log.debug("done with scrape self, next all wled instances")
                 # then scrape all wled instances
                 await self.scrape_all_instances()
-                log.debug('done scraping all wled instances, now releases')
+                log.debug("done scraping all wled instances, now releases")
                 await self.scrape_releases()
-                log.debug('done with perform_full_scrape')
+                log.debug("done with perform_full_scrape")

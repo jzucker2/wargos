@@ -6,7 +6,7 @@ import os
 class LogHelper(object):
     @classmethod
     def get_debug_env_flag(cls):
-        return bool(os.environ.get('DEBUG', 'false').lower() == 'true')
+        return bool(os.environ.get("DEBUG", "false").lower() == "true")
 
     @classmethod
     def get_fast_api_logger(cls, name, log_level=logging.DEBUG):
@@ -15,7 +15,8 @@ class LogHelper(object):
         logger.setLevel(log_level)
         console_handler = logging.StreamHandler(sys.stdout)
         console_formatter = logging.Formatter(
-            fmt='%(asctime)s - %(levelname)s - %(message)s')
+            fmt="%(asctime)s - %(levelname)s - %(message)s"
+        )
         console_handler.setFormatter(console_formatter)
         logger.addHandler(console_handler)
         return logger
