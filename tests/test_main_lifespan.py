@@ -30,8 +30,12 @@ class TestLifespanEvents:
         self, mock_scraper, mock_wled_client, mock_logger
     ):
         async with lifespan(app) as _:
-            mock_logger.info.assert_called_with(
+            # Check that both startup messages are logged
+            mock_logger.info.assert_any_call(
                 "🚀 Starting up FastAPI application"
+            )
+            mock_logger.info.assert_any_call(
+                "🔄 Starting background scraping task"
             )
             mock_logger.debug.assert_called_with(
                 "Starting up FastAPI application"

@@ -40,6 +40,8 @@ async def lifespan(app: FastAPI):
         worker_pid = os.getpid()
         lock_file = "/tmp/wargos_scrape.lock"
 
+        log.info(f"🔄 Background task triggered for worker {worker_pid}")
+
         try:
             # Try to acquire a file lock to ensure only one worker scrapes
             with open(lock_file, "w") as f:
@@ -82,6 +84,10 @@ async def lifespan(app: FastAPI):
 
         except Exception as e:
             log.error(f"❌ Worker {worker_pid}: Error with scrape locking: {e}")
+
+    # Start the background task by calling it once to initiate scheduling
+    log.info("🔄 Starting background scraping task")
+    await perform_full_routine_metrics_scrape()
 
     # Yield None to keep it running
     yield
