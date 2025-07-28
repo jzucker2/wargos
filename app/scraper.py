@@ -230,6 +230,33 @@ class Scraper(object):
                     if response.status == 200:
                         presets_data = await response.json()
 
+                        # Check for empty presets (special case)
+                        if presets_data == {"0": {}}:
+                            # Update metrics for empty presets
+                            duration = (
+                                datetime.now() - start_time
+                            ).total_seconds()
+                            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                                operation_type="single_preset_backup",
+                                device_ip=device_ip,
+                                status="empty_presets",
+                            ).inc()
+                            Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+                                operation_type="single_preset_backup",
+                                device_ip=device_ip,
+                            ).observe(duration)
+
+                            log.info(
+                                f"Empty presets detected for {device_ip}, skipping file creation"
+                            )
+                            return {
+                                "device_ip": device_ip,
+                                "filepath": None,
+                                "timestamp": timestamp,
+                                "status": "empty_presets",
+                                "message": "No presets to backup",
+                            }
+
                         # Add metadata to the presets
                         presets_data["_backup_metadata"] = {
                             "backup_timestamp": datetime.now().isoformat(),

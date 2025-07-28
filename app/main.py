@@ -425,6 +425,22 @@ async def download_latest_presets(
         with open(latest_file, "r") as f:
             presets_data = json.load(f)
 
+        # Check if this is an empty presets file (special case)
+        if presets_data == {"0": {}}:
+            # Update metrics for empty presets download
+            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                operation_type="download_latest_presets",
+                device_ip=device_ip,
+                status="empty_presets",
+            ).inc()
+
+            return {
+                "message": f"No presets available for device {device_ip}",
+                "device_ip": device_ip,
+                "status": "empty_presets",
+                "presets": {"0": {}},
+            }
+
         # Strip metadata if not requested
         if not include_metadata and "_backup_metadata" in presets_data:
             del presets_data["_backup_metadata"]

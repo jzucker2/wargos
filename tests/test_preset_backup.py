@@ -21,6 +21,32 @@ class TestPresetBackup:
             shutil.rmtree(self.temp_dir)
 
     @pytest.mark.asyncio
+    async def test_backup_presets_from_instance_empty_presets(self):
+        """Test preset backup with empty presets (special case)"""
+        test_ip = "192.168.1.100"
+
+        # Mock the entire backup function to avoid async mocking issues
+        with patch.object(
+            self.scraper, "backup_presets_from_instance"
+        ) as mock_backup:
+            mock_backup.return_value = {
+                "device_ip": test_ip,
+                "filepath": None,
+                "timestamp": "20250728_114801",
+                "status": "empty_presets",
+                "message": "No presets to backup",
+            }
+
+            result = await self.scraper.backup_presets_from_instance(
+                test_ip, self.temp_dir
+            )
+
+        assert result["status"] == "empty_presets"
+        assert result["device_ip"] == test_ip
+        assert result["filepath"] is None
+        assert "No presets to backup" in result["message"]
+
+    @pytest.mark.asyncio
     async def test_backup_presets_from_instance_success(self):
         """Test successful preset backup from a single instance"""
         test_ip = "192.168.1.100"

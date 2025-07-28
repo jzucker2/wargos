@@ -179,10 +179,13 @@ Preset files contain the WLED device presets in JSON format with added metadata:
   "_backup_metadata": {
     "backup_timestamp": "2025-07-28T11:48:01.123456",
     "device_ip": "192.168.1.100",
-    "backup_source": "wargos"
+    "backup_source": "wargos",
   }
 }
 ```
+
+**Special Case - Empty Presets:**
+If a WLED device returns `{"0": {}}` for its presets, no backup file is created. This is tracked in Prometheus metrics with status `empty_presets`. When downloading presets, if the latest file contains `{"0": {}}`, the download endpoint returns a JSON response indicating no presets are available.
 
 ## File Naming Convention
 
@@ -263,6 +266,13 @@ The backup feature provides detailed Prometheus metrics for monitoring:
 - `wargos_config_backup_operations_total`: Total number of backup operations (labeled by operation_type, device_ip, status)
 - `wargos_config_backup_operation_duration_seconds`: Duration of backup operations (labeled by operation_type, device_ip)
 
+**Status Values:**
+
+- `success`: Operation completed successfully
+- `error`: Operation failed with an error
+- `not_found`: No backup directory or files found
+- `empty_presets`: Preset backup skipped due to empty presets (special case)
+
 ### Error Metrics
 
 - `wargos_config_backup_operation_exceptions_total`: Exceptions during backup operations (labeled by operation_type, device_ip, exception_type)
@@ -279,6 +289,9 @@ The backup feature provides detailed Prometheus metrics for monitoring:
 ```promql
 # Successful backup operations
 wargos_config_backup_operations_total{status="success"}
+
+# Empty presets operations
+wargos_config_backup_operations_total{status="empty_presets"}
 
 # Backup operation duration
 histogram_quantile(0.95, rate(wargos_config_backup_operation_duration_seconds_bucket[5m]))
