@@ -46,6 +46,9 @@ COPY ./app /code/app
 # Create Prometheus multiprocess directory
 RUN mkdir -p /tmp
 
+# Create backups directory
+RUN mkdir -p /backups
+
 # Set default environment variables for Gunicorn
 ENV PORT=9395
 ENV WORKERS=4

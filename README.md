@@ -10,6 +10,29 @@ Want a [grafana](https://grafana.com/oss/grafana/) dashboard like this?
 
 ![Power Overview](./images/power.png)
 
+## Features
+
+### Metrics Collection
+
+- **Prometheus Metrics**: Comprehensive metrics collection from WLED devices
+- **Real-time Monitoring**: Live monitoring of LED strips, effects, and device status
+- **Multi-device Support**: Monitor multiple WLED instances simultaneously
+- **Release Tracking**: Monitor WLED firmware releases and versions
+
+### Config Backup
+
+- **Automatic Backups**: Collect configuration backups from WLED instances
+- **Configurable Storage**: Store backups in customizable directories
+- **Organized Structure**: Files are stored in IP-specific subdirectories (`/backups/{ip}/`)
+- **Metadata Tracking**: Each backup includes timestamp and device information
+- **Bulk Operations**: Backup all devices or individual instances
+- **Download Latest**: Download the most recent backup for any device
+- **Metadata Control**: Option to include or strip backup metadata from downloads
+- **Error Handling**: Robust error handling for network and file system issues
+- **Prometheus Metrics**: Comprehensive metrics for monitoring backup operations
+
+For detailed information about the config backup feature, see [CONFIG_BACKUP.md](./CONFIG_BACKUP.md).
+
 ## How to Run
 
 ### Configure Docker Compose
@@ -56,6 +79,7 @@ By default, logging is info level. To set to debug, provide the env `DEBUG=true`
 | `DEFAULT_WLED_IP`                              | `10.0.1.179`  |           `10.0.1.100`            |     This is the default IP address used when no IP list is provided                         |
 | `WLED_IP_LIST`                                 |    `None`     | `10.0.1.129,10.0.1.150,10.0.1.179` |     Comma-separated list of WLED device IP addresses to scrape                              |
 | `ENABLE_RELEASE_CHECK`                         |    `true`     |              `false`               |     Enable or disable WLED release checking (true/false, 1/0, yes/no, on/off)              |
+| `CONFIG_BACKUP_DIR`                            | `/backups/` | `/home/user/wled_backups` | Directory where WLED config backups are stored |
 |                     `PORT`                      |    `9395`     |               `8080`                | The port on which the Gunicorn server will listen |
 |                   `WORKERS`                     |      `4`      |                `2`                  | Number of Gunicorn worker processes |
 |                  `TIMEOUT`                      |    `120`      |               `60`                  | Worker timeout in seconds |
@@ -323,6 +347,24 @@ curl -i "http://localhost:9395/prometheus/default" \
 # now test with prometheus metrics for all WLED instances (set in env var for now)
 curl -i "http://localhost:9395/prometheus/all" \
     -H "Content-Type: application/json"
+
+# backup config from all WLED instances
+curl -i "http://localhost:9395/config/backup/all" \
+    -H "Content-Type: application/json"
+
+# backup config from a specific WLED instance
+curl -i "http://localhost:9395/config/backup/192.168.1.100" \
+    -H "Content-Type: application/json"
+
+# backup configs to a custom directory
+curl -i "http://localhost:9395/config/backup/all/custom?backup_dir=/custom/path" \
+    -H "Content-Type: application/json"
+
+# download latest backup for a specific device
+curl -O -J "http://localhost:9395/config/download/192.168.1.100"
+
+# download latest backup with metadata included
+curl -O -J "http://localhost:9395/config/download/192.168.1.100?include_metadata=true"
 ```
 
 ### Logging

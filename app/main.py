@@ -192,3 +192,147 @@ async def prometheus_default():
 async def prometheus_scrape_all():
     await Scraper.get_client().scrape_all_instances()
     return {"message": "Hello World"}
+
+
+@app.get("/config/backup/all")
+async def backup_configs_all():
+    """Backup configs from all WLED instances"""
+    results = await Scraper.get_client().backup_configs_from_all_instances()
+    return {
+        "message": "Config backup completed",
+        "results": results,
+        "backup_dir": Scraper.get_client().get_config_backup_dir(),
+    }
+
+
+@app.get("/config/backup/{device_ip}")
+async def backup_config_single(device_ip: str):
+    """Backup config from a single WLED instance"""
+    result = await Scraper.get_client().backup_config_from_instance(device_ip)
+    return {
+        "message": "Config backup completed",
+        "result": result,
+        "backup_dir": Scraper.get_client().get_config_backup_dir(),
+    }
+
+
+@app.get("/config/backup/all/custom")
+async def backup_configs_all_custom(backup_dir: str):
+    """Backup configs from all WLED instances to a custom directory"""
+    results = await Scraper.get_client().backup_configs_from_all_instances(
+        backup_dir
+    )
+    return {
+        "message": "Config backup completed",
+        "results": results,
+        "backup_dir": backup_dir,
+    }
+
+
+@app.get("/config/download/{device_ip}")
+async def download_latest_backup(
+    device_ip: str, include_metadata: bool = False
+):
+    """Download the latest backup file for a specific WLED instance"""
+    import json
+    import os
+    from pathlib import Path
+
+    from fastapi.responses import FileResponse
+
+    from .metrics import Metrics
+
+    backup_dir = Scraper.get_client().get_config_backup_dir()
+    ip_backup_dir = Path(backup_dir) / device_ip
+
+    try:
+        if not ip_backup_dir.exists():
+            # Update metrics for not found
+            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                operation_type="download_latest",
+                device_ip=device_ip,
+                status="not_found",
+            ).inc()
+
+            return {
+                "error": f"No backup directory found for device {device_ip}",
+                "device_ip": device_ip,
+                "status": "not_found",
+            }
+
+        # Find the latest backup file
+        backup_files = list(ip_backup_dir.glob(f"{device_ip}_*.json"))
+        if not backup_files:
+            # Update metrics for no files found
+            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                operation_type="download_latest",
+                device_ip=device_ip,
+                status="not_found",
+            ).inc()
+
+            return {
+                "error": f"No backup files found for device {device_ip}",
+                "device_ip": device_ip,
+                "status": "not_found",
+            }
+
+        # Sort by modification time and get the latest
+        latest_file = max(backup_files, key=lambda f: f.stat().st_mtime)
+
+        # Read the file content
+        with open(latest_file, "r") as f:
+            config_data = json.load(f)
+
+        # Strip metadata if not requested
+        if not include_metadata and "_backup_metadata" in config_data:
+            del config_data["_backup_metadata"]
+
+        # Create a temporary file with the processed content
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False
+        ) as temp_file:
+            json.dump(config_data, temp_file, indent=2)
+            temp_file_path = temp_file.name
+
+        # Update metrics for successful download
+        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            operation_type="download_latest",
+            device_ip=device_ip,
+            status="success",
+        ).inc()
+
+        async def cleanup_temp_file():
+            """Clean up the temporary file after response is sent"""
+            try:
+                os.unlink(temp_file_path)
+            except OSError:
+                pass  # File might already be deleted
+
+        return FileResponse(
+            path=temp_file_path,
+            filename=f"{device_ip}_latest_backup.json",
+            media_type="application/json",
+            background=cleanup_temp_file,
+        )
+
+    except Exception as e:
+        # Update metrics for exceptions
+        exception_type = type(e).__name__
+        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            operation_type="download_latest",
+            device_ip=device_ip,
+            status="error",
+        ).inc()
+        Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
+            operation_type="download_latest",
+            device_ip=device_ip,
+            exception_type=exception_type,
+        ).inc()
+
+        return {
+            "error": f"Error downloading backup for device {device_ip}: {str(e)}",
+            "device_ip": device_ip,
+            "status": "error",
+        }

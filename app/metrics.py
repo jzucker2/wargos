@@ -1,5 +1,6 @@
 from enum import Enum
-from prometheus_client import Gauge, Counter, Summary
+
+from prometheus_client import Counter, Gauge, Summary
 
 
 class MetricsLabels(Enum):
@@ -592,4 +593,47 @@ class Metrics(object):
         "wargos_wled_instance_sync_send_groups",
         "The current state of the WLED instance sync send groups",
         MetricsLabels.basic_udp_sync_labels(),
+    )
+
+    # Config Backup Metrics
+    CONFIG_BACKUP_OPERATIONS_TOTAL = Counter(
+        "wargos_config_backup_operations_total",
+        "Total number of config backup operations",
+        ["operation_type", "device_ip", "status"],
+    )
+
+    CONFIG_BACKUP_OPERATION_DURATION = Summary(
+        "wargos_config_backup_operation_duration_seconds",
+        "Duration of config backup operations",
+        ["operation_type", "device_ip"],
+    )
+
+    CONFIG_BACKUP_OPERATION_EXCEPTIONS = Counter(
+        "wargos_config_backup_operation_exceptions_total",
+        "Total number of exceptions during config backup operations",
+        ["operation_type", "device_ip", "exception_type"],
+    )
+
+    CONFIG_BACKUP_FILES_CREATED = Counter(
+        "wargos_config_backup_files_created_total",
+        "Total number of config backup files created",
+        ["device_ip"],
+    )
+
+    CONFIG_BACKUP_FILE_SIZE_BYTES = Gauge(
+        "wargos_config_backup_file_size_bytes",
+        "Size of the most recent config backup file in bytes",
+        ["device_ip"],
+    )
+
+    CONFIG_BACKUP_HTTP_ERRORS = Counter(
+        "wargos_config_backup_http_errors_total",
+        "Total number of HTTP errors during config backup operations",
+        ["device_ip", "http_status_code"],
+    )
+
+    CONFIG_BACKUP_CONNECTION_ERRORS = Counter(
+        "wargos_config_backup_connection_errors_total",
+        "Total number of connection errors during config backup operations",
+        ["device_ip", "error_type"],
     )
