@@ -35,7 +35,6 @@ async def lifespan(app: FastAPI):
     )
     async def perform_full_routine_metrics_scrape() -> None:
         import fcntl
-        import os
 
         worker_pid = os.getpid()
         lock_file = "/tmp/wargos_scrape.lock"
@@ -63,7 +62,10 @@ async def lifespan(app: FastAPI):
                     )
 
                     try:
-                        await Scraper.get_client().perform_full_scrape()
+                        # Only set worker-specific metrics when this worker is doing the scraping
+                        await Scraper.get_client().perform_full_scrape(
+                            set_instance_info=True
+                        )
                         log.info(
                             f"✅ Worker {worker_pid}: Full scrape completed successfully"
                         )
@@ -103,6 +105,9 @@ app = FastAPI(lifespan=lifespan)
 # Configure Prometheus for multi-worker environments
 def configure_prometheus():
     """Configure Prometheus for multi-worker environments"""
+    # Import required modules
+    import fcntl
+
     # Check if we're in a multi-process environment
     multiproc_dir = os.environ.get("PROMETHEUS_MULTIPROC_DIR")
 
@@ -111,19 +116,53 @@ def configure_prometheus():
         registry = CollectorRegistry()
         multiprocess.MultiProcessCollector(registry)
 
-        # Configure instrumentator with custom registry
-        instrumentator = Instrumentator(
-            registry=registry,
-            should_respect_env_var=True,
-            should_instrument_requests_inprogress=True,
-            excluded_handlers=["/metrics"],
-            env_var_name="ENABLE_METRICS",
-        )
+        # Try to acquire a lock to ensure only one worker sets up instrumentation
+        worker_pid = os.getpid()
+        lock_file = "/tmp/wargos_instrumentation.lock"
 
-        # Instrument the app
-        instrumentator.instrument(app)
+        try:
+            with open(lock_file, "w") as f:
+                try:
+                    # Try to acquire an exclusive lock (non-blocking)
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
 
-        # Add custom metrics endpoint for multiprocess support
+                    # We got the lock! This worker will set up instrumentation
+                    log.info(
+                        f"🔧 Worker {worker_pid}: Setting up HTTP instrumentation"
+                    )
+
+                    # Configure instrumentator with custom registry
+                    instrumentator = Instrumentator(
+                        registry=registry,
+                        should_respect_env_var=True,
+                        should_instrument_requests_inprogress=True,
+                        excluded_handlers=["/metrics"],
+                        env_var_name="ENABLE_METRICS",
+                    )
+
+                    # Instrument the app
+                    instrumentator.instrument(app)
+
+                    log.info(
+                        f"✅ Worker {worker_pid}: HTTP instrumentation setup complete"
+                    )
+
+                    # Release the lock
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+                except (IOError, OSError):
+                    # Another worker already has the lock
+                    log.debug(
+                        f"🔧 Worker {worker_pid}: Instrumentation lock already held by another worker - skipping"
+                    )
+                    pass
+
+        except Exception as e:
+            log.error(
+                f"❌ Worker {worker_pid}: Error with instrumentation locking: {e}"
+            )
+
+        # Add custom metrics endpoint for multiprocess support (all workers need this)
         @app.get("/metrics")
         async def metrics():
             """Custom metrics endpoint that aggregates across all workers"""
@@ -268,7 +307,6 @@ async def download_latest_backup(
 ):
     """Download the latest backup file for a specific WLED instance"""
     import json
-    import os
     from pathlib import Path
 
     from fastapi.responses import FileResponse
@@ -382,7 +420,6 @@ async def download_latest_presets(
 ):
     """Download the latest presets file for a specific WLED instance"""
     import json
-    import os
     from pathlib import Path
 
     from fastapi.responses import FileResponse

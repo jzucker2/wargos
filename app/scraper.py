@@ -979,13 +979,15 @@ class Scraper(object):
                         # name=dev_info.name,
                     ).set(1)
 
-    def scrape_self(self):
+    def scrape_self(self, set_instance_info=True):
         with Metrics.WLED_SCRAPER_SCRAPE_SELF_EXCEPTIONS.count_exceptions():
             with Metrics.WLED_SCRAPER_SCRAPE_SELF_TIME.time():
                 current_version = version
-                Metrics.WARGOS_INSTANCE_INFO.labels(
-                    version=current_version,
-                ).set(1)
+                # Only set instance info if this worker is responsible for it
+                if set_instance_info:
+                    Metrics.WARGOS_INSTANCE_INFO.labels(
+                        version=current_version,
+                    ).set(1)
 
     async def scrape_all_instances(self):
         with Metrics.WLED_SCRAPER_SCRAPE_ALL_EXCEPTIONS.count_exceptions():
@@ -1019,12 +1021,12 @@ class Scraper(object):
                     beta=str(latest.beta),
                 ).set(1)
 
-    async def perform_full_scrape(self):
+    async def perform_full_scrape(self, set_instance_info=True):
         # first scrape self info for this app
         log.debug("perform_full_scrape")
         with Metrics.SCRAPER_FULL_SCRAPE_EXCEPTIONS.count_exceptions():
             with Metrics.SCRAPER_FULL_SCRAPE_TIME.time():
-                self.scrape_self()
+                self.scrape_self(set_instance_info=set_instance_info)
                 log.debug("done with scrape self, next all wled instances")
                 # then scrape all wled instances
                 await self.scrape_all_instances()
