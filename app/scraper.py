@@ -131,18 +131,23 @@ class Scraper(object):
                             datetime.now() - start_time
                         ).total_seconds()
                         Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-                            operation_type="single_backup",
+                            operation_type="single_config_backup",
                             device_ip=device_ip,
                             status="success",
+                            backup_type="config",
                         ).inc()
                         Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
-                            operation_type="single_backup", device_ip=device_ip
+                            operation_type="single_config_backup",
+                            device_ip=device_ip,
+                            backup_type="config",
                         ).observe(duration)
                         Metrics.CONFIG_BACKUP_FILES_CREATED.labels(
-                            device_ip=device_ip
+                            device_ip=device_ip,
+                            backup_type="config",
                         ).inc()
                         Metrics.CONFIG_BACKUP_FILE_SIZE_BYTES.labels(
-                            device_ip=device_ip
+                            device_ip=device_ip,
+                            backup_type="config",
                         ).set(file_size)
 
                         log.info(
@@ -159,11 +164,13 @@ class Scraper(object):
                         Metrics.CONFIG_BACKUP_HTTP_ERRORS.labels(
                             device_ip=device_ip,
                             http_status_code=str(response.status),
+                            backup_type="config",
                         ).inc()
                         Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-                            operation_type="single_backup",
+                            operation_type="single_config_backup",
                             device_ip=device_ip,
                             status="error",
+                            backup_type="config",
                         ).inc()
 
                         error_msg = f"Failed to fetch config from {device_ip}: HTTP {response.status}"
@@ -179,20 +186,24 @@ class Scraper(object):
             # Track exceptions
             exception_type = type(e).__name__
             Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
-                operation_type="single_backup",
+                operation_type="single_config_backup",
                 device_ip=device_ip,
                 exception_type=exception_type,
+                backup_type="config",
             ).inc()
             Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-                operation_type="single_backup",
+                operation_type="single_config_backup",
                 device_ip=device_ip,
                 status="error",
+                backup_type="config",
             ).inc()
 
             # Track connection errors specifically
             if "connection" in str(e).lower() or "timeout" in str(e).lower():
                 Metrics.CONFIG_BACKUP_CONNECTION_ERRORS.labels(
-                    device_ip=device_ip, error_type=exception_type
+                    device_ip=device_ip,
+                    error_type=exception_type,
+                    backup_type="config",
                 ).inc()
 
             error_msg = f"Error backing up config from {device_ip}: {str(e)}"
@@ -240,10 +251,12 @@ class Scraper(object):
                                 operation_type="single_preset_backup",
                                 device_ip=device_ip,
                                 status="empty_presets",
+                                backup_type="preset",
                             ).inc()
                             Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
                                 operation_type="single_preset_backup",
                                 device_ip=device_ip,
+                                backup_type="preset",
                             ).observe(duration)
 
                             log.info(
@@ -279,16 +292,20 @@ class Scraper(object):
                             operation_type="single_preset_backup",
                             device_ip=device_ip,
                             status="success",
+                            backup_type="preset",
                         ).inc()
                         Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
                             operation_type="single_preset_backup",
                             device_ip=device_ip,
+                            backup_type="preset",
                         ).observe(duration)
                         Metrics.CONFIG_BACKUP_FILES_CREATED.labels(
-                            device_ip=device_ip
+                            device_ip=device_ip,
+                            backup_type="preset",
                         ).inc()
                         Metrics.CONFIG_BACKUP_FILE_SIZE_BYTES.labels(
-                            device_ip=device_ip
+                            device_ip=device_ip,
+                            backup_type="preset",
                         ).set(file_size)
 
                         log.info(
@@ -305,11 +322,13 @@ class Scraper(object):
                         Metrics.CONFIG_BACKUP_HTTP_ERRORS.labels(
                             device_ip=device_ip,
                             http_status_code=str(response.status),
+                            backup_type="preset",
                         ).inc()
                         Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
                             operation_type="single_preset_backup",
                             device_ip=device_ip,
                             status="error",
+                            backup_type="preset",
                         ).inc()
 
                         error_msg = f"Failed to fetch presets from {device_ip}: HTTP {response.status}"
@@ -328,17 +347,21 @@ class Scraper(object):
                 operation_type="single_preset_backup",
                 device_ip=device_ip,
                 exception_type=exception_type,
+                backup_type="preset",
             ).inc()
             Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="single_preset_backup",
                 device_ip=device_ip,
                 status="error",
+                backup_type="preset",
             ).inc()
 
             # Track connection errors specifically
             if "connection" in str(e).lower() or "timeout" in str(e).lower():
                 Metrics.CONFIG_BACKUP_CONNECTION_ERRORS.labels(
-                    device_ip=device_ip, error_type=exception_type
+                    device_ip=device_ip,
+                    error_type=exception_type,
+                    backup_type="preset",
                 ).inc()
 
             error_msg = f"Error backing up presets from {device_ip}: {str(e)}"
@@ -396,10 +419,13 @@ class Scraper(object):
         # Update bulk operation metrics
         duration = (datetime.now() - start_time).total_seconds()
         Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-            operation_type="bulk_backup", device_ip="all", status="completed"
+            operation_type="bulk_backup",
+            device_ip="all",
+            status="completed",
+            backup_type="config",
         ).inc()
         Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
-            operation_type="bulk_backup", device_ip="all"
+            operation_type="bulk_backup", device_ip="all", backup_type="config"
         ).observe(duration)
 
         # Track individual results
@@ -409,12 +435,14 @@ class Scraper(object):
                     operation_type="bulk_backup_success",
                     device_ip=result["device_ip"],
                     status="success",
+                    backup_type="config",
                 ).inc()
             else:
                 Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
                     operation_type="bulk_backup_failed",
                     device_ip=result["device_ip"],
                     status="error",
+                    backup_type="config",
                 ).inc()
 
         return results
@@ -467,9 +495,12 @@ class Scraper(object):
             operation_type="bulk_preset_backup",
             device_ip="all",
             status="completed",
+            backup_type="preset",
         ).inc()
         Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
-            operation_type="bulk_preset_backup", device_ip="all"
+            operation_type="bulk_preset_backup",
+            device_ip="all",
+            backup_type="preset",
         ).observe(duration)
 
         # Track individual results
@@ -479,12 +510,14 @@ class Scraper(object):
                     operation_type="bulk_preset_backup_success",
                     device_ip=result["device_ip"],
                     status="success",
+                    backup_type="preset",
                 ).inc()
             else:
                 Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
                     operation_type="bulk_preset_backup_failed",
                     device_ip=result["device_ip"],
                     status="error",
+                    backup_type="preset",
                 ).inc()
 
         return results
@@ -513,9 +546,12 @@ class Scraper(object):
             operation_type="bulk_all_backup",
             device_ip="all",
             status="completed",
+            backup_type="combined",
         ).inc()
         Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
-            operation_type="bulk_all_backup", device_ip="all"
+            operation_type="bulk_all_backup",
+            device_ip="all",
+            backup_type="combined",
         ).observe(duration)
 
         return {

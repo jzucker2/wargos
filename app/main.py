@@ -282,13 +282,14 @@ async def download_latest_backup(
         if not ip_backup_dir.exists():
             # Update metrics for not found
             Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-                operation_type="download_latest",
+                operation_type="download_latest_config",
                 device_ip=device_ip,
                 status="not_found",
+                backup_type="config",
             ).inc()
 
             return {
-                "error": f"No backup directory found for device {device_ip}",
+                "error": f"No config backup directory found for device {device_ip}",
                 "device_ip": device_ip,
                 "status": "not_found",
             }
@@ -298,13 +299,14 @@ async def download_latest_backup(
         if not backup_files:
             # Update metrics for no files found
             Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-                operation_type="download_latest",
+                operation_type="download_latest_config",
                 device_ip=device_ip,
                 status="not_found",
+                backup_type="config",
             ).inc()
 
             return {
-                "error": f"No backup files found for device {device_ip}",
+                "error": f"No config backup files found for device {device_ip}",
                 "device_ip": device_ip,
                 "status": "not_found",
             }
@@ -331,9 +333,10 @@ async def download_latest_backup(
 
         # Update metrics for successful download
         Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-            operation_type="download_latest",
+            operation_type="download_latest_config",
             device_ip=device_ip,
             status="success",
+            backup_type="config",
         ).inc()
 
         async def cleanup_temp_file():
@@ -345,7 +348,7 @@ async def download_latest_backup(
 
         return FileResponse(
             path=temp_file_path,
-            filename=f"{device_ip}_latest_backup.json",
+            filename=f"{device_ip}_latest_config.json",
             media_type="application/json",
             background=cleanup_temp_file,
         )
@@ -354,18 +357,20 @@ async def download_latest_backup(
         # Update metrics for exceptions
         exception_type = type(e).__name__
         Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-            operation_type="download_latest",
+            operation_type="download_latest_config",
             device_ip=device_ip,
             status="error",
+            backup_type="config",
         ).inc()
         Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
-            operation_type="download_latest",
+            operation_type="download_latest_config",
             device_ip=device_ip,
             exception_type=exception_type,
+            backup_type="config",
         ).inc()
 
         return {
-            "error": f"Error downloading backup for device {device_ip}: {str(e)}",
+            "error": f"Error downloading config for device {device_ip}: {str(e)}",
             "device_ip": device_ip,
             "status": "error",
         }
@@ -394,6 +399,7 @@ async def download_latest_presets(
                 operation_type="download_latest_presets",
                 device_ip=device_ip,
                 status="not_found",
+                backup_type="preset",
             ).inc()
 
             return {
@@ -410,6 +416,7 @@ async def download_latest_presets(
                 operation_type="download_latest_presets",
                 device_ip=device_ip,
                 status="not_found",
+                backup_type="preset",
             ).inc()
 
             return {
@@ -432,6 +439,7 @@ async def download_latest_presets(
                 operation_type="download_latest_presets",
                 device_ip=device_ip,
                 status="empty_presets",
+                backup_type="preset",
             ).inc()
 
             return {
@@ -459,6 +467,7 @@ async def download_latest_presets(
             operation_type="download_latest_presets",
             device_ip=device_ip,
             status="success",
+            backup_type="preset",
         ).inc()
 
         async def cleanup_temp_file():
@@ -482,11 +491,13 @@ async def download_latest_presets(
             operation_type="download_latest_presets",
             device_ip=device_ip,
             status="error",
+            backup_type="preset",
         ).inc()
         Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
             operation_type="download_latest_presets",
             device_ip=device_ip,
             exception_type=exception_type,
+            backup_type="preset",
         ).inc()
 
         return {

@@ -597,43 +597,43 @@ class Metrics(object):
 
     # Config Backup Metrics
     CONFIG_BACKUP_OPERATIONS_TOTAL = Counter(
-        "wargos_config_backup_operations_total",
-        "Total number of config backup operations",
-        ["operation_type", "device_ip", "status"],
+        "wargos_backup_operations_total",
+        "Total number of backup operations",
+        ["operation_type", "device_ip", "status", "backup_type"],
     )
 
     CONFIG_BACKUP_OPERATION_DURATION = Summary(
-        "wargos_config_backup_operation_duration_seconds",
-        "Duration of config backup operations",
-        ["operation_type", "device_ip"],
+        "wargos_backup_operation_duration_seconds",
+        "Duration of backup operations",
+        ["operation_type", "device_ip", "backup_type"],
     )
 
     CONFIG_BACKUP_OPERATION_EXCEPTIONS = Counter(
-        "wargos_config_backup_operation_exceptions_total",
-        "Total number of exceptions during config backup operations",
-        ["operation_type", "device_ip", "exception_type"],
+        "wargos_backup_operation_exceptions_total",
+        "Total number of exceptions during backup operations",
+        ["operation_type", "device_ip", "exception_type", "backup_type"],
     )
 
     CONFIG_BACKUP_FILES_CREATED = Counter(
-        "wargos_config_backup_files_created_total",
-        "Total number of config backup files created",
-        ["device_ip"],
+        "wargos_backup_files_created_total",
+        "Total number of backup files created",
+        ["device_ip", "backup_type"],
     )
 
     CONFIG_BACKUP_FILE_SIZE_BYTES = Gauge(
-        "wargos_config_backup_file_size_bytes",
-        "Size of the most recent config backup file in bytes",
-        ["device_ip"],
+        "wargos_backup_file_size_bytes",
+        "Size of the most recent backup file in bytes",
+        ["device_ip", "backup_type"],
     )
 
     CONFIG_BACKUP_HTTP_ERRORS = Counter(
-        "wargos_config_backup_http_errors_total",
-        "Total number of HTTP errors during config backup operations",
-        ["device_ip", "http_status_code"],
+        "wargos_backup_http_errors_total",
+        "Total number of HTTP errors during backup operations",
+        ["device_ip", "http_status_code", "backup_type"],
     )
 
     CONFIG_BACKUP_CONNECTION_ERRORS = Counter(
-        "wargos_config_backup_connection_errors_total",
-        "Total number of connection errors during config backup operations",
-        ["device_ip", "error_type"],
+        "wargos_backup_connection_errors_total",
+        "Total number of connection errors during backup operations",
+        ["device_ip", "error_type", "backup_type"],
     )
