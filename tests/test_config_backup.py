@@ -55,7 +55,7 @@ class TestConfigBackup:
         ) as mock_backup:
             mock_backup.return_value = {
                 "device_ip": test_ip,
-                "filepath": f"{self.temp_dir}/test.json",
+                "filepath": f"{self.temp_dir}/{test_ip}/{test_ip}_20250728_114801.json",
                 "timestamp": "20250728_114801",
                 "status": "success",
             }
@@ -67,6 +67,7 @@ class TestConfigBackup:
         assert result["device_ip"] == test_ip
         assert result["status"] == "success"
         assert result["filepath"] is not None
+        assert f"{test_ip}_20250728_114801.json" in result["filepath"]
 
     @pytest.mark.asyncio
     async def test_backup_config_from_instance_http_error(self):
@@ -134,13 +135,13 @@ class TestConfigBackup:
                 mock_backup.side_effect = [
                     {
                         "device_ip": "192.168.1.100",
-                        "filepath": f"{self.temp_dir}/test1.json",
+                        "filepath": f"{self.temp_dir}/192.168.1.100/192.168.1.100_20250728_114801.json",
                         "timestamp": "20250728_114801",
                         "status": "success",
                     },
                     {
                         "device_ip": "192.168.1.101",
-                        "filepath": f"{self.temp_dir}/test2.json",
+                        "filepath": f"{self.temp_dir}/192.168.1.101/192.168.1.101_20250728_114801.json",
                         "timestamp": "20250728_114801",
                         "status": "success",
                     },

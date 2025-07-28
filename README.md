@@ -23,6 +23,7 @@ Want a [grafana](https://grafana.com/oss/grafana/) dashboard like this?
 
 - **Automatic Backups**: Collect configuration backups from WLED instances
 - **Configurable Storage**: Store backups in customizable directories
+- **Organized Structure**: Files are stored in IP-specific subdirectories (`/backups/{ip}/`)
 - **Metadata Tracking**: Each backup includes timestamp and device information
 - **Bulk Operations**: Backup all devices or individual instances
 - **Error Handling**: Robust error handling for network and file system issues

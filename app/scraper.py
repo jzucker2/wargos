@@ -92,13 +92,14 @@ class Scraper(object):
         if backup_dir is None:
             backup_dir = self.get_config_backup_dir()
 
-        # Create backup directory if it doesn't exist
-        Path(backup_dir).mkdir(parents=True, exist_ok=True)
+        # Create backup directory and IP subdirectory if they don't exist
+        ip_backup_dir = Path(backup_dir) / device_ip
+        ip_backup_dir.mkdir(parents=True, exist_ok=True)
 
         config_url = f"http://{device_ip}/cfg.json"
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"{device_ip}_{timestamp}.json"
-        filepath = Path(backup_dir) / filename
+        filepath = ip_backup_dir / filename
 
         log.info(f"Backing up config from {device_ip} to {filepath}")
 

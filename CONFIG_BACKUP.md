@@ -4,7 +4,7 @@ This document describes the new config backup functionality added to Wargos.
 
 ## Overview
 
-The config backup feature allows you to collect configuration backups from WLED instances and store them in a configurable directory. Each backup includes the full configuration from the WLED device's `/cfg.json` endpoint.
+The config backup feature allows you to collect configuration backups from WLED instances and store them in a configurable directory. Each backup includes the full configuration from the WLED device's `/cfg.json` endpoint. Files are automatically organized in IP-specific subdirectories for easy management.
 
 ## Configuration
 
@@ -31,7 +31,7 @@ Backs up configs from all WLED instances defined in the `WLED_IP_LIST` environme
   "results": [
     {
       "device_ip": "192.168.1.100",
-      "filepath": "/backups/192.168.1.100_20250728_114801.json",
+      "filepath": "/backups/192.168.1.100/192.168.1.100_20250728_114801.json",
       "timestamp": "20250728_114801",
       "status": "success"
     }
@@ -55,7 +55,7 @@ Backs up config from a specific WLED instance.
   "message": "Config backup completed",
   "result": {
     "device_ip": "192.168.1.100",
-    "filepath": "/backups/192.168.1.100_20250728_114801.json",
+    "filepath": "/backups/192.168.1.100/192.168.1.100_20250728_114801.json",
     "timestamp": "20250728_114801",
     "status": "success"
   },
@@ -106,18 +106,33 @@ Each backup file contains:
 
 ## File Naming Convention
 
-Backup files are named using the pattern:
+Backup files are stored in IP-specific subdirectories using the pattern:
 
 ```
-{device_ip}_{timestamp}.json
+{backup_dir}/{device_ip}/{device_ip}_{timestamp}.json
 ```
 
 Where:
 
+- `backup_dir`: The configured backup directory (default: `/backups/`)
 - `device_ip`: The IP address of the WLED device
 - `timestamp`: Format `YYYYMMDD_HHMMSS`
 
-Example: `192.168.1.100_20250728_114801.json`
+**Example directory structure:**
+
+```
+/backups/
+├── 192.168.1.100/
+│   ├── 192.168.1.100_20250728_114801.json
+│   └── 192.168.1.100_20250728_120000.json
+├── 192.168.1.101/
+│   ├── 192.168.1.101_20250728_114801.json
+│   └── 192.168.1.101_20250728_120000.json
+└── 192.168.1.102/
+    └── 192.168.1.102_20250728_114801.json
+```
+
+**Example file path:** `/backups/192.168.1.100/192.168.1.100_20250728_114801.json`
 
 ## Error Handling
 
