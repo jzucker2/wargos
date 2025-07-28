@@ -281,7 +281,7 @@ async def download_latest_backup(
     try:
         if not ip_backup_dir.exists():
             # Update metrics for not found
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="download_latest_config",
                 device_ip=device_ip,
                 status="not_found",
@@ -298,7 +298,7 @@ async def download_latest_backup(
         backup_files = list(ip_backup_dir.glob(f"{device_ip}_*_configs.json"))
         if not backup_files:
             # Update metrics for no files found
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="download_latest_config",
                 device_ip=device_ip,
                 status="not_found",
@@ -332,7 +332,7 @@ async def download_latest_backup(
             temp_file_path = temp_file.name
 
         # Update metrics for successful download
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
             operation_type="download_latest_config",
             device_ip=device_ip,
             status="success",
@@ -356,13 +356,13 @@ async def download_latest_backup(
     except Exception as e:
         # Update metrics for exceptions
         exception_type = type(e).__name__
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
             operation_type="download_latest_config",
             device_ip=device_ip,
             status="error",
             backup_type="config",
         ).inc()
-        Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
+        Metrics.BACKUP_OPERATION_EXCEPTIONS.labels(
             operation_type="download_latest_config",
             device_ip=device_ip,
             exception_type=exception_type,
@@ -395,7 +395,7 @@ async def download_latest_presets(
     try:
         if not ip_backup_dir.exists():
             # Update metrics for not found
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="download_latest_presets",
                 device_ip=device_ip,
                 status="not_found",
@@ -412,7 +412,7 @@ async def download_latest_presets(
         backup_files = list(ip_backup_dir.glob(f"{device_ip}_*_presets.json"))
         if not backup_files:
             # Update metrics for no files found
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="download_latest_presets",
                 device_ip=device_ip,
                 status="not_found",
@@ -435,7 +435,7 @@ async def download_latest_presets(
         # Check if this is an empty presets file (special case)
         if presets_data == {"0": {}}:
             # Update metrics for empty presets download
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="download_latest_presets",
                 device_ip=device_ip,
                 status="empty_presets",
@@ -463,7 +463,7 @@ async def download_latest_presets(
             temp_file_path = temp_file.name
 
         # Update metrics for successful download
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
             operation_type="download_latest_presets",
             device_ip=device_ip,
             status="success",
@@ -487,13 +487,13 @@ async def download_latest_presets(
     except Exception as e:
         # Update metrics for exceptions
         exception_type = type(e).__name__
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
             operation_type="download_latest_presets",
             device_ip=device_ip,
             status="error",
             backup_type="preset",
         ).inc()
-        Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
+        Metrics.BACKUP_OPERATION_EXCEPTIONS.labels(
             operation_type="download_latest_presets",
             device_ip=device_ip,
             exception_type=exception_type,

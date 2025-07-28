@@ -130,22 +130,22 @@ class Scraper(object):
                         duration = (
                             datetime.now() - start_time
                         ).total_seconds()
-                        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                             operation_type="single_config_backup",
                             device_ip=device_ip,
                             status="success",
                             backup_type="config",
                         ).inc()
-                        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+                        Metrics.BACKUP_OPERATION_DURATION.labels(
                             operation_type="single_config_backup",
                             device_ip=device_ip,
                             backup_type="config",
                         ).observe(duration)
-                        Metrics.CONFIG_BACKUP_FILES_CREATED.labels(
+                        Metrics.BACKUP_FILES_CREATED.labels(
                             device_ip=device_ip,
                             backup_type="config",
                         ).inc()
-                        Metrics.CONFIG_BACKUP_FILE_SIZE_BYTES.labels(
+                        Metrics.BACKUP_FILE_SIZE_BYTES.labels(
                             device_ip=device_ip,
                             backup_type="config",
                         ).set(file_size)
@@ -161,12 +161,12 @@ class Scraper(object):
                         }
                     else:
                         # Track HTTP errors
-                        Metrics.CONFIG_BACKUP_HTTP_ERRORS.labels(
+                        Metrics.BACKUP_HTTP_ERRORS.labels(
                             device_ip=device_ip,
                             http_status_code=str(response.status),
                             backup_type="config",
                         ).inc()
-                        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                             operation_type="single_config_backup",
                             device_ip=device_ip,
                             status="error",
@@ -185,13 +185,13 @@ class Scraper(object):
         except Exception as e:
             # Track exceptions
             exception_type = type(e).__name__
-            Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
+            Metrics.BACKUP_OPERATION_EXCEPTIONS.labels(
                 operation_type="single_config_backup",
                 device_ip=device_ip,
                 exception_type=exception_type,
                 backup_type="config",
             ).inc()
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="single_config_backup",
                 device_ip=device_ip,
                 status="error",
@@ -200,7 +200,7 @@ class Scraper(object):
 
             # Track connection errors specifically
             if "connection" in str(e).lower() or "timeout" in str(e).lower():
-                Metrics.CONFIG_BACKUP_CONNECTION_ERRORS.labels(
+                Metrics.BACKUP_CONNECTION_ERRORS.labels(
                     device_ip=device_ip,
                     error_type=exception_type,
                     backup_type="config",
@@ -247,13 +247,13 @@ class Scraper(object):
                             duration = (
                                 datetime.now() - start_time
                             ).total_seconds()
-                            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                                 operation_type="single_preset_backup",
                                 device_ip=device_ip,
                                 status="empty_presets",
                                 backup_type="preset",
                             ).inc()
-                            Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+                            Metrics.BACKUP_OPERATION_DURATION.labels(
                                 operation_type="single_preset_backup",
                                 device_ip=device_ip,
                                 backup_type="preset",
@@ -288,22 +288,22 @@ class Scraper(object):
                         duration = (
                             datetime.now() - start_time
                         ).total_seconds()
-                        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                             operation_type="single_preset_backup",
                             device_ip=device_ip,
                             status="success",
                             backup_type="preset",
                         ).inc()
-                        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+                        Metrics.BACKUP_OPERATION_DURATION.labels(
                             operation_type="single_preset_backup",
                             device_ip=device_ip,
                             backup_type="preset",
                         ).observe(duration)
-                        Metrics.CONFIG_BACKUP_FILES_CREATED.labels(
+                        Metrics.BACKUP_FILES_CREATED.labels(
                             device_ip=device_ip,
                             backup_type="preset",
                         ).inc()
-                        Metrics.CONFIG_BACKUP_FILE_SIZE_BYTES.labels(
+                        Metrics.BACKUP_FILE_SIZE_BYTES.labels(
                             device_ip=device_ip,
                             backup_type="preset",
                         ).set(file_size)
@@ -319,12 +319,12 @@ class Scraper(object):
                         }
                     else:
                         # Track HTTP errors
-                        Metrics.CONFIG_BACKUP_HTTP_ERRORS.labels(
+                        Metrics.BACKUP_HTTP_ERRORS.labels(
                             device_ip=device_ip,
                             http_status_code=str(response.status),
                             backup_type="preset",
                         ).inc()
-                        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                             operation_type="single_preset_backup",
                             device_ip=device_ip,
                             status="error",
@@ -343,13 +343,13 @@ class Scraper(object):
         except Exception as e:
             # Track exceptions
             exception_type = type(e).__name__
-            Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
+            Metrics.BACKUP_OPERATION_EXCEPTIONS.labels(
                 operation_type="single_preset_backup",
                 device_ip=device_ip,
                 exception_type=exception_type,
                 backup_type="preset",
             ).inc()
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="single_preset_backup",
                 device_ip=device_ip,
                 status="error",
@@ -358,7 +358,7 @@ class Scraper(object):
 
             # Track connection errors specifically
             if "connection" in str(e).lower() or "timeout" in str(e).lower():
-                Metrics.CONFIG_BACKUP_CONNECTION_ERRORS.labels(
+                Metrics.BACKUP_CONNECTION_ERRORS.labels(
                     device_ip=device_ip,
                     error_type=exception_type,
                     backup_type="preset",
@@ -418,27 +418,27 @@ class Scraper(object):
 
         # Update bulk operation metrics
         duration = (datetime.now() - start_time).total_seconds()
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
             operation_type="bulk_backup",
             device_ip="all",
             status="completed",
             backup_type="config",
         ).inc()
-        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+        Metrics.BACKUP_OPERATION_DURATION.labels(
             operation_type="bulk_backup", device_ip="all", backup_type="config"
         ).observe(duration)
 
         # Track individual results
         for result in results:
             if result["status"] == "success":
-                Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                     operation_type="bulk_backup_success",
                     device_ip=result["device_ip"],
                     status="success",
                     backup_type="config",
                 ).inc()
             else:
-                Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                     operation_type="bulk_backup_failed",
                     device_ip=result["device_ip"],
                     status="error",
@@ -491,13 +491,13 @@ class Scraper(object):
 
         # Update bulk operation metrics
         duration = (datetime.now() - start_time).total_seconds()
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
             operation_type="bulk_preset_backup",
             device_ip="all",
             status="completed",
             backup_type="preset",
         ).inc()
-        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+        Metrics.BACKUP_OPERATION_DURATION.labels(
             operation_type="bulk_preset_backup",
             device_ip="all",
             backup_type="preset",
@@ -506,14 +506,14 @@ class Scraper(object):
         # Track individual results
         for result in results:
             if result["status"] == "success":
-                Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                     operation_type="bulk_preset_backup_success",
                     device_ip=result["device_ip"],
                     status="success",
                     backup_type="preset",
                 ).inc()
             else:
-                Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                     operation_type="bulk_preset_backup_failed",
                     device_ip=result["device_ip"],
                     status="error",
@@ -542,13 +542,13 @@ class Scraper(object):
 
         # Update bulk operation metrics
         duration = (datetime.now() - start_time).total_seconds()
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
             operation_type="bulk_all_backup",
             device_ip="all",
             status="completed",
             backup_type="combined",
         ).inc()
-        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+        Metrics.BACKUP_OPERATION_DURATION.labels(
             operation_type="bulk_all_backup",
             device_ip="all",
             backup_type="combined",

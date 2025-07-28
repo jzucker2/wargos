@@ -150,38 +150,38 @@ class TestConfigBackupMetrics:
         from app.metrics import Metrics
 
         # Check that all metrics exist
-        assert hasattr(Metrics, "CONFIG_BACKUP_OPERATIONS_TOTAL")
-        assert hasattr(Metrics, "CONFIG_BACKUP_OPERATION_DURATION")
-        assert hasattr(Metrics, "CONFIG_BACKUP_OPERATION_EXCEPTIONS")
-        assert hasattr(Metrics, "CONFIG_BACKUP_FILES_CREATED")
-        assert hasattr(Metrics, "CONFIG_BACKUP_FILE_SIZE_BYTES")
-        assert hasattr(Metrics, "CONFIG_BACKUP_HTTP_ERRORS")
-        assert hasattr(Metrics, "CONFIG_BACKUP_CONNECTION_ERRORS")
+        assert hasattr(Metrics, "BACKUP_OPERATIONS_TOTAL")
+        assert hasattr(Metrics, "BACKUP_OPERATION_DURATION")
+        assert hasattr(Metrics, "BACKUP_OPERATION_EXCEPTIONS")
+        assert hasattr(Metrics, "BACKUP_FILES_CREATED")
+        assert hasattr(Metrics, "BACKUP_FILE_SIZE_BYTES")
+        assert hasattr(Metrics, "BACKUP_HTTP_ERRORS")
+        assert hasattr(Metrics, "BACKUP_CONNECTION_ERRORS")
 
     def test_metrics_labels(self):
         """Test that metrics have the correct labels"""
         from app.metrics import Metrics
 
         # Check operation metrics
-        metric = Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL
+        metric = Metrics.BACKUP_OPERATIONS_TOTAL
         assert "operation_type" in metric._labelnames
         assert "device_ip" in metric._labelnames
         assert "status" in metric._labelnames
         assert "backup_type" in metric._labelnames
 
         # Check duration metrics
-        metric = Metrics.CONFIG_BACKUP_OPERATION_DURATION
+        metric = Metrics.BACKUP_OPERATION_DURATION
         assert "operation_type" in metric._labelnames
         assert "device_ip" in metric._labelnames
         assert "backup_type" in metric._labelnames
 
         # Check file size metrics
-        metric = Metrics.CONFIG_BACKUP_FILE_SIZE_BYTES
+        metric = Metrics.BACKUP_FILE_SIZE_BYTES
         assert "device_ip" in metric._labelnames
         assert "backup_type" in metric._labelnames
 
         # Check HTTP error metrics
-        metric = Metrics.CONFIG_BACKUP_HTTP_ERRORS
+        metric = Metrics.BACKUP_HTTP_ERRORS
         assert "device_ip" in metric._labelnames
         assert "http_status_code" in metric._labelnames
         assert "backup_type" in metric._labelnames
