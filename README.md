@@ -27,6 +27,7 @@ Want a [grafana](https://grafana.com/oss/grafana/) dashboard like this?
 - **Metadata Tracking**: Each backup includes timestamp and device information
 - **Bulk Operations**: Backup all devices or individual instances
 - **Error Handling**: Robust error handling for network and file system issues
+- **Prometheus Metrics**: Comprehensive metrics for monitoring backup operations
 
 For detailed information about the config backup feature, see [CONFIG_BACKUP.md](./CONFIG_BACKUP.md).
 

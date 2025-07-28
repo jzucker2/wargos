@@ -103,6 +103,9 @@ class Scraper(object):
 
         log.info(f"Backing up config from {device_ip} to {filepath}")
 
+        # Track operation start time for metrics
+        start_time = datetime.now()
+
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(config_url, timeout=10) as response:
@@ -120,6 +123,28 @@ class Scraper(object):
                         with open(filepath, "w") as f:
                             json.dump(config_data, f, indent=2)
 
+                        # Get file size for metrics
+                        file_size = filepath.stat().st_size
+
+                        # Update metrics
+                        duration = (
+                            datetime.now() - start_time
+                        ).total_seconds()
+                        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                            operation_type="single_backup",
+                            device_ip=device_ip,
+                            status="success",
+                        ).inc()
+                        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+                            operation_type="single_backup", device_ip=device_ip
+                        ).observe(duration)
+                        Metrics.CONFIG_BACKUP_FILES_CREATED.labels(
+                            device_ip=device_ip
+                        ).inc()
+                        Metrics.CONFIG_BACKUP_FILE_SIZE_BYTES.labels(
+                            device_ip=device_ip
+                        ).set(file_size)
+
                         log.info(
                             f"Successfully backed up config from {device_ip} to {filepath}"
                         )
@@ -130,6 +155,17 @@ class Scraper(object):
                             "status": "success",
                         }
                     else:
+                        # Track HTTP errors
+                        Metrics.CONFIG_BACKUP_HTTP_ERRORS.labels(
+                            device_ip=device_ip,
+                            http_status_code=str(response.status),
+                        ).inc()
+                        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                            operation_type="single_backup",
+                            device_ip=device_ip,
+                            status="error",
+                        ).inc()
+
                         error_msg = f"Failed to fetch config from {device_ip}: HTTP {response.status}"
                         log.error(error_msg)
                         return {
@@ -140,6 +176,25 @@ class Scraper(object):
                             "error": error_msg,
                         }
         except Exception as e:
+            # Track exceptions
+            exception_type = type(e).__name__
+            Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
+                operation_type="single_backup",
+                device_ip=device_ip,
+                exception_type=exception_type,
+            ).inc()
+            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                operation_type="single_backup",
+                device_ip=device_ip,
+                status="error",
+            ).inc()
+
+            # Track connection errors specifically
+            if "connection" in str(e).lower() or "timeout" in str(e).lower():
+                Metrics.CONFIG_BACKUP_CONNECTION_ERRORS.labels(
+                    device_ip=device_ip, error_type=exception_type
+                ).inc()
+
             error_msg = f"Error backing up config from {device_ip}: {str(e)}"
             log.error(error_msg)
             return {
@@ -158,6 +213,11 @@ class Scraper(object):
             log.error(e_m)
             raise MissingIPListScraperException(e_m)
 
+        # Track bulk operation start time
+        start_time = datetime.now()
+        successful_backups = 0
+        failed_backups = 0
+
         results = []
         for device_ip in wled_ip_list:
             log.debug(f"backing up config for device_ip: {device_ip}")
@@ -166,7 +226,15 @@ class Scraper(object):
                     device_ip, backup_dir
                 )
                 results.append(result)
+
+                # Track success/failure for bulk operation
+                if result["status"] == "success":
+                    successful_backups += 1
+                else:
+                    failed_backups += 1
+
             except Exception as unexp:
+                failed_backups += 1
                 u_m = f"Config backup failed for device_ip: {device_ip} got unexp: {unexp}"
                 log.error(u_m)
                 results.append(
@@ -178,6 +246,30 @@ class Scraper(object):
                         "error": str(unexp),
                     }
                 )
+
+        # Update bulk operation metrics
+        duration = (datetime.now() - start_time).total_seconds()
+        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            operation_type="bulk_backup", device_ip="all", status="completed"
+        ).inc()
+        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+            operation_type="bulk_backup", device_ip="all"
+        ).observe(duration)
+
+        # Track individual results
+        for result in results:
+            if result["status"] == "success":
+                Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                    operation_type="bulk_backup_success",
+                    device_ip=result["device_ip"],
+                    status="success",
+                ).inc()
+            else:
+                Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                    operation_type="bulk_backup_failed",
+                    device_ip=result["device_ip"],
+                    status="error",
+                ).inc()
 
         return results
 

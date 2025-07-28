@@ -177,6 +177,43 @@ The config backup feature integrates seamlessly with the existing Wargos functio
 - Follows the same error handling patterns
 - Integrates with the existing logging system
 - Compatible with the existing FastAPI application structure
+- **Prometheus Metrics**: Comprehensive metrics collection for monitoring backup operations
+
+## Prometheus Metrics
+
+The config backup feature provides detailed Prometheus metrics for monitoring:
+
+### Operation Metrics
+
+- `wargos_config_backup_operations_total`: Total number of backup operations (labeled by operation_type, device_ip, status)
+- `wargos_config_backup_operation_duration_seconds`: Duration of backup operations (labeled by operation_type, device_ip)
+
+### Error Metrics
+
+- `wargos_config_backup_operation_exceptions_total`: Exceptions during backup operations (labeled by operation_type, device_ip, exception_type)
+- `wargos_config_backup_http_errors_total`: HTTP errors during backup operations (labeled by device_ip, http_status_code)
+- `wargos_config_backup_connection_errors_total`: Connection errors during backup operations (labeled by device_ip, error_type)
+
+### File Metrics
+
+- `wargos_config_backup_files_created_total`: Number of backup files created (labeled by device_ip)
+- `wargos_config_backup_file_size_bytes`: Size of the most recent backup file in bytes (labeled by device_ip)
+
+### Example Queries
+
+```promql
+# Successful backup operations
+wargos_config_backup_operations_total{status="success"}
+
+# Backup operation duration
+histogram_quantile(0.95, rate(wargos_config_backup_operation_duration_seconds_bucket[5m]))
+
+# HTTP errors by status code
+wargos_config_backup_http_errors_total
+
+# File creation rate
+rate(wargos_config_backup_files_created_total[5m])
+```
 
 ## Testing
 
