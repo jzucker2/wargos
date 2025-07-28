@@ -75,7 +75,7 @@ By default, logging is info level. To set to debug, provide the env `DEBUG=true`
 | `DEFAULT_WLED_IP`                              | `10.0.1.179`  |           `10.0.1.100`            |     This is the default IP address used when no IP list is provided                         |
 | `WLED_IP_LIST`                                 |    `None`     | `10.0.1.129,10.0.1.150,10.0.1.179` |     Comma-separated list of WLED device IP addresses to scrape                              |
 | `ENABLE_RELEASE_CHECK`                         |    `true`     |              `false`               |     Enable or disable WLED release checking (true/false, 1/0, yes/no, on/off)              |
-| `CONFIG_BACKUP_DIR`                            | `/tmp/wled_configs` | `/home/user/wled_backups` | Directory where WLED config backups are stored |
+| `CONFIG_BACKUP_DIR`                            | `/backups/` | `/home/user/wled_backups` | Directory where WLED config backups are stored |
 |                     `PORT`                      |    `9395`     |               `8080`                | The port on which the Gunicorn server will listen |
 |                   `WORKERS`                     |      `4`      |                `2`                  | Number of Gunicorn worker processes |
 |                  `TIMEOUT`                      |    `120`      |               `60`                  | Worker timeout in seconds |

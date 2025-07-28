@@ -10,7 +10,7 @@ The config backup feature allows you to collect configuration backups from WLED 
 
 ### Environment Variables
 
-- `CONFIG_BACKUP_DIR`: Directory where config backups will be stored (default: `/tmp/wled_configs`)
+- `CONFIG_BACKUP_DIR`: Directory where config backups will be stored (default: `/backups/`)
 - `WLED_IP_LIST`: Comma-separated list of WLED device IP addresses (required for bulk operations)
 
 ## API Endpoints
@@ -31,12 +31,12 @@ Backs up configs from all WLED instances defined in the `WLED_IP_LIST` environme
   "results": [
     {
       "device_ip": "192.168.1.100",
-      "filepath": "/tmp/wled_configs/192.168.1.100_20250728_114801.json",
+      "filepath": "/backups/192.168.1.100_20250728_114801.json",
       "timestamp": "20250728_114801",
       "status": "success"
     }
   ],
-  "backup_dir": "/tmp/wled_configs"
+  "backup_dir": "/backups/"
 }
 ```
 
@@ -55,11 +55,11 @@ Backs up config from a specific WLED instance.
   "message": "Config backup completed",
   "result": {
     "device_ip": "192.168.1.100",
-    "filepath": "/tmp/wled_configs/192.168.1.100_20250728_114801.json",
+    "filepath": "/backups/192.168.1.100_20250728_114801.json",
     "timestamp": "20250728_114801",
     "status": "success"
   },
-  "backup_dir": "/tmp/wled_configs"
+  "backup_dir": "/backups/"
 }
 ```
 

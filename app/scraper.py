@@ -78,7 +78,7 @@ class Scraper(object):
     @classmethod
     def get_config_backup_dir(cls):
         """Get the config backup directory from environment variable"""
-        return os.environ.get("CONFIG_BACKUP_DIR", "/tmp/wled_configs")
+        return os.environ.get("CONFIG_BACKUP_DIR", "/backups/")
 
     def __init__(self, wled_client):
         self._wled_client = wled_client

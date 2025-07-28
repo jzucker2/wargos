@@ -26,7 +26,7 @@ class TestConfigBackup:
             del os.environ["CONFIG_BACKUP_DIR"]
 
         backup_dir = Scraper.get_config_backup_dir()
-        assert backup_dir == "/tmp/wled_configs"
+        assert backup_dir == "/backups/"
 
     def test_get_config_backup_dir_custom(self):
         """Test custom config backup directory from environment"""
