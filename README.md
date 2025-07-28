@@ -27,6 +27,7 @@ Want a [grafana](https://grafana.com/oss/grafana/) dashboard like this?
 - **Metadata Tracking**: Each backup includes timestamp and device information
 - **Bulk Operations**: Backup all devices or individual instances
 - **Download Latest**: Download the most recent backup for any device
+- **Metadata Control**: Option to include or strip backup metadata from downloads
 - **Error Handling**: Robust error handling for network and file system issues
 - **Prometheus Metrics**: Comprehensive metrics for monitoring backup operations
 
@@ -361,6 +362,9 @@ curl -i "http://localhost:9395/config/backup/all/custom?backup_dir=/custom/path"
 
 # download latest backup for a specific device
 curl -O -J "http://localhost:9395/config/download/192.168.1.100"
+
+# download latest backup with metadata included
+curl -O -J "http://localhost:9395/config/download/192.168.1.100?include_metadata=true"
 ```
 
 ### Logging

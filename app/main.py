@@ -230,8 +230,12 @@ async def backup_configs_all_custom(backup_dir: str):
 
 
 @app.get("/config/download/{device_ip}")
-async def download_latest_backup(device_ip: str):
+async def download_latest_backup(
+    device_ip: str, include_metadata: bool = False
+):
     """Download the latest backup file for a specific WLED instance"""
+    import json
+    import os
     from pathlib import Path
 
     from fastapi.responses import FileResponse
@@ -275,6 +279,23 @@ async def download_latest_backup(device_ip: str):
         # Sort by modification time and get the latest
         latest_file = max(backup_files, key=lambda f: f.stat().st_mtime)
 
+        # Read the file content
+        with open(latest_file, "r") as f:
+            config_data = json.load(f)
+
+        # Strip metadata if not requested
+        if not include_metadata and "_backup_metadata" in config_data:
+            del config_data["_backup_metadata"]
+
+        # Create a temporary file with the processed content
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False
+        ) as temp_file:
+            json.dump(config_data, temp_file, indent=2)
+            temp_file_path = temp_file.name
+
         # Update metrics for successful download
         Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
             operation_type="download_latest",
@@ -282,10 +303,18 @@ async def download_latest_backup(device_ip: str):
             status="success",
         ).inc()
 
+        async def cleanup_temp_file():
+            """Clean up the temporary file after response is sent"""
+            try:
+                os.unlink(temp_file_path)
+            except OSError:
+                pass  # File might already be deleted
+
         return FileResponse(
-            path=str(latest_file),
+            path=temp_file_path,
             filename=f"{device_ip}_latest_backup.json",
             media_type="application/json",
+            background=cleanup_temp_file,
         )
 
     except Exception as e:

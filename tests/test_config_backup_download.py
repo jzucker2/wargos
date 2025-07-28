@@ -77,7 +77,7 @@ class TestConfigBackupDownload:
 
     @patch.object(Scraper, "get_config_backup_dir")
     def test_download_latest_backup_success(self, mock_backup_dir):
-        """Test successful download of latest backup file"""
+        """Test successful download of latest backup file (default: metadata stripped)"""
         mock_backup_dir.return_value = str(self.backup_dir)
 
         response = self.client.get(f"/config/download/{self.device_ip}")
@@ -89,11 +89,35 @@ class TestConfigBackupDownload:
             == f'attachment; filename="{self.device_ip}_latest_backup.json"'
         )
 
-        # Verify the content is the latest config (should be config3)
+        # Verify the content is the latest config (should be config3) and metadata is stripped
+        content = response.json()
+        assert content["test"] == "config3"
+        assert content["version"] == "1.2"
+        assert "_backup_metadata" not in content
+
+    @patch.object(Scraper, "get_config_backup_dir")
+    def test_download_latest_backup_with_metadata(self, mock_backup_dir):
+        """Test successful download of latest backup file with metadata included"""
+        mock_backup_dir.return_value = str(self.backup_dir)
+
+        response = self.client.get(
+            f"/config/download/{self.device_ip}?include_metadata=true"
+        )
+
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/json"
+        assert (
+            response.headers["content-disposition"]
+            == f'attachment; filename="{self.device_ip}_latest_backup.json"'
+        )
+
+        # Verify the content is the latest config (should be config3) and metadata is included
         content = response.json()
         assert content["test"] == "config3"
         assert content["version"] == "1.2"
         assert "_backup_metadata" in content
+        assert content["_backup_metadata"]["device_ip"] == self.device_ip
+        assert content["_backup_metadata"]["backup_source"] == "wargos"
 
     @patch.object(Scraper, "get_config_backup_dir")
     def test_download_latest_backup_no_directory(self, mock_backup_dir):
@@ -178,9 +202,10 @@ class TestConfigBackupDownload:
 
         assert response.status_code == 200
         content = response.json()
-        # Should get the latest config (config5)
+        # Should get the latest config (config5) and metadata should be stripped
         assert content["test"] == "config5"
         assert content["version"] == "1.4"
+        assert "_backup_metadata" not in content
 
     def test_download_route_exists(self):
         """Test that the download route is properly registered"""

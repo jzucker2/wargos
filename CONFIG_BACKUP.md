@@ -74,10 +74,15 @@ Backs up configs from all WLED instances to a custom directory.
 ### Download Latest Backup
 
 ```
-GET /config/download/{device_ip}
+GET /config/download/{device_ip}?include_metadata=false
 ```
 
 Downloads the latest backup file for a specific WLED instance as a JSON file.
+
+**Parameters:**
+
+- `device_ip` (path): The IP address of the WLED device
+- `include_metadata` (query, optional): Whether to include backup metadata in the response (default: false)
 
 **Response:**
 
@@ -85,17 +90,22 @@ Downloads the latest backup file for a specific WLED instance as a JSON file.
 - **Not Found**: Returns error message if no backup directory or files exist
 - **Error**: Returns error message if an exception occurs
 
-**Example:**
+**Examples:**
 
 ```bash
-# Download latest backup for a device
+# Download latest backup for a device (metadata stripped by default)
 curl -O -J "http://localhost:8000/config/download/192.168.1.100"
+
+# Download latest backup with metadata included
+curl -O -J "http://localhost:8000/config/download/192.168.1.100?include_metadata=true"
 ```
 
 **File Response Headers:**
 
 - `Content-Type: application/json`
 - `Content-Disposition: attachment; filename="192.168.1.100_latest_backup.json"`
+
+**Note:** By default, the `_backup_metadata` field is stripped from the downloaded file to provide a clean WLED configuration. Use `include_metadata=true` to preserve the backup metadata.
 
 ## Backup File Format
 
