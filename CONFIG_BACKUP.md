@@ -1,69 +1,52 @@
-# WLED Config Backup Feature
+# Config and Preset Backup
 
-This document describes the new config backup functionality added to Wargos.
+This document describes the config and preset backup functionality in Wargos.
 
 ## Overview
 
-The config backup feature allows you to collect configuration backups from WLED instances and store them in a configurable directory. Each backup includes the full configuration from the WLED device's `/cfg.json` endpoint. Files are automatically organized in IP-specific subdirectories for easy management.
+The backup feature allows you to collect configuration and preset backups from WLED instances and store them in an organized directory structure. Files are stored in IP-specific subdirectories with separate folders for configs and presets.
+
+## Directory Structure
+
+Backups are stored in the following structure:
+
+```
+{backup_dir}/
+├── {device_ip}/
+│   ├── configs/
+│   │   └── {device_ip}_{timestamp}_configs.json
+│   └── presets/
+│       └── {device_ip}_{timestamp}_presets.json
+```
 
 ## Configuration
 
 ### Environment Variables
 
-- `CONFIG_BACKUP_DIR`: Directory where config backups will be stored (default: `/backups/`)
-- `WLED_IP_LIST`: Comma-separated list of WLED device IP addresses (required for bulk operations)
+- `CONFIG_BACKUP_DIR`: Directory to store backups (default: `/backups/`)
+- `WLED_IP_LIST`: Comma-separated list of WLED device IP addresses
 
 ## API Endpoints
 
-### Backup All Instances
+### Config Backup
+
+#### Backup All Configs
 
 ```
 GET /config/backup/all
 ```
 
-Backs up configs from all WLED instances defined in the `WLED_IP_LIST` environment variable.
+Backs up configs from all WLED instances.
 
-**Response:**
-
-```json
-{
-  "message": "Config backup completed",
-  "results": [
-    {
-      "device_ip": "192.168.1.100",
-      "filepath": "/backups/192.168.1.100/192.168.1.100_20250728_114801.json",
-      "timestamp": "20250728_114801",
-      "status": "success"
-    }
-  ],
-  "backup_dir": "/backups/"
-}
-```
-
-### Backup Single Instance
+#### Backup Single Config
 
 ```
 GET /config/backup/{device_ip}
 ```
 
-Backs up config from a specific WLED instance.
+Backs up config from a single WLED instance.
 
-**Response:**
-
-```json
-{
-  "message": "Config backup completed",
-  "result": {
-    "device_ip": "192.168.1.100",
-    "filepath": "/backups/192.168.1.100/192.168.1.100_20250728_114801.json",
-    "timestamp": "20250728_114801",
-    "status": "success"
-  },
-  "backup_dir": "/backups/"
-}
-```
-
-### Backup All Instances to Custom Directory
+#### Backup All Configs to Custom Directory
 
 ```
 GET /config/backup/all/custom?backup_dir=/custom/path
@@ -71,13 +54,56 @@ GET /config/backup/all/custom?backup_dir=/custom/path
 
 Backs up configs from all WLED instances to a custom directory.
 
+### Preset Backup
+
+#### Backup All Presets
+
+```
+GET /presets/backup/all
+```
+
+Backs up presets from all WLED instances.
+
+#### Backup Single Preset
+
+```
+GET /presets/backup/{device_ip}
+```
+
+Backs up presets from a single WLED instance.
+
+### Combined Backup
+
+#### Backup All (Configs and Presets)
+
+```
+GET /backup/all
+```
+
+Backs up both configs and presets from all WLED instances.
+
 ### Download Latest Backup
+
+#### Download Latest Config
 
 ```
 GET /config/download/{device_ip}?include_metadata=false
 ```
 
-Downloads the latest backup file for a specific WLED instance as a JSON file.
+Downloads the latest config backup file for a specific WLED instance as a JSON file.
+
+**Parameters:**
+
+- `device_ip` (path): The IP address of the WLED device
+- `include_metadata` (query, optional): Whether to include backup metadata in the response (default: false)
+
+#### Download Latest Presets
+
+```
+GET /presets/download/{device_ip}?include_metadata=false
+```
+
+Downloads the latest presets backup file for a specific WLED instance as a JSON file.
 
 **Parameters:**
 
@@ -93,47 +119,65 @@ Downloads the latest backup file for a specific WLED instance as a JSON file.
 **Examples:**
 
 ```bash
-# Download latest backup for a device (metadata stripped by default)
+# Download latest config for a device (metadata stripped by default)
 curl -O -J "http://localhost:8000/config/download/192.168.1.100"
 
-# Download latest backup with metadata included
+# Download latest config with metadata
 curl -O -J "http://localhost:8000/config/download/192.168.1.100?include_metadata=true"
+
+# Download latest presets for a device
+curl -O -J "http://localhost:8000/presets/download/192.168.1.100"
+
+# Download latest presets with metadata
+curl -O -J "http://localhost:8000/presets/download/192.168.1.100?include_metadata=true"
 ```
 
 **File Response Headers:**
 
 - `Content-Type: application/json`
-- `Content-Disposition: attachment; filename="192.168.1.100_latest_backup.json"`
+- `Content-Disposition: attachment; filename="{device_ip}_latest_backup.json"`
 
 **Note:** By default, the `_backup_metadata` field is stripped from the downloaded file to provide a clean WLED configuration. Use `include_metadata=true` to preserve the backup metadata.
 
 ## Backup File Format
 
-Each backup file contains:
+### Config Files
 
-- The complete WLED configuration from `/cfg.json`
-- Metadata about the backup:
-  - `backup_timestamp`: ISO timestamp of when the backup was created
-  - `device_ip`: IP address of the source device
-  - `backup_source`: Always "wargos"
-
-**Example backup file structure:**
+Config files contain the WLED device configuration in JSON format with added metadata:
 
 ```json
 {
-  "cfg": {
-    "ver": "0.14.0-b1",
-    "leds": {
-      "count": 60,
-      "rgbw": false,
-      "pin": [2],
-      "pwr": 850,
-      "maxseg": 16,
-      "seglock": false
-    }
+  "wifi": {
+    "ssid": "MyNetwork",
+    "pass": "password123"
+  },
+  "leds": {
+    "count": 60,
+    "fps": 60
   },
   "_backup_metadata": {
-    "backup_timestamp": "2025-07-28T11:48:01.153456",
+    "backup_timestamp": "2025-07-28T11:48:01.123456",
+    "device_ip": "192.168.1.100",
+    "backup_source": "wargos"
+  }
+}
+```
+
+### Preset Files
+
+Preset files contain the WLED device presets in JSON format with added metadata:
+
+```json
+{
+  "presets": [
+    {
+      "id": 1,
+      "name": "Rainbow",
+      "segments": [...]
+    }
+  ],
+  "_backup_metadata": {
+    "backup_timestamp": "2025-07-28T11:48:01.123456",
     "device_ip": "192.168.1.100",
     "backup_source": "wargos"
   }
@@ -142,72 +186,67 @@ Each backup file contains:
 
 ## File Naming Convention
 
-Backup files are stored in IP-specific subdirectories using the pattern:
+Files are named using the pattern: `{device_ip}_{timestamp}_{type}.json`
 
-```
-{backup_dir}/{device_ip}/{device_ip}_{timestamp}.json
-```
+- **Config files**: `{device_ip}_{timestamp}_configs.json`
+- **Preset files**: `{device_ip}_{timestamp}_presets.json`
 
-Where:
+Example:
 
-- `backup_dir`: The configured backup directory (default: `/backups/`)
-- `device_ip`: The IP address of the WLED device
-- `timestamp`: Format `YYYYMMDD_HHMMSS`
-
-**Example directory structure:**
-
-```
-/backups/
-├── 192.168.1.100/
-│   ├── 192.168.1.100_20250728_114801.json
-│   └── 192.168.1.100_20250728_120000.json
-├── 192.168.1.101/
-│   ├── 192.168.1.101_20250728_114801.json
-│   └── 192.168.1.101_20250728_120000.json
-└── 192.168.1.102/
-    └── 192.168.1.102_20250728_114801.json
-```
-
-**Example file path:** `/backups/192.168.1.100/192.168.1.100_20250728_114801.json`
+- `192.168.1.100_20250728_114801_configs.json`
+- `192.168.1.100_20250728_114801_presets.json`
 
 ## Error Handling
 
-The backup process handles various error conditions:
+The backup system handles various error conditions:
 
-- **HTTP Errors**: If the WLED device returns an error status (e.g., 404, 500)
-- **Connection Errors**: If the device is unreachable or times out
-- **File System Errors**: If the backup directory cannot be created or written to
+- **Network errors**: Connection timeouts, unreachable devices
+- **HTTP errors**: 404, 500, etc.
+- **File system errors**: Permission denied, disk full
+- **Invalid responses**: Malformed JSON, unexpected data
 
-All errors are logged and returned in the API response with appropriate error messages.
+All errors are logged and returned in the API response with appropriate status codes.
 
 ## Usage Examples
 
-### Using curl
+### Basic Usage
 
 ```bash
-# Backup all instances
-curl http://localhost:8000/config/backup/all
+# Backup all configs
+curl "http://localhost:8000/config/backup/all"
 
-# Backup single instance
-curl http://localhost:8000/config/backup/192.168.1.100
+# Backup all presets
+curl "http://localhost:8000/presets/backup/all"
 
-# Backup to custom directory
-curl "http://localhost:8000/config/backup/all/custom?backup_dir=/home/user/wled_backups"
+# Backup both configs and presets
+curl "http://localhost:8000/backup/all"
+
+# Backup single device config
+curl "http://localhost:8000/config/backup/192.168.1.100"
+
+# Backup single device presets
+curl "http://localhost:8000/presets/backup/192.168.1.100"
 ```
 
-### Environment Setup
+### Download Examples
 
 ```bash
-# Set the backup directory
-export CONFIG_BACKUP_DIR="/home/user/wled_backups"
+# Download latest config (clean)
+curl -O -J "http://localhost:8000/config/download/192.168.1.100"
 
-# Set the list of WLED devices
-export WLED_IP_LIST="192.168.1.100,192.168.1.101,192.168.1.102"
+# Download latest config with metadata
+curl -O -J "http://localhost:8000/config/download/192.168.1.100?include_metadata=true"
+
+# Download latest presets (clean)
+curl -O -J "http://localhost:8000/presets/download/192.168.1.100"
+
+# Download latest presets with metadata
+curl -O -J "http://localhost:8000/presets/download/192.168.1.100?include_metadata=true"
 ```
 
 ## Integration with Existing Features
 
-The config backup feature integrates seamlessly with the existing Wargos functionality:
+The backup feature integrates seamlessly with the existing Wargos functionality:
 
 - Uses the same WLED IP list as the metrics scraping
 - Follows the same error handling patterns
@@ -217,7 +256,7 @@ The config backup feature integrates seamlessly with the existing Wargos functio
 
 ## Prometheus Metrics
 
-The config backup feature provides detailed Prometheus metrics for monitoring:
+The backup feature provides detailed Prometheus metrics for monitoring:
 
 ### Operation Metrics
 
@@ -252,18 +291,3 @@ rate(wargos_config_backup_files_created_total[5m])
 ```
 
 ## Testing
-
-The feature includes comprehensive tests covering:
-
-- Default and custom backup directory configuration
-- Successful backup operations
-- HTTP error handling
-- Connection error handling
-- Bulk backup operations
-- Missing IP list error handling
-
-Run the tests with:
-
-```bash
-python -m pytest tests/test_config_backup.py -v
-```

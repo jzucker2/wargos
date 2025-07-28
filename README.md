@@ -19,11 +19,11 @@ Want a [grafana](https://grafana.com/oss/grafana/) dashboard like this?
 - **Multi-device Support**: Monitor multiple WLED instances simultaneously
 - **Release Tracking**: Monitor WLED firmware releases and versions
 
-### Config Backup
+### Config and Preset Backup
 
-- **Automatic Backups**: Collect configuration backups from WLED instances
+- **Automatic Backups**: Collect configuration and preset backups from WLED instances
 - **Configurable Storage**: Store backups in customizable directories
-- **Organized Structure**: Files are stored in IP-specific subdirectories (`/backups/{ip}/`)
+- **Organized Structure**: Files are stored in IP-specific subdirectories with separate folders for configs and presets (`/backups/{ip}/configs/` and `/backups/{ip}/presets/`)
 - **Metadata Tracking**: Each backup includes timestamp and device information
 - **Bulk Operations**: Backup all devices or individual instances
 - **Download Latest**: Download the most recent backup for any device
@@ -348,23 +348,41 @@ curl -i "http://localhost:9395/prometheus/default" \
 curl -i "http://localhost:9395/prometheus/all" \
     -H "Content-Type: application/json"
 
-# backup config from all WLED instances
+# backup configs from all devices
 curl -i "http://localhost:9395/config/backup/all" \
     -H "Content-Type: application/json"
 
-# backup config from a specific WLED instance
+# backup configs from a specific device
 curl -i "http://localhost:9395/config/backup/192.168.1.100" \
+    -H "Content-Type: application/json"
+
+# backup presets from all devices
+curl -i "http://localhost:9395/presets/backup/all" \
+    -H "Content-Type: application/json"
+
+# backup presets from a specific device
+curl -i "http://localhost:9395/presets/backup/192.168.1.100" \
+    -H "Content-Type: application/json"
+
+# backup both configs and presets from all devices
+curl -i "http://localhost:9395/backup/all" \
     -H "Content-Type: application/json"
 
 # backup configs to a custom directory
 curl -i "http://localhost:9395/config/backup/all/custom?backup_dir=/custom/path" \
     -H "Content-Type: application/json"
 
-# download latest backup for a specific device
+# download latest config for a specific device
 curl -O -J "http://localhost:9395/config/download/192.168.1.100"
 
-# download latest backup with metadata included
+# download latest config with metadata included
 curl -O -J "http://localhost:9395/config/download/192.168.1.100?include_metadata=true"
+
+# download latest presets for a specific device
+curl -O -J "http://localhost:9395/presets/download/192.168.1.100"
+
+# download latest presets with metadata included
+curl -O -J "http://localhost:9395/presets/download/192.168.1.100?include_metadata=true"
 ```
 
 ### Logging

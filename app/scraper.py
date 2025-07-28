@@ -93,12 +93,12 @@ class Scraper(object):
             backup_dir = self.get_config_backup_dir()
 
         # Create backup directory and IP subdirectory if they don't exist
-        ip_backup_dir = Path(backup_dir) / device_ip
+        ip_backup_dir = Path(backup_dir) / device_ip / "configs"
         ip_backup_dir.mkdir(parents=True, exist_ok=True)
 
         config_url = f"http://{device_ip}/cfg.json"
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{device_ip}_{timestamp}.json"
+        filename = f"{device_ip}_{timestamp}_configs.json"
         filepath = ip_backup_dir / filename
 
         log.info(f"Backing up config from {device_ip} to {filepath}")
@@ -205,6 +205,125 @@ class Scraper(object):
                 "error": error_msg,
             }
 
+    async def backup_presets_from_instance(self, device_ip, backup_dir=None):
+        """Backup presets from a single WLED instance"""
+        if backup_dir is None:
+            backup_dir = self.get_config_backup_dir()
+
+        # Create backup directory and IP subdirectory if they don't exist
+        ip_backup_dir = Path(backup_dir) / device_ip / "presets"
+        ip_backup_dir.mkdir(parents=True, exist_ok=True)
+
+        presets_url = f"http://{device_ip}/presets.json"
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{device_ip}_{timestamp}_presets.json"
+        filepath = ip_backup_dir / filename
+
+        log.info(f"Backing up presets from {device_ip} to {filepath}")
+
+        # Track operation start time for metrics
+        start_time = datetime.now()
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(presets_url, timeout=10) as response:
+                    if response.status == 200:
+                        presets_data = await response.json()
+
+                        # Add metadata to the presets
+                        presets_data["_backup_metadata"] = {
+                            "backup_timestamp": datetime.now().isoformat(),
+                            "device_ip": device_ip,
+                            "backup_source": "wargos",
+                        }
+
+                        # Write presets to file
+                        with open(filepath, "w") as f:
+                            json.dump(presets_data, f, indent=2)
+
+                        # Get file size for metrics
+                        file_size = filepath.stat().st_size
+
+                        # Update metrics
+                        duration = (
+                            datetime.now() - start_time
+                        ).total_seconds()
+                        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                            operation_type="single_preset_backup",
+                            device_ip=device_ip,
+                            status="success",
+                        ).inc()
+                        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+                            operation_type="single_preset_backup",
+                            device_ip=device_ip,
+                        ).observe(duration)
+                        Metrics.CONFIG_BACKUP_FILES_CREATED.labels(
+                            device_ip=device_ip
+                        ).inc()
+                        Metrics.CONFIG_BACKUP_FILE_SIZE_BYTES.labels(
+                            device_ip=device_ip
+                        ).set(file_size)
+
+                        log.info(
+                            f"Successfully backed up presets from {device_ip} to {filepath}"
+                        )
+                        return {
+                            "device_ip": device_ip,
+                            "filepath": str(filepath),
+                            "timestamp": timestamp,
+                            "status": "success",
+                        }
+                    else:
+                        # Track HTTP errors
+                        Metrics.CONFIG_BACKUP_HTTP_ERRORS.labels(
+                            device_ip=device_ip,
+                            http_status_code=str(response.status),
+                        ).inc()
+                        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                            operation_type="single_preset_backup",
+                            device_ip=device_ip,
+                            status="error",
+                        ).inc()
+
+                        error_msg = f"Failed to fetch presets from {device_ip}: HTTP {response.status}"
+                        log.error(error_msg)
+                        return {
+                            "device_ip": device_ip,
+                            "filepath": None,
+                            "timestamp": timestamp,
+                            "status": "error",
+                            "error": error_msg,
+                        }
+        except Exception as e:
+            # Track exceptions
+            exception_type = type(e).__name__
+            Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
+                operation_type="single_preset_backup",
+                device_ip=device_ip,
+                exception_type=exception_type,
+            ).inc()
+            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                operation_type="single_preset_backup",
+                device_ip=device_ip,
+                status="error",
+            ).inc()
+
+            # Track connection errors specifically
+            if "connection" in str(e).lower() or "timeout" in str(e).lower():
+                Metrics.CONFIG_BACKUP_CONNECTION_ERRORS.labels(
+                    device_ip=device_ip, error_type=exception_type
+                ).inc()
+
+            error_msg = f"Error backing up presets from {device_ip}: {str(e)}"
+            log.error(error_msg)
+            return {
+                "device_ip": device_ip,
+                "filepath": None,
+                "timestamp": timestamp,
+                "status": "error",
+                "error": error_msg,
+            }
+
     async def backup_configs_from_all_instances(self, backup_dir=None):
         """Backup configs from all WLED instances"""
         wled_ip_list = self.parse_env_wled_ip_list()
@@ -272,6 +391,111 @@ class Scraper(object):
                 ).inc()
 
         return results
+
+    async def backup_presets_from_all_instances(self, backup_dir=None):
+        """Backup presets from all WLED instances"""
+        wled_ip_list = self.parse_env_wled_ip_list()
+        if not wled_ip_list:
+            e_m = "missing wled ip list! must provide with env var to use this method"
+            log.error(e_m)
+            raise MissingIPListScraperException(e_m)
+
+        # Track bulk operation start time
+        start_time = datetime.now()
+        successful_backups = 0
+        failed_backups = 0
+
+        results = []
+        for device_ip in wled_ip_list:
+            log.debug(f"backing up presets for device_ip: {device_ip}")
+            try:
+                result = await self.backup_presets_from_instance(
+                    device_ip, backup_dir
+                )
+                results.append(result)
+
+                # Track success/failure for bulk operation
+                if result["status"] == "success":
+                    successful_backups += 1
+                else:
+                    failed_backups += 1
+
+            except Exception as unexp:
+                failed_backups += 1
+                u_m = f"Preset backup failed for device_ip: {device_ip} got unexp: {unexp}"
+                log.error(u_m)
+                results.append(
+                    {
+                        "device_ip": device_ip,
+                        "filepath": None,
+                        "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
+                        "status": "error",
+                        "error": str(unexp),
+                    }
+                )
+
+        # Update bulk operation metrics
+        duration = (datetime.now() - start_time).total_seconds()
+        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            operation_type="bulk_preset_backup",
+            device_ip="all",
+            status="completed",
+        ).inc()
+        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+            operation_type="bulk_preset_backup", device_ip="all"
+        ).observe(duration)
+
+        # Track individual results
+        for result in results:
+            if result["status"] == "success":
+                Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                    operation_type="bulk_preset_backup_success",
+                    device_ip=result["device_ip"],
+                    status="success",
+                ).inc()
+            else:
+                Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                    operation_type="bulk_preset_backup_failed",
+                    device_ip=result["device_ip"],
+                    status="error",
+                ).inc()
+
+        return results
+
+    async def backup_all_from_all_instances(self, backup_dir=None):
+        """Backup both configs and presets from all WLED instances"""
+        wled_ip_list = self.parse_env_wled_ip_list()
+        if not wled_ip_list:
+            e_m = "missing wled ip list! must provide with env var to use this method"
+            log.error(e_m)
+            raise MissingIPListScraperException(e_m)
+
+        # Track bulk operation start time
+        start_time = datetime.now()
+
+        config_results = await self.backup_configs_from_all_instances(
+            backup_dir
+        )
+        preset_results = await self.backup_presets_from_all_instances(
+            backup_dir
+        )
+
+        # Update bulk operation metrics
+        duration = (datetime.now() - start_time).total_seconds()
+        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            operation_type="bulk_all_backup",
+            device_ip="all",
+            status="completed",
+        ).inc()
+        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+            operation_type="bulk_all_backup", device_ip="all"
+        ).observe(duration)
+
+        return {
+            "configs": config_results,
+            "presets": preset_results,
+            "total_devices": len(wled_ip_list),
+        }
 
     def scrape_device_sync(self, device_info, device_state):
         if not device_info:

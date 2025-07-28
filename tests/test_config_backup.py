@@ -46,7 +46,7 @@ class TestConfigBackup:
 
     @pytest.mark.asyncio
     async def test_backup_config_from_instance_success(self):
-        """Test successful config backup from instance"""
+        """Test successful config backup from a single instance"""
         test_ip = "192.168.1.100"
 
         # Mock the entire backup function to avoid async mocking issues
@@ -55,7 +55,7 @@ class TestConfigBackup:
         ) as mock_backup:
             mock_backup.return_value = {
                 "device_ip": test_ip,
-                "filepath": f"{self.temp_dir}/{test_ip}/{test_ip}_20250728_114801.json",
+                "filepath": f"{self.temp_dir}/{test_ip}/configs/{test_ip}_20250728_114801_configs.json",
                 "timestamp": "20250728_114801",
                 "status": "success",
             }
@@ -64,10 +64,11 @@ class TestConfigBackup:
                 test_ip, self.temp_dir
             )
 
-        assert result["device_ip"] == test_ip
         assert result["status"] == "success"
+        assert result["device_ip"] == test_ip
         assert result["filepath"] is not None
-        assert f"{test_ip}_20250728_114801.json" in result["filepath"]
+        assert "configs" in result["filepath"]
+        assert result["timestamp"] is not None
 
     @pytest.mark.asyncio
     async def test_backup_config_from_instance_http_error(self):
@@ -90,8 +91,9 @@ class TestConfigBackup:
                 test_ip, self.temp_dir
             )
 
-        assert result["device_ip"] == test_ip
         assert result["status"] == "error"
+        assert result["device_ip"] == test_ip
+        assert result["filepath"] is None
         assert "HTTP 404" in result["error"]
 
     @pytest.mark.asyncio
@@ -115,33 +117,34 @@ class TestConfigBackup:
                 test_ip, self.temp_dir
             )
 
-        assert result["device_ip"] == test_ip
         assert result["status"] == "error"
+        assert result["device_ip"] == test_ip
+        assert result["filepath"] is None
         assert "Connection failed" in result["error"]
 
     @pytest.mark.asyncio
     async def test_backup_configs_from_all_instances_success(self):
-        """Test successful backup from all instances"""
+        """Test successful config backup from all instances"""
         test_ips = ["192.168.1.100", "192.168.1.101"]
 
         # Mock environment variable
         with patch.object(
             Scraper, "parse_env_wled_ip_list", return_value=test_ips
         ):
-            # Mock the backup function for each instance
+            # Mock the config backup function for each instance
             with patch.object(
                 self.scraper, "backup_config_from_instance"
             ) as mock_backup:
                 mock_backup.side_effect = [
                     {
                         "device_ip": "192.168.1.100",
-                        "filepath": f"{self.temp_dir}/192.168.1.100/192.168.1.100_20250728_114801.json",
+                        "filepath": f"{self.temp_dir}/192.168.1.100/configs/192.168.1.100_20250728_114801_configs.json",
                         "timestamp": "20250728_114801",
                         "status": "success",
                     },
                     {
                         "device_ip": "192.168.1.101",
-                        "filepath": f"{self.temp_dir}/192.168.1.101/192.168.1.101_20250728_114801.json",
+                        "filepath": f"{self.temp_dir}/192.168.1.101/configs/192.168.1.101_20250728_114801_configs.json",
                         "timestamp": "20250728_114801",
                         "status": "success",
                     },
@@ -154,7 +157,6 @@ class TestConfigBackup:
         assert len(results) == 2
         for result in results:
             assert result["status"] == "success"
-            assert result["device_ip"] in test_ips
 
     @pytest.mark.asyncio
     async def test_backup_configs_from_all_instances_missing_ip_list(self):

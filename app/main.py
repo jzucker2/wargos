@@ -216,6 +216,39 @@ async def backup_config_single(device_ip: str):
     }
 
 
+@app.get("/presets/backup/all")
+async def backup_presets_all():
+    """Backup presets from all WLED instances"""
+    results = await Scraper.get_client().backup_presets_from_all_instances()
+    return {
+        "message": "Preset backup completed",
+        "results": results,
+        "backup_dir": Scraper.get_client().get_config_backup_dir(),
+    }
+
+
+@app.get("/presets/backup/{device_ip}")
+async def backup_presets_single(device_ip: str):
+    """Backup presets from a single WLED instance"""
+    result = await Scraper.get_client().backup_presets_from_instance(device_ip)
+    return {
+        "message": "Preset backup completed",
+        "result": result,
+        "backup_dir": Scraper.get_client().get_config_backup_dir(),
+    }
+
+
+@app.get("/backup/all")
+async def backup_all_all():
+    """Backup both configs and presets from all WLED instances"""
+    results = await Scraper.get_client().backup_all_from_all_instances()
+    return {
+        "message": "All backup completed",
+        "results": results,
+        "backup_dir": Scraper.get_client().get_config_backup_dir(),
+    }
+
+
 @app.get("/config/backup/all/custom")
 async def backup_configs_all_custom(backup_dir: str):
     """Backup configs from all WLED instances to a custom directory"""
@@ -243,7 +276,7 @@ async def download_latest_backup(
     from .metrics import Metrics
 
     backup_dir = Scraper.get_client().get_config_backup_dir()
-    ip_backup_dir = Path(backup_dir) / device_ip
+    ip_backup_dir = Path(backup_dir) / device_ip / "configs"
 
     try:
         if not ip_backup_dir.exists():
@@ -261,7 +294,7 @@ async def download_latest_backup(
             }
 
         # Find the latest backup file
-        backup_files = list(ip_backup_dir.glob(f"{device_ip}_*.json"))
+        backup_files = list(ip_backup_dir.glob(f"{device_ip}_*_configs.json"))
         if not backup_files:
             # Update metrics for no files found
             Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
@@ -333,6 +366,115 @@ async def download_latest_backup(
 
         return {
             "error": f"Error downloading backup for device {device_ip}: {str(e)}",
+            "device_ip": device_ip,
+            "status": "error",
+        }
+
+
+@app.get("/presets/download/{device_ip}")
+async def download_latest_presets(
+    device_ip: str, include_metadata: bool = False
+):
+    """Download the latest presets file for a specific WLED instance"""
+    import json
+    import os
+    from pathlib import Path
+
+    from fastapi.responses import FileResponse
+
+    from .metrics import Metrics
+
+    backup_dir = Scraper.get_client().get_config_backup_dir()
+    ip_backup_dir = Path(backup_dir) / device_ip / "presets"
+
+    try:
+        if not ip_backup_dir.exists():
+            # Update metrics for not found
+            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                operation_type="download_latest_presets",
+                device_ip=device_ip,
+                status="not_found",
+            ).inc()
+
+            return {
+                "error": f"No presets backup directory found for device {device_ip}",
+                "device_ip": device_ip,
+                "status": "not_found",
+            }
+
+        # Find the latest backup file
+        backup_files = list(ip_backup_dir.glob(f"{device_ip}_*_presets.json"))
+        if not backup_files:
+            # Update metrics for no files found
+            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                operation_type="download_latest_presets",
+                device_ip=device_ip,
+                status="not_found",
+            ).inc()
+
+            return {
+                "error": f"No presets backup files found for device {device_ip}",
+                "device_ip": device_ip,
+                "status": "not_found",
+            }
+
+        # Sort by modification time and get the latest
+        latest_file = max(backup_files, key=lambda f: f.stat().st_mtime)
+
+        # Read the file content
+        with open(latest_file, "r") as f:
+            presets_data = json.load(f)
+
+        # Strip metadata if not requested
+        if not include_metadata and "_backup_metadata" in presets_data:
+            del presets_data["_backup_metadata"]
+
+        # Create a temporary file with the processed content
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False
+        ) as temp_file:
+            json.dump(presets_data, temp_file, indent=2)
+            temp_file_path = temp_file.name
+
+        # Update metrics for successful download
+        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            operation_type="download_latest_presets",
+            device_ip=device_ip,
+            status="success",
+        ).inc()
+
+        async def cleanup_temp_file():
+            """Clean up the temporary file after response is sent"""
+            try:
+                os.unlink(temp_file_path)
+            except OSError:
+                pass  # File might already be deleted
+
+        return FileResponse(
+            path=temp_file_path,
+            filename=f"{device_ip}_latest_presets.json",
+            media_type="application/json",
+            background=cleanup_temp_file,
+        )
+
+    except Exception as e:
+        # Update metrics for exceptions
+        exception_type = type(e).__name__
+        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            operation_type="download_latest_presets",
+            device_ip=device_ip,
+            status="error",
+        ).inc()
+        Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
+            operation_type="download_latest_presets",
+            device_ip=device_ip,
+            exception_type=exception_type,
+        ).inc()
+
+        return {
+            "error": f"Error downloading presets for device {device_ip}: {str(e)}",
             "device_ip": device_ip,
             "status": "error",
         }
