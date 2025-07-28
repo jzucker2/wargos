@@ -192,3 +192,38 @@ async def prometheus_default():
 async def prometheus_scrape_all():
     await Scraper.get_client().scrape_all_instances()
     return {"message": "Hello World"}
+
+
+@app.get("/config/backup/all")
+async def backup_configs_all():
+    """Backup configs from all WLED instances"""
+    results = await Scraper.get_client().backup_configs_from_all_instances()
+    return {
+        "message": "Config backup completed",
+        "results": results,
+        "backup_dir": Scraper.get_client().get_config_backup_dir(),
+    }
+
+
+@app.get("/config/backup/{device_ip}")
+async def backup_config_single(device_ip: str):
+    """Backup config from a single WLED instance"""
+    result = await Scraper.get_client().backup_config_from_instance(device_ip)
+    return {
+        "message": "Config backup completed",
+        "result": result,
+        "backup_dir": Scraper.get_client().get_config_backup_dir(),
+    }
+
+
+@app.get("/config/backup/all/custom")
+async def backup_configs_all_custom(backup_dir: str):
+    """Backup configs from all WLED instances to a custom directory"""
+    results = await Scraper.get_client().backup_configs_from_all_instances(
+        backup_dir
+    )
+    return {
+        "message": "Config backup completed",
+        "results": results,
+        "backup_dir": backup_dir,
+    }

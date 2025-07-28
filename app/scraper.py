@@ -1,4 +1,9 @@
+import json
 import os
+from datetime import datetime
+from pathlib import Path
+
+import aiohttp
 
 from .metrics import Metrics
 from .utils import LogHelper
@@ -21,6 +26,10 @@ class ScraperException(Exception):
 
 
 class MissingIPListScraperException(ScraperException):
+    pass
+
+
+class ConfigBackupException(ScraperException):
     pass
 
 
@@ -66,12 +75,110 @@ class Scraper(object):
             return None
         return raw_ip_list.split(",")
 
+    @classmethod
+    def get_config_backup_dir(cls):
+        """Get the config backup directory from environment variable"""
+        return os.environ.get("CONFIG_BACKUP_DIR", "/tmp/wled_configs")
+
     def __init__(self, wled_client):
         self._wled_client = wled_client
 
     @property
     def wled_client(self):
         return self._wled_client
+
+    async def backup_config_from_instance(self, device_ip, backup_dir=None):
+        """Backup config from a single WLED instance"""
+        if backup_dir is None:
+            backup_dir = self.get_config_backup_dir()
+
+        # Create backup directory if it doesn't exist
+        Path(backup_dir).mkdir(parents=True, exist_ok=True)
+
+        config_url = f"http://{device_ip}/cfg.json"
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{device_ip}_{timestamp}.json"
+        filepath = Path(backup_dir) / filename
+
+        log.info(f"Backing up config from {device_ip} to {filepath}")
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(config_url, timeout=10) as response:
+                    if response.status == 200:
+                        config_data = await response.json()
+
+                        # Add metadata to the config
+                        config_data["_backup_metadata"] = {
+                            "backup_timestamp": datetime.now().isoformat(),
+                            "device_ip": device_ip,
+                            "backup_source": "wargos",
+                        }
+
+                        # Write config to file
+                        with open(filepath, "w") as f:
+                            json.dump(config_data, f, indent=2)
+
+                        log.info(
+                            f"Successfully backed up config from {device_ip} to {filepath}"
+                        )
+                        return {
+                            "device_ip": device_ip,
+                            "filepath": str(filepath),
+                            "timestamp": timestamp,
+                            "status": "success",
+                        }
+                    else:
+                        error_msg = f"Failed to fetch config from {device_ip}: HTTP {response.status}"
+                        log.error(error_msg)
+                        return {
+                            "device_ip": device_ip,
+                            "filepath": None,
+                            "timestamp": timestamp,
+                            "status": "error",
+                            "error": error_msg,
+                        }
+        except Exception as e:
+            error_msg = f"Error backing up config from {device_ip}: {str(e)}"
+            log.error(error_msg)
+            return {
+                "device_ip": device_ip,
+                "filepath": None,
+                "timestamp": timestamp,
+                "status": "error",
+                "error": error_msg,
+            }
+
+    async def backup_configs_from_all_instances(self, backup_dir=None):
+        """Backup configs from all WLED instances"""
+        wled_ip_list = self.parse_env_wled_ip_list()
+        if not wled_ip_list:
+            e_m = "missing wled ip list! must provide with env var to use this method"
+            log.error(e_m)
+            raise MissingIPListScraperException(e_m)
+
+        results = []
+        for device_ip in wled_ip_list:
+            log.debug(f"backing up config for device_ip: {device_ip}")
+            try:
+                result = await self.backup_config_from_instance(
+                    device_ip, backup_dir
+                )
+                results.append(result)
+            except Exception as unexp:
+                u_m = f"Config backup failed for device_ip: {device_ip} got unexp: {unexp}"
+                log.error(u_m)
+                results.append(
+                    {
+                        "device_ip": device_ip,
+                        "filepath": None,
+                        "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
+                        "status": "error",
+                        "error": str(unexp),
+                    }
+                )
+
+        return results
 
     def scrape_device_sync(self, device_info, device_state):
         if not device_info:
