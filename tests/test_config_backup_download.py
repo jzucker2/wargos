@@ -23,7 +23,7 @@ class TestConfigBackupDownload:
 
         # Create test device directory
         self.device_ip = "192.168.1.100"
-        self.device_dir = self.backup_dir / self.device_ip
+        self.device_dir = self.backup_dir / self.device_ip / "configs"
         self.device_dir.mkdir(parents=True, exist_ok=True)
 
         # Create test backup files
@@ -54,7 +54,9 @@ class TestConfigBackupDownload:
         ]
 
         for i, test_config in enumerate(test_configs):
-            filename = f"{self.device_ip}_{test_config['timestamp']}.json"
+            filename = (
+                f"{self.device_ip}_{test_config['timestamp']}_configs.json"
+            )
             filepath = self.device_dir / filename
 
             # Add metadata to config
@@ -139,7 +141,7 @@ class TestConfigBackupDownload:
         mock_backup_dir.return_value = str(self.backup_dir)
 
         # Create directory but no files
-        empty_device_dir = self.backup_dir / "192.168.1.999"
+        empty_device_dir = self.backup_dir / "192.168.1.999" / "configs"
         empty_device_dir.mkdir(parents=True, exist_ok=True)
 
         response = self.client.get("/config/download/192.168.1.999")
@@ -181,7 +183,7 @@ class TestConfigBackupDownload:
         ]
 
         for i, (timestamp, config) in enumerate(additional_files):
-            filename = f"{self.device_ip}_{timestamp}.json"
+            filename = f"{self.device_ip}_{timestamp}_configs.json"
             filepath = self.device_dir / filename
 
             config_data = config.copy()
