@@ -26,6 +26,7 @@ Want a [grafana](https://grafana.com/oss/grafana/) dashboard like this?
 - **Organized Structure**: Files are stored in IP-specific subdirectories (`/backups/{ip}/`)
 - **Metadata Tracking**: Each backup includes timestamp and device information
 - **Bulk Operations**: Backup all devices or individual instances
+- **Download Latest**: Download the most recent backup for any device
 - **Error Handling**: Robust error handling for network and file system issues
 - **Prometheus Metrics**: Comprehensive metrics for monitoring backup operations
 
@@ -357,6 +358,9 @@ curl -i "http://localhost:9395/config/backup/192.168.1.100" \
 # backup configs to a custom directory
 curl -i "http://localhost:9395/config/backup/all/custom?backup_dir=/custom/path" \
     -H "Content-Type: application/json"
+
+# download latest backup for a specific device
+curl -O -J "http://localhost:9395/config/download/192.168.1.100"
 ```
 
 ### Logging

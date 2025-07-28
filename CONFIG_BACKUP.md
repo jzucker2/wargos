@@ -71,6 +71,32 @@ GET /config/backup/all/custom?backup_dir=/custom/path
 
 Backs up configs from all WLED instances to a custom directory.
 
+### Download Latest Backup
+
+```
+GET /config/download/{device_ip}
+```
+
+Downloads the latest backup file for a specific WLED instance as a JSON file.
+
+**Response:**
+
+- **Success**: Returns the backup file as a downloadable JSON file
+- **Not Found**: Returns error message if no backup directory or files exist
+- **Error**: Returns error message if an exception occurs
+
+**Example:**
+
+```bash
+# Download latest backup for a device
+curl -O -J "http://localhost:8000/config/download/192.168.1.100"
+```
+
+**File Response Headers:**
+
+- `Content-Type: application/json`
+- `Content-Disposition: attachment; filename="192.168.1.100_latest_backup.json"`
+
 ## Backup File Format
 
 Each backup file contains:

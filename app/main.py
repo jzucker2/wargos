@@ -227,3 +227,83 @@ async def backup_configs_all_custom(backup_dir: str):
         "results": results,
         "backup_dir": backup_dir,
     }
+
+
+@app.get("/config/download/{device_ip}")
+async def download_latest_backup(device_ip: str):
+    """Download the latest backup file for a specific WLED instance"""
+    from pathlib import Path
+
+    from fastapi.responses import FileResponse
+
+    from .metrics import Metrics
+
+    backup_dir = Scraper.get_client().get_config_backup_dir()
+    ip_backup_dir = Path(backup_dir) / device_ip
+
+    try:
+        if not ip_backup_dir.exists():
+            # Update metrics for not found
+            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                operation_type="download_latest",
+                device_ip=device_ip,
+                status="not_found",
+            ).inc()
+
+            return {
+                "error": f"No backup directory found for device {device_ip}",
+                "device_ip": device_ip,
+                "status": "not_found",
+            }
+
+        # Find the latest backup file
+        backup_files = list(ip_backup_dir.glob(f"{device_ip}_*.json"))
+        if not backup_files:
+            # Update metrics for no files found
+            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                operation_type="download_latest",
+                device_ip=device_ip,
+                status="not_found",
+            ).inc()
+
+            return {
+                "error": f"No backup files found for device {device_ip}",
+                "device_ip": device_ip,
+                "status": "not_found",
+            }
+
+        # Sort by modification time and get the latest
+        latest_file = max(backup_files, key=lambda f: f.stat().st_mtime)
+
+        # Update metrics for successful download
+        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            operation_type="download_latest",
+            device_ip=device_ip,
+            status="success",
+        ).inc()
+
+        return FileResponse(
+            path=str(latest_file),
+            filename=f"{device_ip}_latest_backup.json",
+            media_type="application/json",
+        )
+
+    except Exception as e:
+        # Update metrics for exceptions
+        exception_type = type(e).__name__
+        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            operation_type="download_latest",
+            device_ip=device_ip,
+            status="error",
+        ).inc()
+        Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
+            operation_type="download_latest",
+            device_ip=device_ip,
+            exception_type=exception_type,
+        ).inc()
+
+        return {
+            "error": f"Error downloading backup for device {device_ip}: {str(e)}",
+            "device_ip": device_ip,
+            "status": "error",
+        }
