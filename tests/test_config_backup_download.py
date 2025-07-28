@@ -36,6 +36,8 @@ class TestConfigBackupDownload:
 
     def create_test_backup_files(self):
         """Create test backup files with different timestamps"""
+        import time
+
         test_configs = [
             {
                 "timestamp": "20250728_110000",
@@ -51,7 +53,7 @@ class TestConfigBackupDownload:
             },
         ]
 
-        for test_config in test_configs:
+        for i, test_config in enumerate(test_configs):
             filename = f"{self.device_ip}_{test_config['timestamp']}.json"
             filepath = self.device_dir / filename
 
@@ -65,6 +67,13 @@ class TestConfigBackupDownload:
 
             with open(filepath, "w") as f:
                 json.dump(config_data, f, indent=2)
+
+            # Set different modification times to ensure proper sorting
+            # Later files should have later modification times
+            mtime = (
+                time.time() + i
+            )  # Each file gets a progressively later time
+            os.utime(filepath, (mtime, mtime))
 
     @patch.object(Scraper, "get_config_backup_dir")
     def test_download_latest_backup_success(self, mock_backup_dir):
@@ -137,6 +146,8 @@ class TestConfigBackupDownload:
     @patch.object(Scraper, "get_config_backup_dir")
     def test_download_latest_backup_multiple_files(self, mock_backup_dir):
         """Test download with multiple backup files to ensure latest is selected"""
+        import time
+
         mock_backup_dir.return_value = str(self.backup_dir)
 
         # Create additional files with different timestamps
@@ -145,7 +156,7 @@ class TestConfigBackupDownload:
             ("20250728_150000", {"test": "config5", "version": "1.4"}),
         ]
 
-        for timestamp, config in additional_files:
+        for i, (timestamp, config) in enumerate(additional_files):
             filename = f"{self.device_ip}_{timestamp}.json"
             filepath = self.device_dir / filename
 
@@ -158,6 +169,10 @@ class TestConfigBackupDownload:
 
             with open(filepath, "w") as f:
                 json.dump(config_data, f, indent=2)
+
+            # Set modification time to ensure this is the latest
+            mtime = time.time() + 100 + i  # Much later than the original files
+            os.utime(filepath, (mtime, mtime))
 
         response = self.client.get(f"/config/download/{self.device_ip}")
 
