@@ -120,16 +120,16 @@ Downloads the latest presets backup file for a specific WLED instance as a JSON 
 
 ```bash
 # Download latest config for a device (metadata stripped by default)
-curl -O -J "http://localhost:8000/config/download/192.168.1.100"
+curl -O -J "http://localhost:9395/config/download/192.168.1.100"
 
 # Download latest config with metadata
-curl -O -J "http://localhost:8000/config/download/192.168.1.100?include_metadata=true"
+curl -O -J "http://localhost:9395/config/download/192.168.1.100?include_metadata=true"
 
 # Download latest presets for a device
-curl -O -J "http://localhost:8000/presets/download/192.168.1.100"
+curl -O -J "http://localhost:9395/presets/download/192.168.1.100"
 
 # Download latest presets with metadata
-curl -O -J "http://localhost:8000/presets/download/192.168.1.100?include_metadata=true"
+curl -O -J "http://localhost:9395/presets/download/192.168.1.100?include_metadata=true"
 ```
 
 **File Response Headers:**
@@ -216,35 +216,35 @@ All errors are logged and returned in the API response with appropriate status c
 
 ```bash
 # Backup all configs
-curl "http://localhost:8000/config/backup/all"
+curl "http://localhost:9395/config/backup/all"
 
 # Backup all presets
-curl "http://localhost:8000/presets/backup/all"
+curl "http://localhost:9395/presets/backup/all"
 
 # Backup both configs and presets
-curl "http://localhost:8000/backup/all"
+curl "http://localhost:9395/backup/all"
 
 # Backup single device config
-curl "http://localhost:8000/config/backup/192.168.1.100"
+curl "http://localhost:9395/config/backup/192.168.1.100"
 
 # Backup single device presets
-curl "http://localhost:8000/presets/backup/192.168.1.100"
+curl "http://localhost:9395/presets/backup/192.168.1.100"
 ```
 
 ### Download Examples
 
 ```bash
 # Download latest config (clean)
-curl -O -J "http://localhost:8000/config/download/192.168.1.100"
+curl -O -J "http://localhost:9395/config/download/192.168.1.100"
 
 # Download latest config with metadata
-curl -O -J "http://localhost:8000/config/download/192.168.1.100?include_metadata=true"
+curl -O -J "http://localhost:9395/config/download/192.168.1.100?include_metadata=true"
 
 # Download latest presets (clean)
-curl -O -J "http://localhost:8000/presets/download/192.168.1.100"
+curl -O -J "http://localhost:9395/presets/download/192.168.1.100"
 
 # Download latest presets with metadata
-curl -O -J "http://localhost:8000/presets/download/192.168.1.100?include_metadata=true"
+curl -O -J "http://localhost:9395/presets/download/192.168.1.100?include_metadata=true"
 ```
 
 ## Integration with Existing Features

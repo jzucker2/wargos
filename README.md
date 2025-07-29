@@ -6,9 +6,13 @@ Want a [grafana](https://grafana.com/oss/grafana/) dashboard like this?
 
 ![Basic Dashboard Quick Look](./images/basic_dashboard.png)
 
-![More Useful Info](./images/useful_info.png)
+![Select by IP address](./images/select_by_ip_address.png)
 
-![Power Overview](./images/power.png)
+![Select by name](./images/select_by_name.png)
+
+![Power Usage](./images/power_usage.png)
+
+![Useful Debug Info](./images/useful_debug_info.png)
 
 ## Features
 
@@ -43,28 +47,34 @@ Example `docker-compose.yml` like:
 services:
 
   wargos:
+    image: ghcr.io/jzucker2/wargos:latest
     container_name: wargos
-    build:
-      context: .
-      dockerfile: Dockerfile
     restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    # Include this to persist config and presets backups outside of container (across restarts, upgrades)
+    volumes:
+      - wargos-storage:/backups
     environment:
-      - DEBUG=true
       # Replace with your `wled` IP addresses
       - WLED_IP_LIST=10.0.1.129,10.0.1.150,10.0.1.179,10.0.1.153
       # Gunicorn configuration (optional - defaults shown)
       - PORT=9395
-      - WORKERS=4
+      - WORKERS=1
       - TIMEOUT=120
       - KEEPALIVE=2
       - MAX_REQUESTS=1000
       - MAX_REQUESTS_JITTER=50
+      # Enable/disable release checking (optional - defaults to true)
+      - ENABLE_RELEASE_CHECK=false
     ports:
       - "9395:9395"
     stdin_open: true
     tty: true
+
+volumes:
+  wargos-storage:
+    driver: local
 ```
 
 ### Set Env Vars
@@ -80,7 +90,7 @@ By default, logging is info level. To set to debug, provide the env `DEBUG=true`
 | `WLED_IP_LIST`                                 |    `None`     | `10.0.1.129,10.0.1.150,10.0.1.179` |     Comma-separated list of WLED device IP addresses to scrape                              |
 | `ENABLE_RELEASE_CHECK`                         |    `true`     |              `false`               |     Enable or disable WLED release checking (true/false, 1/0, yes/no, on/off)              |
 | `CONFIG_BACKUP_DIR`                            | `/backups/` | `/home/user/wled_backups` | Directory where WLED config backups are stored |
-|                     `PORT`                      |    `9395`     |               `8080`                | The port on which the Gunicorn server will listen |
+|                     `PORT`                      |    `9395`     |               `9395`                | The port on which the Gunicorn server will listen |
 |                   `WORKERS`                     |      `4`      |                `2`                  | Number of Gunicorn worker processes |
 |                  `TIMEOUT`                      |    `120`      |               `60`                  | Worker timeout in seconds |
 |                 `KEEPALIVE`                     |      `2`      |                `5`                  | Keep-alive connection timeout |
@@ -98,13 +108,13 @@ By default, logging is info level. To set to debug, provide the env `DEBUG=true`
 make run
 
 # Run with custom settings
-PORT=8080 WORKERS=2 make run
+PORT=9395 WORKERS=2 make run
 
 # Run directly with script
 ./scripts/run_gunicorn.sh
 
 # Run with custom environment variables
-PORT=8080 WORKERS=2 TIMEOUT=60 ./scripts/run_gunicorn.sh
+PORT=9395 WORKERS=2 TIMEOUT=60 ./scripts/run_gunicorn.sh
 ```
 
 **Option 2: Uvicorn (Development)**
@@ -114,7 +124,7 @@ PORT=8080 WORKERS=2 TIMEOUT=60 ./scripts/run_gunicorn.sh
 make run-uvicorn
 
 # Or directly
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 9395
 ```
 
 ### Docker Deployment
