@@ -33,6 +33,7 @@ class MetricsLabels(Enum):
             [
                 cls.STABLE.value,
                 cls.BETA.value,
+                cls.PID.value,
             ]
         )
 
@@ -41,6 +42,7 @@ class MetricsLabels(Enum):
         return list(
             [
                 cls.VERSION.value,
+                cls.PID.value,
             ]
         )
 

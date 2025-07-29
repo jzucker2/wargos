@@ -16,16 +16,18 @@ class TestMetricsLabelsDetailed(unittest.TestCase):
         """Test releases_labels method returns correct labels"""
         labels = MetricsLabels.releases_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 2)
+        self.assertEqual(len(labels), 3)
         self.assertIn("stable", labels)
         self.assertIn("beta", labels)
+        self.assertIn("pid", labels)
 
     def test_wargos_instance_info_labels(self):
         """Test wargos_instance_info_labels method"""
         labels = MetricsLabels.wargos_instance_info_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 1)
+        self.assertEqual(len(labels), 2)
         self.assertIn("version", labels)
+        self.assertIn("pid", labels)
 
     def test_instance_info_labels(self):
         """Test instance_info_labels method"""
@@ -187,7 +189,7 @@ class TestMetricsDetailed(unittest.TestCase):
             metric._documentation,
             "Details about the actual wargos scraper instance (this app)",
         )
-        self.assertEqual(metric._labelnames, ("version",))
+        self.assertEqual(metric._labelnames, ("version", "pid"))
 
     def test_wled_client_metrics(self):
         """Test WLED client related metrics"""
@@ -227,7 +229,7 @@ class TestMetricsDetailed(unittest.TestCase):
         # Releases info
         metric = Metrics.WLED_RELEASES_INFO
         self.assertEqual(metric._name, "wargos_wled_releases_basic_info")
-        self.assertEqual(metric._labelnames, ("stable", "beta"))
+        self.assertEqual(metric._labelnames, ("stable", "beta", "pid"))
 
     def test_scraper_metrics(self):
         """Test scraper related metrics"""
