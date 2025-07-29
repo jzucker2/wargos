@@ -1,8 +1,9 @@
 import os
-from wled import WLED, WLEDReleases
-from .utils import LogHelper
-from .metrics import Metrics
 
+from wled import WLED, WLEDReleases
+
+from .metrics import Metrics
+from .utils import LogHelper
 
 log = LogHelper.get_env_logger(__name__)
 
@@ -38,9 +39,11 @@ class WLEDClient(object):
         log.debug(f"wled connecting to ip_address: {ip_address}")
         with Metrics.WLED_CLIENT_CONNECT_EXCEPTIONS.labels(
             ip=ip_address,
+            pid=os.getpid(),
         ).count_exceptions():
             with Metrics.WLED_CLIENT_CONNECT_TIME.labels(
                 ip=ip_address,
+                pid=os.getpid(),
             ).time():
                 async with self._connecting_device(ip_address) as led:
                     device = await led.update()
@@ -53,6 +56,7 @@ class WLEDClient(object):
         device_ip = self.default_wled_ip()
         Metrics.WLED_CLIENT_SIMPLE_TEST_COUNTER.labels(
             ip=device_ip,
+            pid=os.getpid(),
         ).inc()
         log.info(f"wled connecting to device_ip: {device_ip}")
         async with self._connecting_device(device_ip) as led:

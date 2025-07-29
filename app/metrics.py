@@ -25,6 +25,7 @@ class MetricsLabels(Enum):
     PRESET_QUICK_LABEL = "preset_quick_label"
     STABLE = "stable"
     BETA = "beta"
+    PID = "pid"
 
     @classmethod
     def releases_labels(cls):
@@ -65,6 +66,7 @@ class MetricsLabels(Enum):
             [
                 cls.NAME.value,
                 cls.IP.value,
+                cls.PID.value,
             ]
         )
 
@@ -74,6 +76,7 @@ class MetricsLabels(Enum):
             [
                 cls.IP.value,
                 cls.SCRAPE_EVENT.value,
+                cls.PID.value,
             ]
         )
 
@@ -84,6 +87,7 @@ class MetricsLabels(Enum):
                 cls.NAME.value,
                 cls.IP.value,
                 cls.BSSID.value,
+                cls.PID.value,
             ]
         )
 
@@ -94,6 +98,7 @@ class MetricsLabels(Enum):
                 cls.NAME.value,
                 cls.IP.value,
                 cls.SEGMENT.value,
+                cls.PID.value,
             ]
         )
 
@@ -114,6 +119,7 @@ class MetricsLabels(Enum):
         return list(
             [
                 cls.IP.value,
+                cls.PID.value,
             ]
         )
 
@@ -122,6 +128,7 @@ class MetricsLabels(Enum):
         return list(
             [
                 cls.IP.value,
+                cls.PID.value,
             ]
         )
 
@@ -130,6 +137,7 @@ class MetricsLabels(Enum):
         return list(
             [
                 cls.IP.value,
+                cls.PID.value,
             ]
         )
 
@@ -139,6 +147,7 @@ class MetricsLabels(Enum):
             [
                 cls.IP.value,
                 cls.EXCEPTION_CLASS.value,
+                cls.PID.value,
             ]
         )
 
@@ -148,6 +157,7 @@ class MetricsLabels(Enum):
             [
                 cls.NAME.value,
                 cls.IP.value,
+                cls.PID.value,
             ]
         )
 
@@ -157,6 +167,7 @@ class MetricsLabels(Enum):
             [
                 cls.NAME.value,
                 cls.IP.value,
+                cls.PID.value,
             ]
         )
 
@@ -168,6 +179,7 @@ class MetricsLabels(Enum):
                 cls.IP.value,
                 cls.PRESET_ID.value,
                 cls.PRESET_NAME.value,
+                cls.PID.value,
             ]
         )
 
@@ -180,6 +192,84 @@ class MetricsLabels(Enum):
                 cls.PRESET_ID.value,
                 cls.PRESET_NAME.value,
                 cls.PRESET_QUICK_LABEL.value,
+                cls.PID.value,
+            ]
+        )
+
+    @classmethod
+    def backup_operations_labels(cls):
+        return list(
+            [
+                "operation_type",
+                "device_ip",
+                "status",
+                "backup_type",
+                cls.PID.value,
+            ]
+        )
+
+    @classmethod
+    def backup_operation_duration_labels(cls):
+        return list(
+            [
+                "operation_type",
+                "device_ip",
+                "backup_type",
+                cls.PID.value,
+            ]
+        )
+
+    @classmethod
+    def backup_operation_exceptions_labels(cls):
+        return list(
+            [
+                "operation_type",
+                "device_ip",
+                "exception_type",
+                "backup_type",
+                cls.PID.value,
+            ]
+        )
+
+    @classmethod
+    def backup_files_created_labels(cls):
+        return list(
+            [
+                "device_ip",
+                "backup_type",
+                cls.PID.value,
+            ]
+        )
+
+    @classmethod
+    def backup_file_size_labels(cls):
+        return list(
+            [
+                "device_ip",
+                "backup_type",
+                cls.PID.value,
+            ]
+        )
+
+    @classmethod
+    def backup_http_errors_labels(cls):
+        return list(
+            [
+                "device_ip",
+                "http_status_code",
+                "backup_type",
+                cls.PID.value,
+            ]
+        )
+
+    @classmethod
+    def backup_connection_errors_labels(cls):
+        return list(
+            [
+                "device_ip",
+                "error_type",
+                "backup_type",
+                cls.PID.value,
             ]
         )
 
@@ -599,41 +689,41 @@ class Metrics(object):
     BACKUP_OPERATIONS_TOTAL = Counter(
         "wargos_backup_operations_total",
         "Total number of backup operations",
-        ["operation_type", "device_ip", "status", "backup_type"],
+        MetricsLabels.backup_operations_labels(),
     )
 
     BACKUP_OPERATION_DURATION = Summary(
         "wargos_backup_operation_duration_seconds",
         "Duration of backup operations",
-        ["operation_type", "device_ip", "backup_type"],
+        MetricsLabels.backup_operation_duration_labels(),
     )
 
     BACKUP_OPERATION_EXCEPTIONS = Counter(
         "wargos_backup_operation_exceptions_total",
         "Total number of exceptions during backup operations",
-        ["operation_type", "device_ip", "exception_type", "backup_type"],
+        MetricsLabels.backup_operation_exceptions_labels(),
     )
 
     BACKUP_FILES_CREATED = Counter(
         "wargos_backup_files_created_total",
         "Total number of backup files created",
-        ["device_ip", "backup_type"],
+        MetricsLabels.backup_files_created_labels(),
     )
 
     BACKUP_FILE_SIZE_BYTES = Gauge(
         "wargos_backup_file_size_bytes",
         "Size of the most recent backup file in bytes",
-        ["device_ip", "backup_type"],
+        MetricsLabels.backup_file_size_labels(),
     )
 
     BACKUP_HTTP_ERRORS = Counter(
         "wargos_backup_http_errors_total",
         "Total number of HTTP errors during backup operations",
-        ["device_ip", "http_status_code", "backup_type"],
+        MetricsLabels.backup_http_errors_labels(),
     )
 
     BACKUP_CONNECTION_ERRORS = Counter(
         "wargos_backup_connection_errors_total",
         "Total number of connection errors during backup operations",
-        ["device_ip", "error_type", "backup_type"],
+        MetricsLabels.backup_connection_errors_labels(),
     )

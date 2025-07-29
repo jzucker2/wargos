@@ -1,4 +1,5 @@
 import unittest
+
 from app.metrics import Metrics, MetricsLabels
 
 
@@ -49,35 +50,39 @@ class TestMetricsLabelsDetailed(unittest.TestCase):
         """Test basic_info_labels method"""
         labels = MetricsLabels.basic_info_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 2)
+        self.assertEqual(len(labels), 3)
         self.assertIn("name", labels)
         self.assertIn("ip", labels)
+        self.assertIn("pid", labels)
 
     def test_scrape_events_labels(self):
         """Test scrape_events_labels method"""
         labels = MetricsLabels.scrape_events_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 2)
+        self.assertEqual(len(labels), 3)
         self.assertIn("ip", labels)
         self.assertIn("scrape_event", labels)
+        self.assertIn("pid", labels)
 
     def test_wifi_bssid_labels(self):
         """Test wifi_bssid_labels method"""
         labels = MetricsLabels.wifi_bssid_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 3)
+        self.assertEqual(len(labels), 4)
         self.assertIn("name", labels)
         self.assertIn("ip", labels)
         self.assertIn("bssid", labels)
+        self.assertIn("pid", labels)
 
     def test_basic_segment_labels(self):
         """Test basic_segment_labels method"""
         labels = MetricsLabels.basic_segment_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 3)
+        self.assertEqual(len(labels), 4)
         self.assertIn("name", labels)
         self.assertIn("ip", labels)
         self.assertIn("segment", labels)
+        self.assertIn("pid", labels)
 
     def test_segment_color_labels(self):
         """Test segment_color_labels method"""
@@ -98,53 +103,59 @@ class TestMetricsLabelsDetailed(unittest.TestCase):
         """Test basic_client_labels method"""
         labels = MetricsLabels.basic_client_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 1)
+        self.assertEqual(len(labels), 2)
         self.assertIn("ip", labels)
+        self.assertIn("pid", labels)
 
     def test_basic_online_labels(self):
         """Test basic_online_labels method"""
         labels = MetricsLabels.basic_online_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 1)
+        self.assertEqual(len(labels), 2)
         self.assertIn("ip", labels)
+        self.assertIn("pid", labels)
 
     def test_basic_instance_scraper_labels(self):
         """Test basic_instance_scraper_labels method"""
         labels = MetricsLabels.basic_instance_scraper_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 1)
+        self.assertEqual(len(labels), 2)
         self.assertIn("ip", labels)
+        self.assertIn("pid", labels)
 
     def test_instance_scraper_exception_labels(self):
         """Test instance_scraper_exception_labels method"""
         labels = MetricsLabels.instance_scraper_exception_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 2)
+        self.assertEqual(len(labels), 3)
         self.assertIn("ip", labels)
         self.assertIn("exception_class", labels)
+        self.assertIn("pid", labels)
 
     def test_basic_state_labels(self):
         """Test basic_state_labels method"""
         labels = MetricsLabels.basic_state_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 2)
+        self.assertEqual(len(labels), 3)
         self.assertIn("name", labels)
         self.assertIn("ip", labels)
+        self.assertIn("pid", labels)
 
     def test_basic_udp_sync_labels(self):
         """Test basic_udp_sync_labels method"""
         labels = MetricsLabels.basic_udp_sync_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 2)
+        self.assertEqual(len(labels), 3)
         self.assertIn("name", labels)
         self.assertIn("ip", labels)
+        self.assertIn("pid", labels)
 
     def test_basic_preset_labels(self):
         """Test basic_preset_labels method"""
         labels = MetricsLabels.basic_preset_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 4)
-        expected_labels = ["name", "ip", "preset_id", "preset_name"]
+        self.assertEqual(len(labels), 5)
+        expected_labels = ["name", "ip", "preset_id", "preset_name", "pid"]
         for label in expected_labels:
             self.assertIn(label, labels)
 
@@ -152,13 +163,14 @@ class TestMetricsLabelsDetailed(unittest.TestCase):
         """Test preset_quick_label_labels method"""
         labels = MetricsLabels.preset_quick_label_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 5)
+        self.assertEqual(len(labels), 6)
         expected_labels = [
             "name",
             "ip",
             "preset_id",
             "preset_name",
             "preset_quick_label",
+            "pid",
         ]
         for label in expected_labels:
             self.assertIn(label, labels)
@@ -182,19 +194,19 @@ class TestMetricsDetailed(unittest.TestCase):
         # Simple test counter
         metric = Metrics.WLED_CLIENT_SIMPLE_TEST_COUNTER
         self.assertEqual(metric._name, "wargos_wled_client_simple_test")
-        self.assertEqual(metric._labelnames, ("ip",))
+        self.assertEqual(metric._labelnames, ("ip", "pid"))
 
         # Connect exceptions
         metric = Metrics.WLED_CLIENT_CONNECT_EXCEPTIONS
         self.assertEqual(metric._name, "wargos_wled_client_connect_exceptions")
-        self.assertEqual(metric._labelnames, ("ip",))
+        self.assertEqual(metric._labelnames, ("ip", "pid"))
 
         # Connect time
         metric = Metrics.WLED_CLIENT_CONNECT_TIME
         self.assertEqual(
             metric._name, "wargos_wled_client_connect_time_seconds"
         )
-        self.assertEqual(metric._labelnames, ("ip",))
+        self.assertEqual(metric._labelnames, ("ip", "pid"))
 
     def test_wled_releases_metrics(self):
         """Test WLED releases related metrics"""
@@ -282,21 +294,21 @@ class TestMetricsDetailed(unittest.TestCase):
         self.assertEqual(
             metric._name, "wargos_wled_scraper_scrape_instance_exceptions"
         )
-        self.assertEqual(metric._labelnames, ("ip",))
+        self.assertEqual(metric._labelnames, ("ip", "pid"))
 
         # Scrape instance time
         metric = Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_TIME
         self.assertEqual(
             metric._name, "wargos_wled_scraper_scrape_instance_time_seconds"
         )
-        self.assertEqual(metric._labelnames, ("ip",))
+        self.assertEqual(metric._labelnames, ("ip", "pid"))
 
     def test_instance_metrics(self):
         """Test instance related metrics"""
         # Instance online
         metric = Metrics.WLED_INSTANCE_ONLINE
         self.assertEqual(metric._name, "wargos_wled_instance_online")
-        self.assertEqual(metric._labelnames, ("ip",))
+        self.assertEqual(metric._labelnames, ("ip", "pid"))
 
         # Instance info
         metric = Metrics.INSTANCE_INFO
@@ -319,24 +331,24 @@ class TestMetricsDetailed(unittest.TestCase):
         # Instance free heap
         metric = Metrics.INSTANCE_FREE_HEAP
         self.assertEqual(metric._name, "wargos_wled_instance_free_heap")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # Instance UDP port
         metric = Metrics.INSTANCE_UDP_PORT
         self.assertEqual(metric._name, "wargos_wled_instance_udp_port")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # Instance uptime
         metric = Metrics.INSTANCE_UPTIME_SECONDS
         self.assertEqual(metric._name, "wargos_wled_instance_uptime_seconds")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # Instance websocket clients
         metric = Metrics.INSTANCE_WEBSOCKET_CLIENTS
         self.assertEqual(
             metric._name, "wargos_wled_instance_websocket_clients"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
     def test_preset_metrics(self):
         """Test preset related metrics"""
@@ -345,7 +357,7 @@ class TestMetricsDetailed(unittest.TestCase):
         self.assertEqual(
             metric._name, "wargos_wled_instance_preset_count_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # Preset is on
         metric = Metrics.INSTANCE_PRESET_IS_ON_VALUE
@@ -353,7 +365,8 @@ class TestMetricsDetailed(unittest.TestCase):
             metric._name, "wargos_wled_instance_preset_is_on_value"
         )
         self.assertEqual(
-            metric._labelnames, ("name", "ip", "preset_id", "preset_name")
+            metric._labelnames,
+            ("name", "ip", "preset_id", "preset_name", "pid"),
         )
 
         # Preset transition
@@ -362,7 +375,8 @@ class TestMetricsDetailed(unittest.TestCase):
             metric._name, "wargos_wled_instance_preset_transition_value"
         )
         self.assertEqual(
-            metric._labelnames, ("name", "ip", "preset_id", "preset_name")
+            metric._labelnames,
+            ("name", "ip", "preset_id", "preset_name", "pid"),
         )
 
         # Preset quick label info
@@ -372,7 +386,14 @@ class TestMetricsDetailed(unittest.TestCase):
         )
         self.assertEqual(
             metric._labelnames,
-            ("name", "ip", "preset_id", "preset_name", "preset_quick_label"),
+            (
+                "name",
+                "ip",
+                "preset_id",
+                "preset_name",
+                "preset_quick_label",
+                "pid",
+            ),
         )
 
     def test_led_metrics(self):
@@ -382,39 +403,39 @@ class TestMetricsDetailed(unittest.TestCase):
         self.assertEqual(
             metric._name, "wargos_wled_instance_palette_count_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # Effect count
         metric = Metrics.INSTANCE_EFFECT_COUNT_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_effect_count_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # LED count
         metric = Metrics.INSTANCE_LED_COUNT_VALUE
         self.assertEqual(metric._name, "wargos_wled_instance_led_count_value")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # LED FPS
         metric = Metrics.INSTANCE_LED_FPS_VALUE
         self.assertEqual(metric._name, "wargos_wled_instance_fps_value")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # LED max power
         metric = Metrics.INSTANCE_LED_MAX_POWER
         self.assertEqual(metric._name, "wargos_wled_instance_max_power")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # LED current power
         metric = Metrics.INSTANCE_LED_CURRENT_POWER
         self.assertEqual(metric._name, "wargos_wled_instance_current_power")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # LED max segments
         metric = Metrics.INSTANCE_LED_MAX_SEGMENTS
         self.assertEqual(metric._name, "wargos_wled_instance_max_segments")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
     def test_nightlight_metrics(self):
         """Test nightlight related metrics"""
@@ -423,14 +444,14 @@ class TestMetricsDetailed(unittest.TestCase):
         self.assertEqual(
             metric._name, "wargos_wled_instance_nightlight_duration_minutes"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # Nightlight on
         metric = Metrics.INSTANCE_NIGHTLIGHT_ON_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_nightlight_on_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # Nightlight target brightness
         metric = Metrics.INSTANCE_NIGHTLIGHT_TARGET_BRIGHTNESS_VALUE
@@ -438,7 +459,7 @@ class TestMetricsDetailed(unittest.TestCase):
             metric._name,
             "wargos_wled_instance_nightlight_target_brightness_value",
         )
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
     def test_segment_metrics(self):
         """Test segment related metrics"""
@@ -463,94 +484,94 @@ class TestMetricsDetailed(unittest.TestCase):
         self.assertEqual(
             metric._name, "wargos_wled_instance_segment_brightness_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment clones
         metric = Metrics.INSTANCE_SEGMENT_CLONES_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_segment_clones_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment effect ID
         metric = Metrics.INSTANCE_SEGMENT_EFFECT_ID_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_segment_effect_id_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment intensity
         metric = Metrics.INSTANCE_SEGMENT_INTENSITY_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_segment_intensity_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment length
         metric = Metrics.INSTANCE_SEGMENT_LENGTH_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_segment_length_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment on
         metric = Metrics.INSTANCE_SEGMENT_ON_VALUE
         self.assertEqual(metric._name, "wargos_wled_instance_segment_on_value")
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment palette ID
         metric = Metrics.INSTANCE_SEGMENT_PALETTE_ID_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_segment_palette_id_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment reverse
         metric = Metrics.INSTANCE_SEGMENT_REVERSE_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_segment_reverse_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment segment ID
         metric = Metrics.INSTANCE_SEGMENT_SEGMENT_ID_VALUE
         self.assertEqual(metric._name, "wargos_wled_instance_segment_id_value")
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment selected
         metric = Metrics.INSTANCE_SEGMENT_SELECTED_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_segment_selected_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment speed
         metric = Metrics.INSTANCE_SEGMENT_SPEED_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_segment_speed_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment CCT
         metric = Metrics.INSTANCE_SEGMENT_CCT_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_segment_cct_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment start
         metric = Metrics.INSTANCE_SEGMENT_START_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_segment_start_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
         # Segment stop
         metric = Metrics.INSTANCE_SEGMENT_STOP_VALUE
         self.assertEqual(
             metric._name, "wargos_wled_instance_segment_stop_value"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip", "segment"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "segment", "pid"))
 
     def test_filesystem_metrics(self):
         """Test filesystem related metrics"""
@@ -559,70 +580,70 @@ class TestMetricsDetailed(unittest.TestCase):
         self.assertEqual(
             metric._name, "wargos_wled_instance_filesystem_space_kb_total"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # Filesystem space used
         metric = Metrics.INSTANCE_FILESYSTEM_SPACE_USED
         self.assertEqual(
             metric._name, "wargos_wled_instance_filesystem_space_kb_used"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
     def test_wifi_metrics(self):
         """Test WiFi related metrics"""
         # WiFi channel
         metric = Metrics.INSTANCE_WIFI_CHANNEL
         self.assertEqual(metric._name, "wargos_wled_instance_wifi_channel")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # WiFi RSSI
         metric = Metrics.INSTANCE_WIFI_RSSI
         self.assertEqual(metric._name, "wargos_wled_instance_wifi_rssi")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # WiFi signal
         metric = Metrics.INSTANCE_WIFI_SIGNAL
         self.assertEqual(metric._name, "wargos_wled_instance_wifi_signal")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # WiFi BSSID
         metric = Metrics.INSTANCE_WIFI_BSSID
         self.assertEqual(metric._name, "wargos_wled_instance_wifi_bssid")
-        self.assertEqual(metric._labelnames, ("name", "ip", "bssid"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "bssid", "pid"))
 
     def test_state_metrics(self):
         """Test state related metrics"""
         # Live state
         metric = Metrics.INSTANCE_LIVE_STATE
         self.assertEqual(metric._name, "wargos_wled_instance_live_state")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # State brightness
         metric = Metrics.INSTANCE_STATE_BRIGHTNESS
         self.assertEqual(metric._name, "wargos_wled_instance_state_brightness")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # State transition
         metric = Metrics.INSTANCE_STATE_TRANSITION
         self.assertEqual(metric._name, "wargos_wled_instance_state_transition")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # State on
         metric = Metrics.INSTANCE_STATE_ON
         self.assertEqual(metric._name, "wargos_wled_instance_state_on")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # State playlist ID
         metric = Metrics.INSTANCE_STATE_PLAYLIST_ID
         self.assertEqual(
             metric._name, "wargos_wled_instance_state_playlist_id"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # State preset ID
         metric = Metrics.INSTANCE_STATE_PRESET_ID
         self.assertEqual(metric._name, "wargos_wled_instance_state_preset_id")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
     def test_sync_metrics(self):
         """Test sync related metrics"""
@@ -631,24 +652,24 @@ class TestMetricsDetailed(unittest.TestCase):
         self.assertEqual(
             metric._name, "wargos_wled_instance_sync_receive_state"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # Sync send state
         metric = Metrics.INSTANCE_SYNC_SEND_STATE
         self.assertEqual(metric._name, "wargos_wled_instance_sync_send_state")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # Sync receive groups
         metric = Metrics.INSTANCE_SYNC_RECEIVE_GROUPS
         self.assertEqual(
             metric._name, "wargos_wled_instance_sync_receive_groups"
         )
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
         # Sync send groups
         metric = Metrics.INSTANCE_SYNC_SEND_GROUPS
         self.assertEqual(metric._name, "wargos_wled_instance_sync_send_groups")
-        self.assertEqual(metric._labelnames, ("name", "ip"))
+        self.assertEqual(metric._labelnames, ("name", "ip", "pid"))
 
     def test_metric_types(self):
         """Test that metrics have correct types"""
