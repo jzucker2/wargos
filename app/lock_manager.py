@@ -1,4 +1,5 @@
 import logging
+import os
 import sqlite3
 import time
 from typing import Optional
@@ -11,12 +12,26 @@ class SQLiteLockManager:
 
     def __init__(self, db_path: str = "/tmp/wargos_locks.db"):
         self.db_path = db_path
+        self._ensure_db_directory()
         self._init_db()
+
+    def _ensure_db_directory(self):
+        """Ensure the database directory exists"""
+        try:
+            db_dir = os.path.dirname(self.db_path)
+            if db_dir and not os.path.exists(db_dir):
+                os.makedirs(db_dir, exist_ok=True)
+                log.info(f"Created database directory: {db_dir}")
+        except Exception as e:
+            log.error(f"Failed to create database directory: {e}")
 
     def _init_db(self):
         """Initialize the SQLite database with the locks table"""
         try:
             with sqlite3.connect(self.db_path) as conn:
+                # Enable WAL mode for better concurrency
+                conn.execute("PRAGMA journal_mode=WAL")
+
                 conn.execute(
                     """
                     CREATE TABLE IF NOT EXISTS locks (
@@ -28,18 +43,47 @@ class SQLiteLockManager:
                 """
                 )
                 conn.commit()
+                log.info(f"Initialized SQLite lock database: {self.db_path}")
         except Exception as e:
             log.error(f"Failed to initialize SQLite lock database: {e}")
+            # Try to create a new database file if the current one is corrupted
+            try:
+                if os.path.exists(self.db_path):
+                    os.remove(self.db_path)
+                    log.info(
+                        f"Removed corrupted database file: {self.db_path}"
+                    )
+                with sqlite3.connect(self.db_path) as conn:
+                    conn.execute("PRAGMA journal_mode=WAL")
+                    conn.execute(
+                        """
+                        CREATE TABLE IF NOT EXISTS locks (
+                            lock_name TEXT PRIMARY KEY,
+                            worker_pid INTEGER,
+                            acquired_at REAL,
+                            expires_at REAL
+                        )
+                    """
+                    )
+                    conn.commit()
+                    log.info(f"Recreated SQLite lock database: {self.db_path}")
+            except Exception as recreate_error:
+                log.error(
+                    f"Failed to recreate SQLite lock database: {recreate_error}"
+                )
 
     def _cleanup_expired_locks(self):
         """Clean up expired locks"""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 current_time = time.time()
-                conn.execute(
+                cursor = conn.execute(
                     "DELETE FROM locks WHERE expires_at < ?", (current_time,)
                 )
+                deleted_count = cursor.rowcount
                 conn.commit()
+                if deleted_count > 0:
+                    log.debug(f"Cleaned up {deleted_count} expired locks")
         except Exception as e:
             log.error(f"Failed to cleanup expired locks: {e}")
 

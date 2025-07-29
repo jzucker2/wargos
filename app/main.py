@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI):
                     f"=========>"
                 )
 
-                # Only set worker-specific metrics when this worker is doing the scraping
+                # Only set worker-specific metrics when this worker is responsible for metrics
                 await Scraper.get_client().perform_full_scrape(
                     set_instance_info=True, set_metrics=True
                 )
@@ -90,30 +90,26 @@ app = FastAPI(lifespan=lifespan)
 # Configure Prometheus for multi-worker environments
 def configure_prometheus():
     """Configure Prometheus for multi-worker environments"""
-    # Check if we're in a multi-process environment
-    multiproc_dir = os.environ.get("PROMETHEUS_MULTIPROC_DIR")
+    # Use simple global registry - only one worker will update metrics during scrape
+    instrumentator = Instrumentator(
+        should_respect_env_var=True,
+        should_instrument_requests_inprogress=True,
+        excluded_handlers=["/metrics"],
+        env_var_name="ENABLE_METRICS",
+    )
 
-    if multiproc_dir and os.path.isdir(multiproc_dir):
-        # Temporarily disable multiprocess to fix corruption issues
-        # Use default configuration for single-process environments (like tests)
-        instrumentator = Instrumentator(
-            should_respect_env_var=True,
-            should_instrument_requests_inprogress=True,
-            excluded_handlers=["/metrics"],
-            env_var_name="ENABLE_METRICS",
-        )
+    # Instrument the app
+    instrumentator.instrument(app)
 
-        # Instrument the app
-        instrumentator.instrument(app)
+    log.info(
+        "🔧 Using global Prometheus registry (single worker updates metrics)"
+    )
 
-        log.info(
-            "🔧 Using single-process Prometheus configuration (multiprocess disabled)"
-        )
-
-        # Add metrics endpoint
-        @app.get("/metrics")
-        async def metrics():
-            """Metrics endpoint"""
+    # Add metrics endpoint
+    @app.get("/metrics")
+    async def metrics():
+        """Metrics endpoint"""
+        try:
             return Response(
                 generate_latest(),
                 media_type=CONTENT_TYPE_LATEST,
@@ -121,18 +117,13 @@ def configure_prometheus():
                     "Cache-Control": "no-cache, no-store, must-revalidate"
                 },
             )
-
-    else:
-        # Use default configuration for single-process environments (like tests)
-        instrumentator = Instrumentator(
-            should_respect_env_var=True,
-            should_instrument_requests_inprogress=True,
-            excluded_handlers=["/metrics"],
-            env_var_name="ENABLE_METRICS",
-        )
-
-        # Instrument the app
-        instrumentator.instrument(app)
+        except Exception as e:
+            log.error(f"Error generating metrics: {e}")
+            return Response(
+                "# Error generating metrics\n",
+                media_type=CONTENT_TYPE_LATEST,
+                status_code=500,
+            )
 
 
 # Configure Prometheus

@@ -52,8 +52,7 @@ class TestPrometheusConfiguration:
                 # Call configure_prometheus
                 configure_prometheus()
 
-                # Currently using single-process configuration (multiprocess disabled)
-                # Check that standard instrumentator was used (not multiprocess)
+                # Check that standard instrumentator was used (global registry)
                 mock_instrumentator.assert_called_once_with(
                     should_respect_env_var=True,
                     should_instrument_requests_inprogress=True,
@@ -192,15 +191,14 @@ class TestPrometheusConfiguration:
         self,
         mock_instrumentator,
     ):
-        """Test that multiprocess registry is created correctly"""
+        """Test that standard instrumentator is created correctly"""
         with patch.dict(
             os.environ, {"PROMETHEUS_MULTIPROC_DIR": "/tmp"}, clear=True
         ):
             with patch("os.path.isdir", return_value=True):
                 configure_prometheus()
 
-                # Currently using single-process configuration (multiprocess disabled)
-                # Check that standard instrumentator was used (not multiprocess)
+                # Check that standard instrumentator was used (global registry)
                 mock_instrumentator.assert_called_once_with(
                     should_respect_env_var=True,
                     should_instrument_requests_inprogress=True,
@@ -212,15 +210,14 @@ class TestPrometheusConfiguration:
         self,
         mock_instrumentator,
     ):
-        """Test that instrumentator is created with registry in multi-process mode"""
+        """Test that instrumentator is created without registry (global registry)"""
         with patch.dict(
             os.environ, {"PROMETHEUS_MULTIPROC_DIR": "/tmp"}, clear=True
         ):
             with patch("os.path.isdir", return_value=True):
                 configure_prometheus()
 
-                # Currently using single-process configuration (multiprocess disabled)
-                # Check that instrumentator was created without registry
+                # Check that instrumentator was created without registry (uses global registry)
                 call_args = mock_instrumentator.call_args
                 assert "registry" not in call_args[1]
 
@@ -247,8 +244,7 @@ class TestPrometheusConfiguration:
             with patch("os.path.isdir", return_value=True):
                 configure_prometheus()
 
-                # Currently using single-process configuration (multiprocess disabled)
-                # Should use single-process configuration
+                # Should use global registry configuration
                 call_args = mock_instrumentator.call_args
                 assert "registry" not in call_args[1]
 
@@ -261,7 +257,7 @@ class TestPrometheusConfiguration:
             with patch("os.path.isdir", return_value=False):
                 configure_prometheus()
 
-                # Should fall back to single-process configuration
+                # Should fall back to global registry configuration
                 call_args = mock_instrumentator.call_args
                 assert "registry" not in call_args[1]
 
