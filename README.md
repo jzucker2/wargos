@@ -86,16 +86,16 @@ By default, logging is info level. To set to debug, provide the env `DEBUG=true`
 |                     `DEBUG`                     |    `false`    |               `true`               |                     This determines debug logging and a few other things                     |
 | `DEFAULT_WLED_INSTANCE_SCRAPE_INTERVAL_SECONDS` |     `60`      |                `30`                |     This determines how often `wargos` scrapes prometheus metrics from `wled` instances      |
 | `DEFAULT_WLED_FIRST_WAIT_SECONDS`              |     `30`      |                `15`                |     This determines how long to wait before the first scrape after startup                   |
-| `DEFAULT_WLED_IP`                              | `10.0.1.179`  |           `10.0.1.100`            |     This is the default IP address used when no IP list is provided                         |
+| `DEFAULT_WLED_IP`                              | `10.0.1.179`  |            `10.0.1.100`            |     This is the default IP address used when no IP list is provided                         |
 | `WLED_IP_LIST`                                 |    `None`     | `10.0.1.129,10.0.1.150,10.0.1.179` |     Comma-separated list of WLED device IP addresses to scrape                              |
 | `ENABLE_RELEASE_CHECK`                         |    `true`     |              `false`               |     Enable or disable WLED release checking (true/false, 1/0, yes/no, on/off)              |
-| `CONFIG_BACKUP_DIR`                            | `/backups/` | `/home/user/wled_backups` | Directory where WLED config backups are stored |
-|                     `PORT`                      |    `9395`     |               `9395`                | The port on which the Gunicorn server will listen |
-|                   `WORKERS`                     |      `4`      |                `2`                  | Number of Gunicorn worker processes |
-|                  `TIMEOUT`                      |    `120`      |               `60`                  | Worker timeout in seconds |
-|                 `KEEPALIVE`                     |      `2`      |                `5`                  | Keep-alive connection timeout |
-|               `MAX_REQUESTS`                    |   `1000`      |               `500`                 | Maximum requests per worker before restart |
-|           `MAX_REQUESTS_JITTER`                 |     `50`      |               `25`                  | Jitter for max requests to prevent all workers restarting at once |
+| `CONFIG_BACKUP_DIR`                            | `/backups/` |     `/home/user/wled_backups`      | Directory where WLED config backups are stored |
+|                     `PORT`                      |    `9395`     |               `9395`               | The port on which the Gunicorn server will listen |
+|                   `WORKERS`                     |      `4`      |                `1`                 | Number of Gunicorn worker processes |
+|                  `TIMEOUT`                      |    `120`      |                `60`                | Worker timeout in seconds |
+|                 `KEEPALIVE`                     |      `2`      |                `5`                 | Keep-alive connection timeout |
+|               `MAX_REQUESTS`                    |   `1000`      |               `500`                | Maximum requests per worker before restart |
+|           `MAX_REQUESTS_JITTER`                 |     `50`      |                `25`                | Jitter for max requests to prevent all workers restarting at once |
 
 ## Running the Application
 
