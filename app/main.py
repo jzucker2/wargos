@@ -23,58 +23,66 @@ async def lifespan(app: FastAPI):
     log.info("🚀 Starting up FastAPI application")
     log.debug("Starting up FastAPI application")
 
-    # Start the background task
-    @repeat_every(
-        seconds=Scraper.get_default_scrape_interval(),
-        wait_first=Scraper.get_default_wait_first_interval(),
-        logger=log,
-    )
-    async def perform_full_routine_metrics_scrape() -> None:
-        worker_pid = os.getpid()
+    # Check if we should enable background tasks (disable during testing)
+    enable_background_tasks = os.environ.get(
+        "ENABLE_BACKGROUND_TASKS", "true"
+    ).lower() in ("true", "1", "yes", "on")
 
-        log.info(f"🔄 Background task triggered for worker {worker_pid}")
+    if enable_background_tasks:
+        # Start the background task
+        @repeat_every(
+            seconds=Scraper.get_default_scrape_interval(),
+            wait_first=Scraper.get_default_wait_first_interval(),
+            logger=log,
+        )
+        async def perform_full_routine_metrics_scrape() -> None:
+            worker_pid = os.getpid()
 
-        # Try to acquire the scraper lock using SQLite
-        if lock_manager.try_acquire_lock(
-            "scraper", worker_pid, timeout_seconds=300
-        ):
-            try:
-                log.info(
-                    f"🔒 Worker {worker_pid}: Acquired scraper lock - performing full scrape"
-                )
-                log.info(
-                    f"🔄 Worker {worker_pid}: Performing full scrape of all metrics (interval: {Scraper.get_default_scrape_interval()})"
-                )
+            log.info(f"🔄 Background task triggered for worker {worker_pid}")
+
+            # Try to acquire the scraper lock using SQLite
+            if lock_manager.try_acquire_lock(
+                "scraper", worker_pid, timeout_seconds=300
+            ):
+                try:
+                    log.info(
+                        f"🔒 Worker {worker_pid}: Acquired scraper lock - performing full scrape"
+                    )
+                    log.info(
+                        f"🔄 Worker {worker_pid}: Performing full scrape of all metrics (interval: {Scraper.get_default_scrape_interval()})"
+                    )
+                    log.debug(
+                        f"Worker {worker_pid}: Going to perform full scrape of all metrics "
+                        f"(interval: {Scraper.get_default_scrape_interval()}) "
+                        f"=========>"
+                    )
+
+                    # Only set worker-specific metrics when this worker is responsible for metrics
+                    await Scraper.get_client().perform_full_scrape(
+                        set_instance_info=True, set_metrics=True
+                    )
+                    log.info(
+                        f"✅ Worker {worker_pid}: Full scrape completed successfully"
+                    )
+                except Exception as e:
+                    log.error(
+                        f"❌ Worker {worker_pid}: Error during full scrape: {e}"
+                    )
+                finally:
+                    # Always release the lock
+                    lock_manager.release_lock("scraper", worker_pid)
+            else:
+                # Another worker already has the lock
                 log.debug(
-                    f"Worker {worker_pid}: Going to perform full scrape of all metrics "
-                    f"(interval: {Scraper.get_default_scrape_interval()}) "
-                    f"=========>"
+                    f"🔒 Worker {worker_pid}: Scraper lock already held by another worker - skipping"
                 )
 
-                # Only set worker-specific metrics when this worker is responsible for metrics
-                await Scraper.get_client().perform_full_scrape(
-                    set_instance_info=True, set_metrics=True
-                )
-                log.info(
-                    f"✅ Worker {worker_pid}: Full scrape completed successfully"
-                )
-            except Exception as e:
-                log.error(
-                    f"❌ Worker {worker_pid}: Error during full scrape: {e}"
-                )
-            finally:
-                # Always release the lock
-                lock_manager.release_lock("scraper", worker_pid)
-        else:
-            # Another worker already has the lock
-            log.debug(
-                f"🔒 Worker {worker_pid}: Scraper lock already held by another worker - skipping"
-            )
-
-    # Start the background task by calling it once to initiate scheduling
-    log.info("🔄 Starting background scraping task")
-    # Call the function once to start the scheduling
-    await perform_full_routine_metrics_scrape()
+        # Start the background task by calling it once to initiate scheduling
+        log.info("🔄 Starting background scraping task")
+        # Call the function once to start the scheduling
+        await perform_full_routine_metrics_scrape()
+    else:
+        log.info("⏸️ Background tasks disabled (likely during testing)")
 
     # Yield None to keep it running
     yield
@@ -82,6 +90,26 @@ async def lifespan(app: FastAPI):
     # Shutdown
     log.info("🛑 Shutting down FastAPI application")
     log.debug("Shutting down FastAPI application")
+
+    # Clean up any pending tasks
+    try:
+        # Cancel any pending background tasks
+        import asyncio
+
+        tasks = [task for task in asyncio.all_tasks() if not task.done()]
+        if tasks:
+            log.info(f"🛑 Cancelling {len(tasks)} pending tasks")
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+            # Wait a bit for tasks to cancel, but handle cancellation gracefully
+            try:
+                await asyncio.sleep(0.1)
+            except asyncio.CancelledError:
+                # This is expected when tasks are being cancelled
+                pass
+    except Exception as e:
+        log.debug(f"Error during task cleanup: {e}")
 
 
 app = FastAPI(lifespan=lifespan)
