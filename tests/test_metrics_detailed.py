@@ -91,13 +91,14 @@ class TestMetricsLabelsDetailed(unittest.TestCase):
         """Test segment_color_labels method"""
         labels = MetricsLabels.segment_color_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 5)
+        self.assertEqual(len(labels), 6)
         expected_labels = [
             "name",
             "ip",
             "segment",
             "color_priority",
             "color_tuple_position",
+            "pid",
         ]
         for label in expected_labels:
             self.assertIn(label, labels)
@@ -480,6 +481,7 @@ class TestMetricsDetailed(unittest.TestCase):
                 "segment",
                 "color_priority",
                 "color_tuple_position",
+                "pid",
             ),
         )
 

@@ -114,6 +114,7 @@ class MetricsLabels(Enum):
                 cls.SEGMENT.value,
                 cls.COLOR_PRIORITY.value,
                 cls.COLOR_TUPLE_POSITION.value,
+                cls.PID.value,
             ]
         )
 
