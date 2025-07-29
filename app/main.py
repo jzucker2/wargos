@@ -263,7 +263,6 @@ async def download_latest_backup(
                 device_ip=device_ip,
                 status="not_found",
                 backup_type="config",
-                pid=os.getpid(),
             ).inc()
 
             return {
@@ -281,7 +280,6 @@ async def download_latest_backup(
                 device_ip=device_ip,
                 status="not_found",
                 backup_type="config",
-                pid=os.getpid(),
             ).inc()
 
             return {
@@ -316,7 +314,6 @@ async def download_latest_backup(
             device_ip=device_ip,
             status="success",
             backup_type="config",
-            pid=os.getpid(),
         ).inc()
 
         async def cleanup_temp_file():
@@ -341,14 +338,12 @@ async def download_latest_backup(
             device_ip=device_ip,
             status="error",
             backup_type="config",
-            pid=os.getpid(),
         ).inc()
         Metrics.BACKUP_OPERATION_EXCEPTIONS.labels(
             operation_type="download_latest_config",
             device_ip=device_ip,
             exception_type=exception_type,
             backup_type="config",
-            pid=os.getpid(),
         ).inc()
 
         return {
@@ -381,7 +376,6 @@ async def download_latest_presets(
                 device_ip=device_ip,
                 status="not_found",
                 backup_type="preset",
-                pid=os.getpid(),
             ).inc()
 
             return {
@@ -399,7 +393,6 @@ async def download_latest_presets(
                 device_ip=device_ip,
                 status="not_found",
                 backup_type="preset",
-                pid=os.getpid(),
             ).inc()
 
             return {
@@ -423,7 +416,6 @@ async def download_latest_presets(
                 device_ip=device_ip,
                 status="empty_presets",
                 backup_type="preset",
-                pid=os.getpid(),
             ).inc()
 
             return {
@@ -452,7 +444,6 @@ async def download_latest_presets(
             device_ip=device_ip,
             status="success",
             backup_type="preset",
-            pid=os.getpid(),
         ).inc()
 
         async def cleanup_temp_file():
@@ -477,14 +468,12 @@ async def download_latest_presets(
             device_ip=device_ip,
             status="error",
             backup_type="preset",
-            pid=os.getpid(),
         ).inc()
         Metrics.BACKUP_OPERATION_EXCEPTIONS.labels(
             operation_type="download_latest_presets",
             device_ip=device_ip,
             exception_type=exception_type,
             backup_type="preset",
-            pid=os.getpid(),
         ).inc()
 
         return {

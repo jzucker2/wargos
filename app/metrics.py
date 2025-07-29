@@ -33,7 +33,6 @@ class MetricsLabels(Enum):
             [
                 cls.STABLE.value,
                 cls.BETA.value,
-                cls.PID.value,
             ]
         )
 
@@ -42,7 +41,6 @@ class MetricsLabels(Enum):
         return list(
             [
                 cls.VERSION.value,
-                cls.PID.value,
             ]
         )
 
@@ -59,7 +57,6 @@ class MetricsLabels(Enum):
                 cls.NAME.value,
                 cls.PRODUCT.value,
                 cls.VERSION.value,
-                cls.PID.value,
             ]
         )
 
@@ -69,7 +66,6 @@ class MetricsLabels(Enum):
             [
                 cls.NAME.value,
                 cls.IP.value,
-                cls.PID.value,
             ]
         )
 
@@ -79,7 +75,6 @@ class MetricsLabels(Enum):
             [
                 cls.IP.value,
                 cls.SCRAPE_EVENT.value,
-                cls.PID.value,
             ]
         )
 
@@ -90,7 +85,6 @@ class MetricsLabels(Enum):
                 cls.NAME.value,
                 cls.IP.value,
                 cls.BSSID.value,
-                cls.PID.value,
             ]
         )
 
@@ -101,7 +95,6 @@ class MetricsLabels(Enum):
                 cls.NAME.value,
                 cls.IP.value,
                 cls.SEGMENT.value,
-                cls.PID.value,
             ]
         )
 
@@ -114,7 +107,6 @@ class MetricsLabels(Enum):
                 cls.SEGMENT.value,
                 cls.COLOR_PRIORITY.value,
                 cls.COLOR_TUPLE_POSITION.value,
-                cls.PID.value,
             ]
         )
 
@@ -123,7 +115,6 @@ class MetricsLabels(Enum):
         return list(
             [
                 cls.IP.value,
-                cls.PID.value,
             ]
         )
 
@@ -132,7 +123,6 @@ class MetricsLabels(Enum):
         return list(
             [
                 cls.IP.value,
-                cls.PID.value,
             ]
         )
 
@@ -141,7 +131,6 @@ class MetricsLabels(Enum):
         return list(
             [
                 cls.IP.value,
-                cls.PID.value,
             ]
         )
 
@@ -151,7 +140,6 @@ class MetricsLabels(Enum):
             [
                 cls.IP.value,
                 cls.EXCEPTION_CLASS.value,
-                cls.PID.value,
             ]
         )
 
@@ -161,7 +149,6 @@ class MetricsLabels(Enum):
             [
                 cls.NAME.value,
                 cls.IP.value,
-                cls.PID.value,
             ]
         )
 
@@ -171,7 +158,6 @@ class MetricsLabels(Enum):
             [
                 cls.NAME.value,
                 cls.IP.value,
-                cls.PID.value,
             ]
         )
 
@@ -183,7 +169,6 @@ class MetricsLabels(Enum):
                 cls.IP.value,
                 cls.PRESET_ID.value,
                 cls.PRESET_NAME.value,
-                cls.PID.value,
             ]
         )
 
@@ -196,7 +181,6 @@ class MetricsLabels(Enum):
                 cls.PRESET_ID.value,
                 cls.PRESET_NAME.value,
                 cls.PRESET_QUICK_LABEL.value,
-                cls.PID.value,
             ]
         )
 
@@ -208,7 +192,6 @@ class MetricsLabels(Enum):
                 "device_ip",
                 "status",
                 "backup_type",
-                cls.PID.value,
             ]
         )
 
@@ -219,7 +202,6 @@ class MetricsLabels(Enum):
                 "operation_type",
                 "device_ip",
                 "backup_type",
-                cls.PID.value,
             ]
         )
 
@@ -231,7 +213,6 @@ class MetricsLabels(Enum):
                 "device_ip",
                 "exception_type",
                 "backup_type",
-                cls.PID.value,
             ]
         )
 
@@ -241,7 +222,6 @@ class MetricsLabels(Enum):
             [
                 "device_ip",
                 "backup_type",
-                cls.PID.value,
             ]
         )
 
@@ -251,7 +231,6 @@ class MetricsLabels(Enum):
             [
                 "device_ip",
                 "backup_type",
-                cls.PID.value,
             ]
         )
 
@@ -262,7 +241,6 @@ class MetricsLabels(Enum):
                 "device_ip",
                 "http_status_code",
                 "backup_type",
-                cls.PID.value,
             ]
         )
 
@@ -273,7 +251,6 @@ class MetricsLabels(Enum):
                 "device_ip",
                 "error_type",
                 "backup_type",
-                cls.PID.value,
             ]
         )
 

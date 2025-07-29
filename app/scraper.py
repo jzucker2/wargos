@@ -135,23 +135,19 @@ class Scraper(object):
                             device_ip=device_ip,
                             status="success",
                             backup_type="config",
-                            pid=os.getpid(),
                         ).inc()
                         Metrics.BACKUP_OPERATION_DURATION.labels(
                             operation_type="single_config_backup",
                             device_ip=device_ip,
                             backup_type="config",
-                            pid=os.getpid(),
                         ).observe(duration)
                         Metrics.BACKUP_FILES_CREATED.labels(
                             device_ip=device_ip,
                             backup_type="config",
-                            pid=os.getpid(),
                         ).inc()
                         Metrics.BACKUP_FILE_SIZE_BYTES.labels(
                             device_ip=device_ip,
                             backup_type="config",
-                            pid=os.getpid(),
                         ).set(file_size)
 
                         log.info(
@@ -169,14 +165,12 @@ class Scraper(object):
                             device_ip=device_ip,
                             http_status_code=str(response.status),
                             backup_type="config",
-                            pid=os.getpid(),
                         ).inc()
                         Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                             operation_type="single_config_backup",
                             device_ip=device_ip,
                             status="error",
                             backup_type="config",
-                            pid=os.getpid(),
                         ).inc()
 
                         error_msg = f"Failed to fetch config from {device_ip}: HTTP {response.status}"
@@ -196,14 +190,12 @@ class Scraper(object):
                 device_ip=device_ip,
                 exception_type=exception_type,
                 backup_type="config",
-                pid=os.getpid(),
             ).inc()
             Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="single_config_backup",
                 device_ip=device_ip,
                 status="error",
                 backup_type="config",
-                pid=os.getpid(),
             ).inc()
 
             # Track connection errors specifically
@@ -212,7 +204,6 @@ class Scraper(object):
                     device_ip=device_ip,
                     error_type=exception_type,
                     backup_type="config",
-                    pid=os.getpid(),
                 ).inc()
 
             error_msg = f"Error backing up config from {device_ip}: {str(e)}"
@@ -261,13 +252,11 @@ class Scraper(object):
                                 device_ip=device_ip,
                                 status="empty_presets",
                                 backup_type="preset",
-                                pid=os.getpid(),
                             ).inc()
                             Metrics.BACKUP_OPERATION_DURATION.labels(
                                 operation_type="single_preset_backup",
                                 device_ip=device_ip,
                                 backup_type="preset",
-                                pid=os.getpid(),
                             ).observe(duration)
 
                             log.info(
@@ -304,23 +293,19 @@ class Scraper(object):
                             device_ip=device_ip,
                             status="success",
                             backup_type="preset",
-                            pid=os.getpid(),
                         ).inc()
                         Metrics.BACKUP_OPERATION_DURATION.labels(
                             operation_type="single_preset_backup",
                             device_ip=device_ip,
                             backup_type="preset",
-                            pid=os.getpid(),
                         ).observe(duration)
                         Metrics.BACKUP_FILES_CREATED.labels(
                             device_ip=device_ip,
                             backup_type="preset",
-                            pid=os.getpid(),
                         ).inc()
                         Metrics.BACKUP_FILE_SIZE_BYTES.labels(
                             device_ip=device_ip,
                             backup_type="preset",
-                            pid=os.getpid(),
                         ).set(file_size)
 
                         log.info(
@@ -338,14 +323,12 @@ class Scraper(object):
                             device_ip=device_ip,
                             http_status_code=str(response.status),
                             backup_type="preset",
-                            pid=os.getpid(),
                         ).inc()
                         Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                             operation_type="single_preset_backup",
                             device_ip=device_ip,
                             status="error",
                             backup_type="preset",
-                            pid=os.getpid(),
                         ).inc()
 
                         error_msg = f"Failed to fetch presets from {device_ip}: HTTP {response.status}"
@@ -365,14 +348,12 @@ class Scraper(object):
                 device_ip=device_ip,
                 exception_type=exception_type,
                 backup_type="preset",
-                pid=os.getpid(),
             ).inc()
             Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="single_preset_backup",
                 device_ip=device_ip,
                 status="error",
                 backup_type="preset",
-                pid=os.getpid(),
             ).inc()
 
             # Track connection errors specifically
@@ -381,7 +362,6 @@ class Scraper(object):
                     device_ip=device_ip,
                     error_type=exception_type,
                     backup_type="preset",
-                    pid=os.getpid(),
                 ).inc()
 
             error_msg = f"Error backing up presets from {device_ip}: {str(e)}"
@@ -443,13 +423,11 @@ class Scraper(object):
             device_ip="all",
             status="completed",
             backup_type="config",
-            pid=os.getpid(),
         ).inc()
         Metrics.BACKUP_OPERATION_DURATION.labels(
             operation_type="bulk_backup",
             device_ip="all",
             backup_type="config",
-            pid=os.getpid(),
         ).observe(duration)
 
         # Track individual results
@@ -460,7 +438,6 @@ class Scraper(object):
                     device_ip=result["device_ip"],
                     status="success",
                     backup_type="config",
-                    pid=os.getpid(),
                 ).inc()
             else:
                 Metrics.BACKUP_OPERATIONS_TOTAL.labels(
@@ -468,7 +445,6 @@ class Scraper(object):
                     device_ip=result["device_ip"],
                     status="error",
                     backup_type="config",
-                    pid=os.getpid(),
                 ).inc()
 
         return results
@@ -522,13 +498,11 @@ class Scraper(object):
             device_ip="all",
             status="completed",
             backup_type="preset",
-            pid=os.getpid(),
         ).inc()
         Metrics.BACKUP_OPERATION_DURATION.labels(
             operation_type="bulk_preset_backup",
             device_ip="all",
             backup_type="preset",
-            pid=os.getpid(),
         ).observe(duration)
 
         # Track individual results
@@ -539,7 +513,6 @@ class Scraper(object):
                     device_ip=result["device_ip"],
                     status="success",
                     backup_type="preset",
-                    pid=os.getpid(),
                 ).inc()
             else:
                 Metrics.BACKUP_OPERATIONS_TOTAL.labels(
@@ -547,7 +520,6 @@ class Scraper(object):
                     device_ip=result["device_ip"],
                     status="error",
                     backup_type="preset",
-                    pid=os.getpid(),
                 ).inc()
 
         return results
@@ -577,13 +549,11 @@ class Scraper(object):
             device_ip="all",
             status="completed",
             backup_type="combined",
-            pid=os.getpid(),
         ).inc()
         Metrics.BACKUP_OPERATION_DURATION.labels(
             operation_type="bulk_all_backup",
             device_ip="all",
             backup_type="combined",
-            pid=os.getpid(),
         ).observe(duration)
 
         return {
@@ -602,22 +572,18 @@ class Scraper(object):
         Metrics.INSTANCE_SYNC_RECEIVE_STATE.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(sync_state.receive or 0)
         Metrics.INSTANCE_SYNC_RECEIVE_GROUPS.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(sync_state.receive_groups or 0)
         Metrics.INSTANCE_SYNC_SEND_STATE.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(sync_state.send or 0)
         Metrics.INSTANCE_SYNC_SEND_GROUPS.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(sync_state.send_groups or 0)
 
     def scrape_device_wifi(self, device_info):
@@ -628,23 +594,19 @@ class Scraper(object):
         Metrics.INSTANCE_WIFI_CHANNEL.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(wifi_info.channel or 0)
         Metrics.INSTANCE_WIFI_RSSI.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(wifi_info.rssi or 0)
         Metrics.INSTANCE_WIFI_SIGNAL.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(wifi_info.signal or 0)
         Metrics.INSTANCE_WIFI_BSSID.labels(
             ip=device_info.ip,
             name=device_info.name,
             bssid=wifi_info.bssid,
-            pid=os.getpid(),
         ).set(1)
 
     def scrape_device_presets(self, device_info, device):
@@ -657,7 +619,6 @@ class Scraper(object):
         Metrics.INSTANCE_PRESET_COUNT_VALUE.labels(
             name=device_info.name,
             ip=device_info.ip,
-            pid=os.getpid(),
         ).set(preset_count or 0)
         for preset_info in preset_info_list:
             log.debug(f"found preset_info: {preset_info}")
@@ -669,14 +630,12 @@ class Scraper(object):
                 ip=device_info.ip,
                 preset_id=preset_id,
                 preset_name=preset_name,
-                pid=os.getpid(),
             ).set(preset_info.on or 0)
             Metrics.INSTANCE_PRESET_TRANSITION_VALUE.labels(
                 name=device_info.name,
                 ip=device_info.ip,
                 preset_id=preset_id,
                 preset_name=preset_name,
-                pid=os.getpid(),
             ).set(preset_info.transition or 0)
             Metrics.INSTANCE_PRESET_QUICK_LABEL_INFO.labels(
                 name=device_info.name,
@@ -684,28 +643,24 @@ class Scraper(object):
                 preset_id=preset_id,
                 preset_name=preset_name,
                 preset_quick_label=final_quick_label,
-                pid=os.getpid(),
             ).set(1)
 
     def scrape_uptime(self, device_info):
         Metrics.INSTANCE_UPTIME_SECONDS.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(device_info.uptime.total_seconds() or 0)
 
     def scrape_websocket_clients(self, device_info):
         Metrics.INSTANCE_WEBSOCKET_CLIENTS.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(device_info.websocket or 0)
 
     def scrape_udp_port(self, device_info):
         Metrics.INSTANCE_UDP_PORT.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(device_info.udp_port or 0)
 
     def scrape_state_nightlight(self, device_info, device_state):
@@ -714,17 +669,14 @@ class Scraper(object):
         Metrics.INSTANCE_NIGHTLIGHT_DURATION_MINUTES.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(dev_nightlight.duration or 0)
         Metrics.INSTANCE_NIGHTLIGHT_ON_VALUE.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(dev_nightlight.on or 0)
         Metrics.INSTANCE_NIGHTLIGHT_TARGET_BRIGHTNESS_VALUE.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(dev_nightlight.target_brightness or 0)
 
     def _scrape_single_priority_color(
@@ -745,7 +697,6 @@ class Scraper(object):
                 segment=segment_name,
                 color_priority=color_priority,
                 color_tuple_position=color_position,
-                pid=os.getpid(),
             ).set(color_value)
             color_position += 1
 
@@ -777,85 +728,71 @@ class Scraper(object):
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.brightness or 0)
             Metrics.INSTANCE_SEGMENT_CLONES_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.clones or 0)
             Metrics.INSTANCE_SEGMENT_EFFECT_ID_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.effect_id or 0)
             Metrics.INSTANCE_SEGMENT_INTENSITY_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.intensity or 0)
             Metrics.INSTANCE_SEGMENT_LENGTH_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.length or 0)
             Metrics.INSTANCE_SEGMENT_ON_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.on or 0)
             Metrics.INSTANCE_SEGMENT_PALETTE_ID_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.palette_id or 0)
             Metrics.INSTANCE_SEGMENT_REVERSE_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.reverse or 0)
             Metrics.INSTANCE_SEGMENT_SEGMENT_ID_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.segment_id or 0)
             Metrics.INSTANCE_SEGMENT_SELECTED_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.selected or 0)
             Metrics.INSTANCE_SEGMENT_SPEED_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.speed or 0)
             Metrics.INSTANCE_SEGMENT_CCT_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.cct or 0)
             Metrics.INSTANCE_SEGMENT_START_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.start or 0)
             Metrics.INSTANCE_SEGMENT_STOP_VALUE.labels(
                 ip=device_info.ip,
                 name=device_info.name,
                 segment=segment_name,
-                pid=os.getpid(),
             ).set(segment_info.stop or 0)
             log.debug(
                 f"Now try and scrape colors "
@@ -871,12 +808,10 @@ class Scraper(object):
         Metrics.INSTANCE_FILESYSTEM_SPACE_TOTAL.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(dev_fs.total or 0)
         Metrics.INSTANCE_FILESYSTEM_SPACE_USED.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(dev_fs.used or 0)
 
     def scrape_info_leds(self, device_info):
@@ -885,27 +820,22 @@ class Scraper(object):
         Metrics.INSTANCE_LED_COUNT_VALUE.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(dev_leds.count or 0)
         Metrics.INSTANCE_LED_FPS_VALUE.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(dev_leds.fps or 0)
         Metrics.INSTANCE_LED_MAX_SEGMENTS.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(dev_leds.max_segments or 0)
         Metrics.INSTANCE_LED_MAX_POWER.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(dev_leds.max_power or 0)
         Metrics.INSTANCE_LED_CURRENT_POWER.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(dev_leds.power or 0)
 
     def scrape_device_info(self, device_info):
@@ -924,27 +854,22 @@ class Scraper(object):
             name=device_info.name,
             product=device_info.product,
             version=str(device_info.version),
-            pid=os.getpid(),
         ).set(1)
         Metrics.INSTANCE_FREE_HEAP.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(device_info.free_heap or 0)
         Metrics.INSTANCE_PALETTE_COUNT_VALUE.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(device_info.palette_count or 0)
         Metrics.INSTANCE_EFFECT_COUNT_VALUE.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(device_info.effect_count or 0)
         Metrics.INSTANCE_LIVE_STATE.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(device_info.live or 0)
 
     def scrape_device_state(self, device_info, device_state):
@@ -954,27 +879,22 @@ class Scraper(object):
         Metrics.INSTANCE_STATE_BRIGHTNESS.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(device_state.brightness or 0)
         Metrics.INSTANCE_STATE_TRANSITION.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(device_state.transition or 0)
         Metrics.INSTANCE_STATE_ON.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(device_state.on or 0)
         Metrics.INSTANCE_STATE_PLAYLIST_ID.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(device_state.playlist_id or 0)
         Metrics.INSTANCE_STATE_PRESET_ID.labels(
             ip=device_info.ip,
             name=device_info.name,
-            pid=os.getpid(),
         ).set(device_state.preset_id or 0)
 
     async def scrape_default_instance(self):
@@ -986,11 +906,9 @@ class Scraper(object):
         if set_metrics:
             with Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_EXCEPTIONS.labels(
                 ip=device_ip,
-                pid=os.getpid(),
             ).count_exceptions():
                 with Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_TIME.labels(
                     ip=device_ip,
-                    pid=os.getpid(),
                 ).time():
                     await self._scrape_instance_internal(
                         device_ip, set_metrics=True
@@ -1007,14 +925,12 @@ class Scraper(object):
                 ip=device_ip,
                 # name=dev_info.name,
                 scrape_event="started",
-                pid=os.getpid(),
             ).inc()
             # Want to set this _before_ trying to connect
             # because timeouts haven't been configured yet
             Metrics.WLED_INSTANCE_ONLINE.labels(
                 ip=device_ip,
                 # name=dev_info.name,
-                pid=os.getpid(),
             ).set(0)
         device = await self.wled_client.get_wled_instance_device(device_ip)
         if set_metrics:
@@ -1022,7 +938,6 @@ class Scraper(object):
                 ip=device_ip,
                 # name=dev_info.name,
                 scrape_event="connected",
-                pid=os.getpid(),
             ).inc()
         log.debug(f"wled got device: {device}")
 
@@ -1059,18 +974,15 @@ class Scraper(object):
                 Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_BY_TYPE_EXCEPTIONS.labels(  # noqa: E501
                     ip=device_ip,
                     exception_class=exc_class,
-                    pid=os.getpid(),
                 ).inc()
                 Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
                     ip=device_ip,
                     # name=dev_info.name,
                     scrape_event="failed",
-                    pid=os.getpid(),
                 ).inc()
                 Metrics.WLED_INSTANCE_ONLINE.labels(
                     ip=device_ip,
                     # name=dev_info.name,
-                    pid=os.getpid(),
                 ).set(0)
         else:
             if set_metrics:
@@ -1078,12 +990,10 @@ class Scraper(object):
                     ip=device_ip,
                     # name=dev_info.name,
                     scrape_event="succeeded",
-                    pid=os.getpid(),
                 ).inc()
                 Metrics.WLED_INSTANCE_ONLINE.labels(
                     ip=device_ip,
                     # name=dev_info.name,
-                    pid=os.getpid(),
                 ).set(1)
 
     def scrape_self(self, set_instance_info=True):
@@ -1094,7 +1004,6 @@ class Scraper(object):
                 if set_instance_info:
                     Metrics.WARGOS_INSTANCE_INFO.labels(
                         version=current_version,
-                        pid=os.getpid(),
                     ).set(1)
 
     async def scrape_all_instances(self, set_metrics=True):
@@ -1135,7 +1044,6 @@ class Scraper(object):
                 Metrics.WLED_RELEASES_INFO.labels(
                     stable=str(latest.stable),
                     beta=str(latest.beta),
-                    pid=os.getpid(),
                 ).set(1)
 
     async def perform_full_scrape(
