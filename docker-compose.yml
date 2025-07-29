@@ -18,7 +18,7 @@ services:
       - CONFIG_BACKUP_DIR=/backups/
       # Gunicorn configuration (optional - defaults shown)
       - PORT=9395
-      - WORKERS=${WORKERS:-4}
+      - WORKERS=${WORKERS:-1}
       - TIMEOUT=120
       - KEEPALIVE=2
       - MAX_REQUESTS=1000
