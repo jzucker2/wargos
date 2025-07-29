@@ -263,8 +263,8 @@ The backup feature provides detailed Prometheus metrics for monitoring:
 
 ### Operation Metrics
 
-- `wargos_config_backup_operations_total`: Total number of backup operations (labeled by operation_type, device_ip, status)
-- `wargos_config_backup_operation_duration_seconds`: Duration of backup operations (labeled by operation_type, device_ip)
+- `wargos_backup_operations_total`: Total number of backup operations (labeled by operation_type, device_ip, status, backup_type)
+- `wargos_backup_operation_duration_seconds`: Duration of backup operations (labeled by operation_type, device_ip, backup_type)
 
 **Status Values:**
 
@@ -273,34 +273,46 @@ The backup feature provides detailed Prometheus metrics for monitoring:
 - `not_found`: No backup directory or files found
 - `empty_presets`: Preset backup skipped due to empty presets (special case)
 
+**Backup Type Values:**
+
+- `config`: Config backup operations
+- `preset`: Preset backup operations
+- `combined`: Combined config and preset backup operations
+
 ### Error Metrics
 
-- `wargos_config_backup_operation_exceptions_total`: Exceptions during backup operations (labeled by operation_type, device_ip, exception_type)
-- `wargos_config_backup_http_errors_total`: HTTP errors during backup operations (labeled by device_ip, http_status_code)
-- `wargos_config_backup_connection_errors_total`: Connection errors during backup operations (labeled by device_ip, error_type)
+- `wargos_backup_operation_exceptions_total`: Total number of exceptions during backup operations (labeled by operation_type, device_ip, exception_type, backup_type)
+- `wargos_backup_http_errors_total`: Total number of HTTP errors during backup operations (labeled by device_ip, http_status_code, backup_type)
+- `wargos_backup_connection_errors_total`: Total number of connection errors during backup operations (labeled by device_ip, error_type, backup_type)
 
 ### File Metrics
 
-- `wargos_config_backup_files_created_total`: Number of backup files created (labeled by device_ip)
-- `wargos_config_backup_file_size_bytes`: Size of the most recent backup file in bytes (labeled by device_ip)
+- `wargos_backup_files_created_total`: Total number of backup files created (labeled by device_ip, backup_type)
+- `wargos_backup_file_size_bytes`: Size of the most recent backup file in bytes (labeled by device_ip, backup_type)
 
 ### Example Queries
 
 ```promql
-# Successful backup operations
-wargos_config_backup_operations_total{status="success"}
+# Successful config backup operations
+wargos_backup_operations_total{status="success", backup_type="config"}
+
+# Successful preset backup operations
+wargos_backup_operations_total{status="success", backup_type="preset"}
 
 # Empty presets operations
-wargos_config_backup_operations_total{status="empty_presets"}
+wargos_backup_operations_total{status="empty_presets", backup_type="preset"}
 
-# Backup operation duration
-histogram_quantile(0.95, rate(wargos_config_backup_operation_duration_seconds_bucket[5m]))
+# Config backup operation duration
+histogram_quantile(0.95, rate(wargos_backup_operation_duration_seconds_bucket{backup_type="config"}[5m]))
 
-# HTTP errors by status code
-wargos_config_backup_http_errors_total
+# Preset backup operation duration
+histogram_quantile(0.95, rate(wargos_backup_operation_duration_seconds_bucket{backup_type="preset"}[5m]))
 
-# File creation rate
-rate(wargos_config_backup_files_created_total[5m])
+# HTTP errors by status code and backup type
+wargos_backup_http_errors_total
+
+# File creation rate by backup type
+rate(wargos_backup_files_created_total[5m])
 ```
 
 ## Testing

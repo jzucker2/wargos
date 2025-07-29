@@ -25,6 +25,7 @@ class MetricsLabels(Enum):
     PRESET_QUICK_LABEL = "preset_quick_label"
     STABLE = "stable"
     BETA = "beta"
+    PID = "pid"
 
     @classmethod
     def releases_labels(cls):
@@ -180,6 +181,76 @@ class MetricsLabels(Enum):
                 cls.PRESET_ID.value,
                 cls.PRESET_NAME.value,
                 cls.PRESET_QUICK_LABEL.value,
+            ]
+        )
+
+    @classmethod
+    def backup_operations_labels(cls):
+        return list(
+            [
+                "operation_type",
+                "device_ip",
+                "status",
+                "backup_type",
+            ]
+        )
+
+    @classmethod
+    def backup_operation_duration_labels(cls):
+        return list(
+            [
+                "operation_type",
+                "device_ip",
+                "backup_type",
+            ]
+        )
+
+    @classmethod
+    def backup_operation_exceptions_labels(cls):
+        return list(
+            [
+                "operation_type",
+                "device_ip",
+                "exception_type",
+                "backup_type",
+            ]
+        )
+
+    @classmethod
+    def backup_files_created_labels(cls):
+        return list(
+            [
+                "device_ip",
+                "backup_type",
+            ]
+        )
+
+    @classmethod
+    def backup_file_size_labels(cls):
+        return list(
+            [
+                "device_ip",
+                "backup_type",
+            ]
+        )
+
+    @classmethod
+    def backup_http_errors_labels(cls):
+        return list(
+            [
+                "device_ip",
+                "http_status_code",
+                "backup_type",
+            ]
+        )
+
+    @classmethod
+    def backup_connection_errors_labels(cls):
+        return list(
+            [
+                "device_ip",
+                "error_type",
+                "backup_type",
             ]
         )
 
@@ -595,45 +666,45 @@ class Metrics(object):
         MetricsLabels.basic_udp_sync_labels(),
     )
 
-    # Config Backup Metrics
-    CONFIG_BACKUP_OPERATIONS_TOTAL = Counter(
-        "wargos_config_backup_operations_total",
-        "Total number of config backup operations",
-        ["operation_type", "device_ip", "status"],
+    # Backup Metrics (consolidated for both config and preset operations)
+    BACKUP_OPERATIONS_TOTAL = Counter(
+        "wargos_backup_operations_total",
+        "Total number of backup operations",
+        MetricsLabels.backup_operations_labels(),
     )
 
-    CONFIG_BACKUP_OPERATION_DURATION = Summary(
-        "wargos_config_backup_operation_duration_seconds",
-        "Duration of config backup operations",
-        ["operation_type", "device_ip"],
+    BACKUP_OPERATION_DURATION = Summary(
+        "wargos_backup_operation_duration_seconds",
+        "Duration of backup operations",
+        MetricsLabels.backup_operation_duration_labels(),
     )
 
-    CONFIG_BACKUP_OPERATION_EXCEPTIONS = Counter(
-        "wargos_config_backup_operation_exceptions_total",
-        "Total number of exceptions during config backup operations",
-        ["operation_type", "device_ip", "exception_type"],
+    BACKUP_OPERATION_EXCEPTIONS = Counter(
+        "wargos_backup_operation_exceptions_total",
+        "Total number of exceptions during backup operations",
+        MetricsLabels.backup_operation_exceptions_labels(),
     )
 
-    CONFIG_BACKUP_FILES_CREATED = Counter(
-        "wargos_config_backup_files_created_total",
-        "Total number of config backup files created",
-        ["device_ip"],
+    BACKUP_FILES_CREATED = Counter(
+        "wargos_backup_files_created_total",
+        "Total number of backup files created",
+        MetricsLabels.backup_files_created_labels(),
     )
 
-    CONFIG_BACKUP_FILE_SIZE_BYTES = Gauge(
-        "wargos_config_backup_file_size_bytes",
-        "Size of the most recent config backup file in bytes",
-        ["device_ip"],
+    BACKUP_FILE_SIZE_BYTES = Gauge(
+        "wargos_backup_file_size_bytes",
+        "Size of the most recent backup file in bytes",
+        MetricsLabels.backup_file_size_labels(),
     )
 
-    CONFIG_BACKUP_HTTP_ERRORS = Counter(
-        "wargos_config_backup_http_errors_total",
-        "Total number of HTTP errors during config backup operations",
-        ["device_ip", "http_status_code"],
+    BACKUP_HTTP_ERRORS = Counter(
+        "wargos_backup_http_errors_total",
+        "Total number of HTTP errors during backup operations",
+        MetricsLabels.backup_http_errors_labels(),
     )
 
-    CONFIG_BACKUP_CONNECTION_ERRORS = Counter(
-        "wargos_config_backup_connection_errors_total",
-        "Total number of connection errors during config backup operations",
-        ["device_ip", "error_type"],
+    BACKUP_CONNECTION_ERRORS = Counter(
+        "wargos_backup_connection_errors_total",
+        "Total number of connection errors during backup operations",
+        MetricsLabels.backup_connection_errors_labels(),
     )

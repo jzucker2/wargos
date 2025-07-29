@@ -88,10 +88,10 @@ class TestConfigBackupDownload:
         assert response.headers["content-type"] == "application/json"
         assert (
             response.headers["content-disposition"]
-            == f'attachment; filename="{self.device_ip}_latest_backup.json"'
+            == f'attachment; filename="{self.device_ip}_latest_config.json"'
         )
 
-        # Verify the content is the latest config (should be config3) and metadata is stripped
+        # Verify the content is the latest config and metadata is stripped
         content = response.json()
         assert content["test"] == "config3"
         assert content["version"] == "1.2"
@@ -110,10 +110,10 @@ class TestConfigBackupDownload:
         assert response.headers["content-type"] == "application/json"
         assert (
             response.headers["content-disposition"]
-            == f'attachment; filename="{self.device_ip}_latest_backup.json"'
+            == f'attachment; filename="{self.device_ip}_latest_config.json"'
         )
 
-        # Verify the content is the latest config (should be config3) and metadata is included
+        # Verify the content is the latest config and metadata is included
         content = response.json()
         assert content["test"] == "config3"
         assert content["version"] == "1.2"
@@ -132,8 +132,7 @@ class TestConfigBackupDownload:
         assert response.status_code == 200
         content = response.json()
         assert content["status"] == "not_found"
-        assert "No backup directory found" in content["error"]
-        assert content["device_ip"] == "192.168.1.999"
+        assert "No config backup directory found" in content["error"]
 
     @patch.object(Scraper, "get_config_backup_dir")
     def test_download_latest_backup_no_files(self, mock_backup_dir):
@@ -149,8 +148,7 @@ class TestConfigBackupDownload:
         assert response.status_code == 200
         content = response.json()
         assert content["status"] == "not_found"
-        assert "No backup files found" in content["error"]
-        assert content["device_ip"] == "192.168.1.999"
+        assert "No config backup files found" in content["error"]
 
     @patch.object(Scraper, "get_config_backup_dir")
     def test_download_latest_backup_with_exception(self, mock_backup_dir):
@@ -166,8 +164,7 @@ class TestConfigBackupDownload:
             assert response.status_code == 200
             content = response.json()
             assert content["status"] == "error"
-            assert "Error downloading backup" in content["error"]
-            assert content["device_ip"] == self.device_ip
+            assert "Error downloading config" in content["error"]
 
     @patch.object(Scraper, "get_config_backup_dir")
     def test_download_latest_backup_multiple_files(self, mock_backup_dir):

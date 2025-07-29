@@ -130,19 +130,24 @@ class Scraper(object):
                         duration = (
                             datetime.now() - start_time
                         ).total_seconds()
-                        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-                            operation_type="single_backup",
+                        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
+                            operation_type="single_config_backup",
                             device_ip=device_ip,
                             status="success",
+                            backup_type="config",
                         ).inc()
-                        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
-                            operation_type="single_backup", device_ip=device_ip
+                        Metrics.BACKUP_OPERATION_DURATION.labels(
+                            operation_type="single_config_backup",
+                            device_ip=device_ip,
+                            backup_type="config",
                         ).observe(duration)
-                        Metrics.CONFIG_BACKUP_FILES_CREATED.labels(
-                            device_ip=device_ip
+                        Metrics.BACKUP_FILES_CREATED.labels(
+                            device_ip=device_ip,
+                            backup_type="config",
                         ).inc()
-                        Metrics.CONFIG_BACKUP_FILE_SIZE_BYTES.labels(
-                            device_ip=device_ip
+                        Metrics.BACKUP_FILE_SIZE_BYTES.labels(
+                            device_ip=device_ip,
+                            backup_type="config",
                         ).set(file_size)
 
                         log.info(
@@ -156,14 +161,16 @@ class Scraper(object):
                         }
                     else:
                         # Track HTTP errors
-                        Metrics.CONFIG_BACKUP_HTTP_ERRORS.labels(
+                        Metrics.BACKUP_HTTP_ERRORS.labels(
                             device_ip=device_ip,
                             http_status_code=str(response.status),
+                            backup_type="config",
                         ).inc()
-                        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-                            operation_type="single_backup",
+                        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
+                            operation_type="single_config_backup",
                             device_ip=device_ip,
                             status="error",
+                            backup_type="config",
                         ).inc()
 
                         error_msg = f"Failed to fetch config from {device_ip}: HTTP {response.status}"
@@ -178,21 +185,25 @@ class Scraper(object):
         except Exception as e:
             # Track exceptions
             exception_type = type(e).__name__
-            Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
-                operation_type="single_backup",
+            Metrics.BACKUP_OPERATION_EXCEPTIONS.labels(
+                operation_type="single_config_backup",
                 device_ip=device_ip,
                 exception_type=exception_type,
+                backup_type="config",
             ).inc()
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-                operation_type="single_backup",
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
+                operation_type="single_config_backup",
                 device_ip=device_ip,
                 status="error",
+                backup_type="config",
             ).inc()
 
             # Track connection errors specifically
             if "connection" in str(e).lower() or "timeout" in str(e).lower():
-                Metrics.CONFIG_BACKUP_CONNECTION_ERRORS.labels(
-                    device_ip=device_ip, error_type=exception_type
+                Metrics.BACKUP_CONNECTION_ERRORS.labels(
+                    device_ip=device_ip,
+                    error_type=exception_type,
+                    backup_type="config",
                 ).inc()
 
             error_msg = f"Error backing up config from {device_ip}: {str(e)}"
@@ -236,14 +247,16 @@ class Scraper(object):
                             duration = (
                                 datetime.now() - start_time
                             ).total_seconds()
-                            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                                 operation_type="single_preset_backup",
                                 device_ip=device_ip,
                                 status="empty_presets",
+                                backup_type="preset",
                             ).inc()
-                            Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+                            Metrics.BACKUP_OPERATION_DURATION.labels(
                                 operation_type="single_preset_backup",
                                 device_ip=device_ip,
+                                backup_type="preset",
                             ).observe(duration)
 
                             log.info(
@@ -275,20 +288,24 @@ class Scraper(object):
                         duration = (
                             datetime.now() - start_time
                         ).total_seconds()
-                        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                             operation_type="single_preset_backup",
                             device_ip=device_ip,
                             status="success",
+                            backup_type="preset",
                         ).inc()
-                        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
+                        Metrics.BACKUP_OPERATION_DURATION.labels(
                             operation_type="single_preset_backup",
                             device_ip=device_ip,
+                            backup_type="preset",
                         ).observe(duration)
-                        Metrics.CONFIG_BACKUP_FILES_CREATED.labels(
-                            device_ip=device_ip
+                        Metrics.BACKUP_FILES_CREATED.labels(
+                            device_ip=device_ip,
+                            backup_type="preset",
                         ).inc()
-                        Metrics.CONFIG_BACKUP_FILE_SIZE_BYTES.labels(
-                            device_ip=device_ip
+                        Metrics.BACKUP_FILE_SIZE_BYTES.labels(
+                            device_ip=device_ip,
+                            backup_type="preset",
                         ).set(file_size)
 
                         log.info(
@@ -302,14 +319,16 @@ class Scraper(object):
                         }
                     else:
                         # Track HTTP errors
-                        Metrics.CONFIG_BACKUP_HTTP_ERRORS.labels(
+                        Metrics.BACKUP_HTTP_ERRORS.labels(
                             device_ip=device_ip,
                             http_status_code=str(response.status),
+                            backup_type="preset",
                         ).inc()
-                        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                             operation_type="single_preset_backup",
                             device_ip=device_ip,
                             status="error",
+                            backup_type="preset",
                         ).inc()
 
                         error_msg = f"Failed to fetch presets from {device_ip}: HTTP {response.status}"
@@ -324,21 +343,25 @@ class Scraper(object):
         except Exception as e:
             # Track exceptions
             exception_type = type(e).__name__
-            Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
+            Metrics.BACKUP_OPERATION_EXCEPTIONS.labels(
                 operation_type="single_preset_backup",
                 device_ip=device_ip,
                 exception_type=exception_type,
+                backup_type="preset",
             ).inc()
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="single_preset_backup",
                 device_ip=device_ip,
                 status="error",
+                backup_type="preset",
             ).inc()
 
             # Track connection errors specifically
             if "connection" in str(e).lower() or "timeout" in str(e).lower():
-                Metrics.CONFIG_BACKUP_CONNECTION_ERRORS.labels(
-                    device_ip=device_ip, error_type=exception_type
+                Metrics.BACKUP_CONNECTION_ERRORS.labels(
+                    device_ip=device_ip,
+                    error_type=exception_type,
+                    backup_type="preset",
                 ).inc()
 
             error_msg = f"Error backing up presets from {device_ip}: {str(e)}"
@@ -395,26 +418,33 @@ class Scraper(object):
 
         # Update bulk operation metrics
         duration = (datetime.now() - start_time).total_seconds()
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-            operation_type="bulk_backup", device_ip="all", status="completed"
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
+            operation_type="bulk_backup",
+            device_ip="all",
+            status="completed",
+            backup_type="config",
         ).inc()
-        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
-            operation_type="bulk_backup", device_ip="all"
+        Metrics.BACKUP_OPERATION_DURATION.labels(
+            operation_type="bulk_backup",
+            device_ip="all",
+            backup_type="config",
         ).observe(duration)
 
         # Track individual results
         for result in results:
             if result["status"] == "success":
-                Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                     operation_type="bulk_backup_success",
                     device_ip=result["device_ip"],
                     status="success",
+                    backup_type="config",
                 ).inc()
             else:
-                Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                     operation_type="bulk_backup_failed",
                     device_ip=result["device_ip"],
                     status="error",
+                    backup_type="config",
                 ).inc()
 
         return results
@@ -463,28 +493,33 @@ class Scraper(object):
 
         # Update bulk operation metrics
         duration = (datetime.now() - start_time).total_seconds()
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
             operation_type="bulk_preset_backup",
             device_ip="all",
             status="completed",
+            backup_type="preset",
         ).inc()
-        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
-            operation_type="bulk_preset_backup", device_ip="all"
+        Metrics.BACKUP_OPERATION_DURATION.labels(
+            operation_type="bulk_preset_backup",
+            device_ip="all",
+            backup_type="preset",
         ).observe(duration)
 
         # Track individual results
         for result in results:
             if result["status"] == "success":
-                Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                     operation_type="bulk_preset_backup_success",
                     device_ip=result["device_ip"],
                     status="success",
+                    backup_type="preset",
                 ).inc()
             else:
-                Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+                Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                     operation_type="bulk_preset_backup_failed",
                     device_ip=result["device_ip"],
                     status="error",
+                    backup_type="preset",
                 ).inc()
 
         return results
@@ -509,13 +544,16 @@ class Scraper(object):
 
         # Update bulk operation metrics
         duration = (datetime.now() - start_time).total_seconds()
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
             operation_type="bulk_all_backup",
             device_ip="all",
             status="completed",
+            backup_type="combined",
         ).inc()
-        Metrics.CONFIG_BACKUP_OPERATION_DURATION.labels(
-            operation_type="bulk_all_backup", device_ip="all"
+        Metrics.BACKUP_OPERATION_DURATION.labels(
+            operation_type="bulk_all_backup",
+            device_ip="all",
+            backup_type="combined",
         ).observe(duration)
 
         return {
@@ -863,116 +901,141 @@ class Scraper(object):
         device_ip = self.default_wled_ip()
         await self.scrape_instance(device_ip)
 
-    async def scrape_instance(self, device_ip):
-        with Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_EXCEPTIONS.labels(
-            ip=device_ip,
-        ).count_exceptions():
-            with Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_TIME.labels(
+    async def scrape_instance(self, device_ip, set_metrics=True):
+        # Only set timing and exception metrics if this worker is responsible for metrics
+        if set_metrics:
+            with Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_EXCEPTIONS.labels(
                 ip=device_ip,
-            ).time():
-                log.debug(f"wled connecting to device_ip: {device_ip}")
+            ).count_exceptions():
+                with Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_TIME.labels(
+                    ip=device_ip,
+                ).time():
+                    await self._scrape_instance_internal(
+                        device_ip, set_metrics=True
+                    )
+        else:
+            # Just do the scraping without any metrics
+            await self._scrape_instance_internal(device_ip, set_metrics=False)
+
+    async def _scrape_instance_internal(self, device_ip, set_metrics=True):
+        """Internal method for scraping a single instance"""
+        log.debug(f"wled connecting to device_ip: {device_ip}")
+        if set_metrics:
+            Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
+                ip=device_ip,
+                # name=dev_info.name,
+                scrape_event="started",
+            ).inc()
+            # Want to set this _before_ trying to connect
+            # because timeouts haven't been configured yet
+            Metrics.WLED_INSTANCE_ONLINE.labels(
+                ip=device_ip,
+                # name=dev_info.name,
+            ).set(0)
+        device = await self.wled_client.get_wled_instance_device(device_ip)
+        if set_metrics:
+            Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
+                ip=device_ip,
+                # name=dev_info.name,
+                scrape_event="connected",
+            ).inc()
+        log.debug(f"wled got device: {device}")
+
+        try:
+            dev_info = device.info
+            dev_state = device.state
+            # Always scrape all device metrics when this worker has the lock
+            if set_metrics:
+                self.scrape_device_presets(dev_info, device)
+                self.scrape_device_info(dev_info)
+                self.scrape_uptime(dev_info)
+                self.scrape_websocket_clients(dev_info)
+                self.scrape_udp_port(dev_info)
+                self.scrape_info_leds(dev_info)
+                self.scrape_info_filesystem(dev_info)
+                self.scrape_device_wifi(dev_info)
+                self.scrape_device_state(dev_info, dev_state)
+                self.scrape_device_sync(dev_info, dev_state)
+                self.scrape_state_nightlight(dev_info, dev_state)
+                self.scrape_state_segments(dev_info, dev_state)
+        except Exception as unexp:
+            log.error(
+                f"Unexpected issue for device_ip: {device_ip} "
+                f"with scrape issue unexp: {unexp} with "
+                f"type(unexp): {type(unexp)}"
+            )
+            exc_class = str(type(unexp).__name__)
+            log.debug(
+                f"Unexpected exception unexp: {unexp} with "
+                f"type(unexp): {type(unexp)} has exc_class: "
+                f"{exc_class}"
+            )
+            if set_metrics:
+                Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_BY_TYPE_EXCEPTIONS.labels(  # noqa: E501
+                    ip=device_ip,
+                    exception_class=exc_class,
+                ).inc()
                 Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
                     ip=device_ip,
                     # name=dev_info.name,
-                    scrape_event="started",
+                    scrape_event="failed",
                 ).inc()
-                # Want to set this _before_ trying to connect
-                # because timeouts haven't been configured yet
                 Metrics.WLED_INSTANCE_ONLINE.labels(
                     ip=device_ip,
                     # name=dev_info.name,
                 ).set(0)
-                device = await self.wled_client.get_wled_instance_device(
-                    device_ip
-                )
+        else:
+            if set_metrics:
                 Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
                     ip=device_ip,
                     # name=dev_info.name,
-                    scrape_event="connected",
+                    scrape_event="succeeded",
                 ).inc()
-                log.debug(f"wled got device: {device}")
+                Metrics.WLED_INSTANCE_ONLINE.labels(
+                    ip=device_ip,
+                    # name=dev_info.name,
+                ).set(1)
 
-                try:
-                    dev_info = device.info
-                    dev_state = device.state
-                    self.scrape_device_presets(dev_info, device)
-                    self.scrape_device_info(dev_info)
-                    self.scrape_uptime(dev_info)
-                    self.scrape_websocket_clients(dev_info)
-                    self.scrape_udp_port(dev_info)
-                    self.scrape_info_leds(dev_info)
-                    self.scrape_info_filesystem(dev_info)
-                    self.scrape_device_wifi(dev_info)
-                    self.scrape_device_state(dev_info, dev_state)
-                    self.scrape_device_sync(dev_info, dev_state)
-                    self.scrape_state_nightlight(dev_info, dev_state)
-                    self.scrape_state_segments(dev_info, dev_state)
-                except Exception as unexp:
-                    log.error(
-                        f"Unexpected issue for device_ip: {device_ip} "
-                        f"with scrape issue unexp: {unexp} with "
-                        f"type(unexp): {type(unexp)}"
-                    )
-                    exc_class = str(type(unexp).__name__)
-                    log.debug(
-                        f"Unexpected exception unexp: {unexp} with "
-                        f"type(unexp): {type(unexp)} has exc_class: "
-                        f"{exc_class}"
-                    )
-                    Metrics.WLED_SCRAPER_SCRAPE_INSTANCE_BY_TYPE_EXCEPTIONS.labels(  # noqa: E501
-                        ip=device_ip,
-                        exception_class=exc_class,
-                    ).inc()
-                    Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
-                        ip=device_ip,
-                        # name=dev_info.name,
-                        scrape_event="failed",
-                    ).inc()
-                    Metrics.WLED_INSTANCE_ONLINE.labels(
-                        ip=device_ip,
-                        # name=dev_info.name,
-                    ).set(0)
-                else:
-                    Metrics.WLED_INSTANCE_SCRAPE_EVENTS_COUNTER.labels(
-                        ip=device_ip,
-                        # name=dev_info.name,
-                        scrape_event="succeeded",
-                    ).inc()
-                    Metrics.WLED_INSTANCE_ONLINE.labels(
-                        ip=device_ip,
-                        # name=dev_info.name,
-                    ).set(1)
-
-    def scrape_self(self):
+    def scrape_self(self, set_instance_info=True):
         with Metrics.WLED_SCRAPER_SCRAPE_SELF_EXCEPTIONS.count_exceptions():
             with Metrics.WLED_SCRAPER_SCRAPE_SELF_TIME.time():
                 current_version = version
-                Metrics.WARGOS_INSTANCE_INFO.labels(
-                    version=current_version,
-                ).set(1)
+                # Only set instance info if this worker is responsible for it
+                if set_instance_info:
+                    Metrics.WARGOS_INSTANCE_INFO.labels(
+                        version=current_version,
+                    ).set(1)
 
-    async def scrape_all_instances(self):
-        with Metrics.WLED_SCRAPER_SCRAPE_ALL_EXCEPTIONS.count_exceptions():
-            with Metrics.WLED_SCRAPER_SCRAPE_ALL_TIME.time():
-                wled_ip_list = self.parse_env_wled_ip_list()
-                if not wled_ip_list:
-                    e_m = (
-                        "missing wled ip list! must provide "
-                        "with env var to use this method"
-                    )
-                    log.error(e_m)
-                    raise MissingIPListScraperException(e_m)
-                for device_ip in wled_ip_list:
-                    log.debug(f"scraping metrics for device_ip: {device_ip}")
-                    try:
-                        await self.scrape_instance(device_ip)
-                    # TODO: why does it throw up here and not within function?
-                    except Exception as unexp:
-                        u_m = (
-                            f"Scrape all device_ip: {device_ip} "
-                            f"got unexp: {unexp}"
-                        )
-                        log.error(u_m)
+    async def scrape_all_instances(self, set_metrics=True):
+        # Only set timing and exception metrics if this worker is responsible for metrics
+        if set_metrics:
+            with Metrics.WLED_SCRAPER_SCRAPE_ALL_EXCEPTIONS.count_exceptions():
+                with Metrics.WLED_SCRAPER_SCRAPE_ALL_TIME.time():
+                    await self._scrape_all_instances_internal(set_metrics=True)
+        else:
+            # Just do the scraping without any metrics
+            await self._scrape_all_instances_internal(set_metrics=False)
+
+    async def _scrape_all_instances_internal(self, set_metrics=True):
+        """Internal method for scraping all instances"""
+        wled_ip_list = self.parse_env_wled_ip_list()
+        if not wled_ip_list:
+            e_m = (
+                "missing wled ip list! must provide "
+                "with env var to use this method"
+            )
+            log.error(e_m)
+            raise MissingIPListScraperException(e_m)
+        for device_ip in wled_ip_list:
+            log.debug(f"scraping metrics for device_ip: {device_ip}")
+            try:
+                await self.scrape_instance(device_ip, set_metrics=set_metrics)
+            # TODO: why does it throw up here and not within function?
+            except Exception as unexp:
+                u_m = (
+                    f"Scrape all device_ip: {device_ip} " f"got unexp: {unexp}"
+                )
+                log.error(u_m)
 
     async def scrape_releases(self):
         with Metrics.SCRAPER_SCRAPE_RELEASES_EXCEPTIONS.count_exceptions():
@@ -983,15 +1046,17 @@ class Scraper(object):
                     beta=str(latest.beta),
                 ).set(1)
 
-    async def perform_full_scrape(self):
+    async def perform_full_scrape(
+        self, set_instance_info=True, set_metrics=True
+    ):
         # first scrape self info for this app
         log.debug("perform_full_scrape")
         with Metrics.SCRAPER_FULL_SCRAPE_EXCEPTIONS.count_exceptions():
             with Metrics.SCRAPER_FULL_SCRAPE_TIME.time():
-                self.scrape_self()
+                self.scrape_self(set_instance_info=set_instance_info)
                 log.debug("done with scrape self, next all wled instances")
                 # then scrape all wled instances
-                await self.scrape_all_instances()
+                await self.scrape_all_instances(set_metrics=set_metrics)
                 log.debug("done scraping all wled instances, now releases")
                 if self.should_scrape_releases():
                     log.debug("release checking enabled - scraping releases")

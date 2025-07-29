@@ -47,9 +47,8 @@ class TestLifespanEvents:
     ):
         async with lifespan(app) as _:
             pass
-        mock_logger.info.assert_called_with(
-            "🛑 Shutting down FastAPI application"
-        )
+        # Check that the shutdown message was logged
+        mock_logger.info.assert_any_call("🛑 Shutting down FastAPI application")
         mock_logger.debug.assert_called_with(
             "Shutting down FastAPI application"
         )

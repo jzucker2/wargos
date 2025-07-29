@@ -1,8 +1,9 @@
 import os
-from wled import WLED, WLEDReleases
-from .utils import LogHelper
-from .metrics import Metrics
 
+from wled import WLED, WLEDReleases
+
+from .metrics import Metrics
+from .utils import LogHelper
 
 log = LogHelper.get_env_logger(__name__)
 

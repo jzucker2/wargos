@@ -4,14 +4,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import Response
 from fastapi_utils.tasks import repeat_every
-from prometheus_client import (
-    CONTENT_TYPE_LATEST,
-    CollectorRegistry,
-    generate_latest,
-    multiprocess,
-)
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from prometheus_fastapi_instrumentator import Instrumentator
 
+from .lock_manager import lock_manager
 from .scraper import Scraper
 from .utils import LogHelper
 from .version import version
@@ -27,31 +23,30 @@ async def lifespan(app: FastAPI):
     log.info("🚀 Starting up FastAPI application")
     log.debug("Starting up FastAPI application")
 
-    # Start the background task
-    @repeat_every(
-        seconds=Scraper.get_default_scrape_interval(),
-        wait_first=Scraper.get_default_wait_first_interval(),
-        logger=log,
-    )
-    async def perform_full_routine_metrics_scrape() -> None:
-        import fcntl
-        import os
+    # Check if we should enable background tasks (disable during testing)
+    enable_background_tasks = os.environ.get(
+        "ENABLE_BACKGROUND_TASKS", "true"
+    ).lower() in ("true", "1", "yes", "on")
 
-        worker_pid = os.getpid()
-        lock_file = "/tmp/wargos_scrape.lock"
+    if enable_background_tasks:
+        # Start the background task
+        @repeat_every(
+            seconds=Scraper.get_default_scrape_interval(),
+            wait_first=Scraper.get_default_wait_first_interval(),
+            logger=log,
+        )
+        async def perform_full_routine_metrics_scrape() -> None:
+            worker_pid = os.getpid()
 
-        log.info(f"🔄 Background task triggered for worker {worker_pid}")
+            log.info(f"🔄 Background task triggered for worker {worker_pid}")
 
-        try:
-            # Try to acquire a file lock to ensure only one worker scrapes
-            with open(lock_file, "w") as f:
+            # Try to acquire the scraper lock using SQLite
+            if lock_manager.try_acquire_lock(
+                "scraper", worker_pid, timeout_seconds=300
+            ):
                 try:
-                    # Try to acquire an exclusive lock (non-blocking)
-                    fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-
-                    # We got the lock! This worker will do the scraping
                     log.info(
-                        f"🔒 Worker {worker_pid}: Acquired scrape lock - performing full scrape"
+                        f"🔒 Worker {worker_pid}: Acquired scraper lock - performing full scrape"
                     )
                     log.info(
                         f"🔄 Worker {worker_pid}: Performing full scrape of all metrics (interval: {Scraper.get_default_scrape_interval()})"
@@ -62,32 +57,32 @@ async def lifespan(app: FastAPI):
                         f"=========>"
                     )
 
-                    try:
-                        await Scraper.get_client().perform_full_scrape()
-                        log.info(
-                            f"✅ Worker {worker_pid}: Full scrape completed successfully"
-                        )
-                    except Exception as e:
-                        log.error(
-                            f"❌ Worker {worker_pid}: Error during full scrape: {e}"
-                        )
-
-                    # Release the lock
-                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-
-                except (IOError, OSError):
-                    # Another worker already has the lock
-                    log.debug(
-                        f"🔒 Worker {worker_pid}: Scrape lock already held by another worker - skipping"
+                    # Only set worker-specific metrics when this worker is responsible for metrics
+                    await Scraper.get_client().perform_full_scrape(
+                        set_instance_info=True, set_metrics=True
                     )
-                    pass
+                    log.info(
+                        f"✅ Worker {worker_pid}: Full scrape completed successfully"
+                    )
+                except Exception as e:
+                    log.error(
+                        f"❌ Worker {worker_pid}: Error during full scrape: {e}"
+                    )
+                finally:
+                    # Always release the lock
+                    lock_manager.release_lock("scraper", worker_pid)
+            else:
+                # Another worker already has the lock
+                log.debug(
+                    f"🔒 Worker {worker_pid}: Scraper lock already held by another worker - skipping"
+                )
 
-        except Exception as e:
-            log.error(f"❌ Worker {worker_pid}: Error with scrape locking: {e}")
-
-    # Start the background task by calling it once to initiate scheduling
-    log.info("🔄 Starting background scraping task")
-    await perform_full_routine_metrics_scrape()
+        # Start the background task by calling it once to initiate scheduling
+        log.info("🔄 Starting background scraping task")
+        # Call the function once to start the scheduling
+        await perform_full_routine_metrics_scrape()
+    else:
+        log.info("⏸️ Background tasks disabled (likely during testing)")
 
     # Yield None to keep it running
     yield
@@ -96,6 +91,26 @@ async def lifespan(app: FastAPI):
     log.info("🛑 Shutting down FastAPI application")
     log.debug("Shutting down FastAPI application")
 
+    # Clean up any pending tasks
+    try:
+        # Cancel any pending background tasks
+        import asyncio
+
+        tasks = [task for task in asyncio.all_tasks() if not task.done()]
+        if tasks:
+            log.info(f"🛑 Cancelling {len(tasks)} pending tasks")
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+            # Wait a bit for tasks to cancel, but handle cancellation gracefully
+            try:
+                await asyncio.sleep(0.1)
+            except asyncio.CancelledError:
+                # This is expected when tasks are being cancelled
+                pass
+    except Exception as e:
+        log.debug(f"Error during task cleanup: {e}")
+
 
 app = FastAPI(lifespan=lifespan)
 
@@ -103,49 +118,40 @@ app = FastAPI(lifespan=lifespan)
 # Configure Prometheus for multi-worker environments
 def configure_prometheus():
     """Configure Prometheus for multi-worker environments"""
-    # Check if we're in a multi-process environment
-    multiproc_dir = os.environ.get("PROMETHEUS_MULTIPROC_DIR")
+    # Use simple global registry - only one worker will update metrics during scrape
+    instrumentator = Instrumentator(
+        should_respect_env_var=True,
+        should_instrument_requests_inprogress=True,
+        excluded_handlers=["/metrics"],
+        env_var_name="ENABLE_METRICS",
+    )
 
-    if multiproc_dir and os.path.isdir(multiproc_dir):
-        # Use multiprocess registry for Gunicorn workers
-        registry = CollectorRegistry()
-        multiprocess.MultiProcessCollector(registry)
+    # Instrument the app
+    instrumentator.instrument(app)
 
-        # Configure instrumentator with custom registry
-        instrumentator = Instrumentator(
-            registry=registry,
-            should_respect_env_var=True,
-            should_instrument_requests_inprogress=True,
-            excluded_handlers=["/metrics"],
-            env_var_name="ENABLE_METRICS",
-        )
+    log.info(
+        "🔧 Using global Prometheus registry (single worker updates metrics)"
+    )
 
-        # Instrument the app
-        instrumentator.instrument(app)
-
-        # Add custom metrics endpoint for multiprocess support
-        @app.get("/metrics")
-        async def metrics():
-            """Custom metrics endpoint that aggregates across all workers"""
+    # Add metrics endpoint
+    @app.get("/metrics")
+    async def metrics():
+        """Metrics endpoint"""
+        try:
             return Response(
-                generate_latest(registry),
+                generate_latest(),
                 media_type=CONTENT_TYPE_LATEST,
                 headers={
                     "Cache-Control": "no-cache, no-store, must-revalidate"
                 },
             )
-
-    else:
-        # Use default configuration for single-process environments (like tests)
-        instrumentator = Instrumentator(
-            should_respect_env_var=True,
-            should_instrument_requests_inprogress=True,
-            excluded_handlers=["/metrics"],
-            env_var_name="ENABLE_METRICS",
-        )
-
-        # Instrument the app
-        instrumentator.instrument(app)
+        except Exception as e:
+            log.error(f"Error generating metrics: {e}")
+            return Response(
+                "# Error generating metrics\n",
+                media_type=CONTENT_TYPE_LATEST,
+                status_code=500,
+            )
 
 
 # Configure Prometheus
@@ -268,7 +274,6 @@ async def download_latest_backup(
 ):
     """Download the latest backup file for a specific WLED instance"""
     import json
-    import os
     from pathlib import Path
 
     from fastapi.responses import FileResponse
@@ -281,14 +286,15 @@ async def download_latest_backup(
     try:
         if not ip_backup_dir.exists():
             # Update metrics for not found
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-                operation_type="download_latest",
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
+                operation_type="download_latest_config",
                 device_ip=device_ip,
                 status="not_found",
+                backup_type="config",
             ).inc()
 
             return {
-                "error": f"No backup directory found for device {device_ip}",
+                "error": f"No config backup directory found for device {device_ip}",
                 "device_ip": device_ip,
                 "status": "not_found",
             }
@@ -297,14 +303,15 @@ async def download_latest_backup(
         backup_files = list(ip_backup_dir.glob(f"{device_ip}_*_configs.json"))
         if not backup_files:
             # Update metrics for no files found
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-                operation_type="download_latest",
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
+                operation_type="download_latest_config",
                 device_ip=device_ip,
                 status="not_found",
+                backup_type="config",
             ).inc()
 
             return {
-                "error": f"No backup files found for device {device_ip}",
+                "error": f"No config backup files found for device {device_ip}",
                 "device_ip": device_ip,
                 "status": "not_found",
             }
@@ -330,10 +337,11 @@ async def download_latest_backup(
             temp_file_path = temp_file.name
 
         # Update metrics for successful download
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-            operation_type="download_latest",
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
+            operation_type="download_latest_config",
             device_ip=device_ip,
             status="success",
+            backup_type="config",
         ).inc()
 
         async def cleanup_temp_file():
@@ -345,7 +353,7 @@ async def download_latest_backup(
 
         return FileResponse(
             path=temp_file_path,
-            filename=f"{device_ip}_latest_backup.json",
+            filename=f"{device_ip}_latest_config.json",
             media_type="application/json",
             background=cleanup_temp_file,
         )
@@ -353,19 +361,21 @@ async def download_latest_backup(
     except Exception as e:
         # Update metrics for exceptions
         exception_type = type(e).__name__
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
-            operation_type="download_latest",
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
+            operation_type="download_latest_config",
             device_ip=device_ip,
             status="error",
+            backup_type="config",
         ).inc()
-        Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
-            operation_type="download_latest",
+        Metrics.BACKUP_OPERATION_EXCEPTIONS.labels(
+            operation_type="download_latest_config",
             device_ip=device_ip,
             exception_type=exception_type,
+            backup_type="config",
         ).inc()
 
         return {
-            "error": f"Error downloading backup for device {device_ip}: {str(e)}",
+            "error": f"Error downloading config for device {device_ip}: {str(e)}",
             "device_ip": device_ip,
             "status": "error",
         }
@@ -377,7 +387,6 @@ async def download_latest_presets(
 ):
     """Download the latest presets file for a specific WLED instance"""
     import json
-    import os
     from pathlib import Path
 
     from fastapi.responses import FileResponse
@@ -390,10 +399,11 @@ async def download_latest_presets(
     try:
         if not ip_backup_dir.exists():
             # Update metrics for not found
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="download_latest_presets",
                 device_ip=device_ip,
                 status="not_found",
+                backup_type="preset",
             ).inc()
 
             return {
@@ -406,10 +416,11 @@ async def download_latest_presets(
         backup_files = list(ip_backup_dir.glob(f"{device_ip}_*_presets.json"))
         if not backup_files:
             # Update metrics for no files found
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="download_latest_presets",
                 device_ip=device_ip,
                 status="not_found",
+                backup_type="preset",
             ).inc()
 
             return {
@@ -428,10 +439,11 @@ async def download_latest_presets(
         # Check if this is an empty presets file (special case)
         if presets_data == {"0": {}}:
             # Update metrics for empty presets download
-            Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+            Metrics.BACKUP_OPERATIONS_TOTAL.labels(
                 operation_type="download_latest_presets",
                 device_ip=device_ip,
                 status="empty_presets",
+                backup_type="preset",
             ).inc()
 
             return {
@@ -455,10 +467,11 @@ async def download_latest_presets(
             temp_file_path = temp_file.name
 
         # Update metrics for successful download
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
             operation_type="download_latest_presets",
             device_ip=device_ip,
             status="success",
+            backup_type="preset",
         ).inc()
 
         async def cleanup_temp_file():
@@ -478,15 +491,17 @@ async def download_latest_presets(
     except Exception as e:
         # Update metrics for exceptions
         exception_type = type(e).__name__
-        Metrics.CONFIG_BACKUP_OPERATIONS_TOTAL.labels(
+        Metrics.BACKUP_OPERATIONS_TOTAL.labels(
             operation_type="download_latest_presets",
             device_ip=device_ip,
             status="error",
+            backup_type="preset",
         ).inc()
-        Metrics.CONFIG_BACKUP_OPERATION_EXCEPTIONS.labels(
+        Metrics.BACKUP_OPERATION_EXCEPTIONS.labels(
             operation_type="download_latest_presets",
             device_ip=device_ip,
             exception_type=exception_type,
+            backup_type="preset",
         ).inc()
 
         return {

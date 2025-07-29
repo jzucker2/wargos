@@ -51,7 +51,7 @@ RUN mkdir -p /backups
 
 # Set default environment variables for Gunicorn
 ENV PORT=9395
-ENV WORKERS=4
+ENV WORKERS=1
 ENV WORKER_CLASS=uvicorn.workers.UvicornWorker
 ENV TIMEOUT=120
 ENV KEEPALIVE=2
