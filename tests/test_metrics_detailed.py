@@ -33,7 +33,7 @@ class TestMetricsLabelsDetailed(unittest.TestCase):
         """Test instance_info_labels method"""
         labels = MetricsLabels.instance_info_labels()
         self.assertIsInstance(labels, list)
-        self.assertEqual(len(labels), 9)
+        self.assertEqual(len(labels), 10)
         expected_labels = [
             "architecture",
             "arduino_core_version",
@@ -44,6 +44,7 @@ class TestMetricsLabelsDetailed(unittest.TestCase):
             "name",
             "product",
             "version",
+            "pid",
         ]
         for label in expected_labels:
             self.assertIn(label, labels)
@@ -327,6 +328,7 @@ class TestMetricsDetailed(unittest.TestCase):
                 "name",
                 "product",
                 "version",
+                "pid",
             ),
         )
 

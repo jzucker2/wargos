@@ -59,6 +59,7 @@ class MetricsLabels(Enum):
                 cls.NAME.value,
                 cls.PRODUCT.value,
                 cls.VERSION.value,
+                cls.PID.value,
             ]
         )
 
