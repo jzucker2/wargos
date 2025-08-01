@@ -3,6 +3,8 @@
 [![GitHub release](https://img.shields.io/github/release/jzucker2/wargos.svg)](https://GitHub.com/jzucker2/wargos/releases/)
 [![Publish Docker image](https://github.com/jzucker2/wargos/actions/workflows/docker.yml/badge.svg?branch=master)](https://github.com/jzucker2/wargos/actions/workflows/docker.yml)
 [![Tests](https://github.com/jzucker2/wargos/actions/workflows/python_unittests.yml/badge.svg)](https://github.com/jzucker2/wargos/actions/workflows/python_unittests.yml)
+[![flake8 Lint](https://github.com/jzucker2/wargos/actions/workflows/python_lint.yml/badge.svg)](https://github.com/jzucker2/wargos/actions/workflows/python_lint.yml)
+[![Dependabot Updates](https://github.com/jzucker2/wargos/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/jzucker2/wargos/actions/workflows/dependabot/dependabot-updates)
 
 ![wArgos Logo](./images/wargos_logo.png)
 
