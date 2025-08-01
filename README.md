@@ -1,7 +1,10 @@
 # wargos
 
 [![GitHub release](https://img.shields.io/github/release/jzucker2/wargos.svg)](https://GitHub.com/jzucker2/wargos/releases/)
-[![Create and publish a Docker image](https://github.com/jzucker2/wargos/actions/workflows/docker.yml/badge.svg?branch=master)](https://github.com/jzucker2/wargos/actions/workflows/docker.yml)
+[![Publish Docker image](https://github.com/jzucker2/wargos/actions/workflows/docker.yml/badge.svg?branch=master)](https://github.com/jzucker2/wargos/actions/workflows/docker.yml)
+[![Tests](https://github.com/jzucker2/wargos/actions/workflows/python_unittests.yml/badge.svg)](https://github.com/jzucker2/wargos/actions/workflows/python_unittests.yml)
+
+![wArgos Logo](./images/wargos_logo.png)
 
 I plan on using the Home Assistant wled library: `wled` located here: <https://pypi.org/project/wled/>
 
