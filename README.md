@@ -1,4 +1,4 @@
-# wargos
+# wArgos
 
 [![GitHub release](https://img.shields.io/github/release/jzucker2/wargos.svg)](https://GitHub.com/jzucker2/wargos/releases/)
 [![Publish Docker image](https://github.com/jzucker2/wargos/actions/workflows/docker.yml/badge.svg?branch=master)](https://github.com/jzucker2/wargos/actions/workflows/docker.yml)
