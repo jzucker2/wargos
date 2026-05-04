@@ -12,8 +12,7 @@ Changes should pass the hooks configured in `.pre-commit-config.yaml` before the
 2. **end-of-file-fixer** — ensure newline at end of file
 3. **check-yaml** — validate YAML syntax
 4. **check-added-large-files** — block very large additions
-5. **black** — format Python with line length **79**
-6. **flake8** — lint Python under `app/` and `tests/`
+5. **`make ci-lint`** — local hook that runs the Makefile target (**`black --check`** + **`flake8`** on `app/` and `tests/`), matching the GitHub Actions lint job
 
 ### Running hooks
 
@@ -44,25 +43,30 @@ pre-commit run
 ### Commands
 
 ```bash
-# Format Python
-make format
+# Definitive verify (no writes): same as CI lint job and pre-commit Python gate
+make ci-lint
+# Equivalent alias:
+make check
 
-# Lint (check only)
+# Apply Black, then run the same verify step
+make format-lint
+
+# Flake8 only (rarely needed alone)
 make lint
 
-# Format then lint (convenient gate before commit)
-make check
+# Format only
+make format
 
 # Try automatic fixes where applicable
 make lint-fix
 ```
 
-If `make lint` fails after `make format`, use `make lint-fix` for autopep8-assisted fixes, then re-run `make check` until clean.
+If Flake8 fails, use `make lint-fix` where it helps, then `make format` and **`make ci-lint`** until clean.
 
 ## Tests
 
 - **Runner:** `pytest` (see `pytest.ini` and `tests/`).
-- **Default:** `make test` runs `pytest tests/ -v`.
+- **Default:** `make test` (alias **`make ci-test`**) runs `pytest tests/ -v`, same as the GitHub Actions unittest workflow.
 - **Coverage:** `make test-coverage`.
 - **Single file:** `make test-file FILE=tests/test_basic.py`.
 
@@ -72,7 +76,7 @@ Background scraping can be disabled in tests via `ENABLE_BACKGROUND_TASKS` — f
 
 ## CI alignment
 
-GitHub Actions run lint and tests (see `.github/workflows/`). Local `make check`, `make test`, and `make pre-commit-run` (or `make ci-check`) approximate what CI enforces.
+GitHub Actions run **`make ci-lint`** and **`make ci-test`** (see `.github/workflows/`). Local **`make pre-commit-run`** runs generic hooks plus **`make ci-lint`**; **`make ci-check`** runs pre-commit and tests together.
 
 ## Project structure (high level)
 
@@ -130,14 +134,14 @@ Keep new modules cohesive: prefer small, focused modules over very large single 
 
 1. Read nearby code and tests; match existing style and abstractions.
 2. Implement the smallest change that satisfies the request.
-3. Run `make check` and fix any lint issues (`make lint-fix` if needed).
+3. Run **`make ci-lint`** (or `make check`) and fix issues (`make format` / `make lint-fix` as needed).
 4. Run `make test`.
 5. Run `make pre-commit-run` (or ensure `pre-commit run --all-files` passes).
 6. Update **README.md** / **CONFIG_BACKUP.md** when behavior visible to users or operators changes.
 
 ## Checklist before submitting changes
 
-- [ ] `make check` passes (format + lint)
+- [ ] **`make ci-lint`** passes (Black check + Flake8)
 - [ ] `make test` passes
 - [ ] `make pre-commit-run` passes (or equivalent)
 - [ ] New or changed behavior has tests where practical

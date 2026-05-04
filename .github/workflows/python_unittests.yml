@@ -30,6 +30,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements-dev.txt
-      - name: Test with unittest
+      - name: Unit tests (Makefile ci-test)
         run: |
-          make test
+          make ci-test

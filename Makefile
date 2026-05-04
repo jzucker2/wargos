@@ -1,4 +1,7 @@
-.PHONY: help build run run-gunicorn test clean docker-build docker-run docker-stop docker-logs
+.PHONY: help build run run-gunicorn test ci-test ci-lint format-lint check clean docker-build docker-run docker-stop docker-logs
+
+# Python trees used by format, lint, and CI (single source of truth for paths)
+PY_SRCS := app/ tests/
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -16,8 +19,10 @@ run-uvicorn: ## Run the application locally with Uvicorn (development)
 run-gunicorn: ## Run the application with Gunicorn (production-like)
 	./scripts/run_gunicorn.sh
 
-test: ## Run all tests
+test: ## Run all tests (same command as the GitHub Actions test workflow)
 	pytest tests/ -v
+
+ci-test: test ## Alias for CI/docs — identical to `make test`
 
 test-coverage: ## Run tests with coverage report
 	pytest tests/ --cov=app --cov-report=term-missing
@@ -61,17 +66,24 @@ test-docker: ## Run tests in Docker container
 	docker build -t wargos .
 	docker run --rm wargos pytest
 
-format: ## Format code with black
-	black app/ tests/ --line-length=79
+format: ## Apply Black formatting (modifies files)
+	black $(PY_SRCS) --line-length=79
 
-lint: ## Lint code with flake8
-	flake8 app/ tests/
+lint: ## Run Flake8 only (no Black)
+	flake8 $(PY_SRCS)
 
-check: format lint ## Run all checks (format, lint)
+# Definitive lint gate for CI and pre-commit: no file writes, must match remote tree
+ci-lint: ## Black --check + Flake8 (same as GitHub Actions lint job and pre-commit)
+	black --check $(PY_SRCS) --line-length=79
+	flake8 $(PY_SRCS)
+
+check: ci-lint ## Same as ci-lint (verify formatting + lint)
+
+format-lint: format ci-lint ## Format with Black, then run the definitive lint gate
 
 lint-fix: ## Auto-fix linting issues where possible
-	black app/ tests/ --line-length=79
-	autopep8 --in-place --recursive --aggressive --aggressive app/ tests/
+	black $(PY_SRCS) --line-length=79
+	autopep8 --in-place --recursive --aggressive --aggressive $(PY_SRCS)
 
 pre-commit-install: ## Install pre-commit hooks
 	pre-commit install
@@ -79,4 +91,4 @@ pre-commit-install: ## Install pre-commit hooks
 pre-commit-run: ## Run pre-commit hooks on all files
 	pre-commit run --all-files
 
-ci-check: pre-commit-run test ## Run all CI checks
+ci-check: pre-commit-run ci-test ## Pre-commit (incl. ci-lint) + unit tests (matches automation intent)
