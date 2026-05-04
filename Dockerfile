@@ -1,5 +1,5 @@
 # https://fastapi.tiangolo.com/deployment/docker/
-ARG PYTHON_VERSION=3.12-alpine
+ARG PYTHON_VERSION=3.13-alpine
 FROM python:${PYTHON_VERSION} AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1

@@ -1,19 +1,19 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-added-large-files
 
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
+  # Python lint/format: single source of truth is `make ci-lint` in the Makefile
+  # (Black --check + Flake8 on app/ and tests/), same as .github/workflows/python_lint.yml
+  - repo: local
     hooks:
-      - id: black
-        args: [--line-length=79]
-
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
-    hooks:
-      - id: flake8
+      - id: make-ci-lint
+        name: make ci-lint
+        entry: make ci-lint
+        language: system
+        pass_filenames: false
+        always_run: true

@@ -143,20 +143,36 @@ The application uses Gunicorn with Uvicorn workers for production deployment. Th
 - **Health checks** for container monitoring
 - **Alpine Linux base** for security and size efficiency
 
+## Linting and continuous integration
+
+The **Makefile** defines the same entrypoints that GitHub Actions and pre-commit use for Python lint and tests, so local results match automation.
+
+| Command | Purpose |
+| --- | --- |
+| `make ci-lint` | **`black --check`** and **`flake8`** on `app/` and `tests/` only (no file writes). This is what the **flake8 Lint** workflow runs and what pre-commit runs after the generic file hooks. |
+| `make ci-test` | Same as **`make test`**: **`pytest tests/ -v`**. This is what the **python unittests** workflow runs. |
+| `make format` | Apply Black (modifies files). Use when `make ci-lint` reports formatting issues. |
+| `make format-lint` | `make format` then `make ci-lint` — typical local “format and verify” flow. |
+| `make ci-check` | `pre-commit run --all-files` (including `make ci-lint`) plus **`make ci-test`**. |
+
+**Previously:** the lint workflow ran `make check`, which formatted the checkout in the runner with Black and then ran Flake8, so CI did not prove that unformatted code would fail. **Now** lint and pre-commit both invoke **`make ci-lint`**, which fails if the tree is not already Black-clean.
+
+**Pre-commit vs GitHub Actions:** Pre-commit also runs repository-wide hooks from `.pre-commit-config.yaml` (for example trailing whitespace, end of file, YAML, and large files). Python style is enforced only via **`make ci-lint`** so it stays aligned with CI. Running pre-commit requires **Make** available on your `PATH` for that hook.
+
 ## Testing
 
 The project includes a comprehensive test suite with **104 tests** and comprehensive code coverage.
 
 #### Prerequisites
 
-1. **Virtual Environment**: Ensure you have a Python virtual environment set up
+1. **Virtual environment**: Activate the one you already use for this repo (for example `.venv` or `venv`). If you do not have one yet, create and activate it, for example:
 
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
-2. **Install Dependencies**: Install both production and test dependencies
+2. **Install dependencies**: Install both production and test dependencies (once per environment)
 
    ```bash
    pip install -r requirements.txt
@@ -165,11 +181,14 @@ The project includes a comprehensive test suite with **104 tests** and comprehen
 
 #### Running Tests
 
-**Option 1: Makefile (Recommended)**
+**Option 1: Makefile (recommended — same as CI)**
 
 ```bash
-# Run all tests
+# Run all tests (same as `make ci-test` and the GitHub Actions unittest job)
 make test
+
+# Explicit CI alias (identical to make test)
+make ci-test
 
 # Run tests with coverage
 make test-coverage
@@ -217,21 +236,20 @@ Current coverage across modules:
 
 ### GitHub Actions CI/CD
 
-The project includes GitHub Actions for automated testing. The workflow file is located at `.github/workflows/tests.yml` and includes:
+Workflows live under `.github/workflows/`:
 
-- **Multi-Python Testing**: Tests against Python 3.11 and 3.12
-- **Dependency Caching**: Speeds up builds by caching pip dependencies
-- **Coverage Reporting**: Generates coverage reports and uploads to Codecov
-- **Automatic Triggers**: Runs on push to main/develop and all pull requests
+- **`python_lint.yml`** — installs `requirements-dev.txt`, then runs **`make ci-lint`** (Black check + Flake8).
+- **`python_unittests.yml`** — same install, then runs **`make ci-test`** (pytest).
+- **`docker.yml`** — builds the production image.
 
-#### Required Files
+They run on pushes and pull requests to `master`, on semver tags, and on a weekly schedule. Pip dependencies are cached via `actions/setup-python`.
 
-Ensure these files exist for GitHub Actions:
+#### Required files for CI
 
-1. **`.github/workflows/tests.yml`** - The workflow file
-2. **`requirements-dev.txt`** - Test dependencies
-3. **`pytest.ini`** - Pytest configuration
-4. **`Makefile`** - Make targets for testing
+1. **`Makefile`** — defines `ci-lint` and `ci-test`
+2. **`requirements-dev.txt`** — Black, Flake8, pytest, and related tools
+3. **`pytest.ini`** — pytest configuration
+4. **`.flake8`** — Flake8 configuration (used by `make ci-lint`)
 
 #### Optional: Codecov Integration
 
