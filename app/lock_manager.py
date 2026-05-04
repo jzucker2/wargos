@@ -32,16 +32,14 @@ class SQLiteLockManager:
                 # Enable WAL mode for better concurrency
                 conn.execute("PRAGMA journal_mode=WAL")
 
-                conn.execute(
-                    """
+                conn.execute("""
                     CREATE TABLE IF NOT EXISTS locks (
                         lock_name TEXT PRIMARY KEY,
                         worker_pid INTEGER,
                         acquired_at REAL,
                         expires_at REAL
                     )
-                """
-                )
+                """)
                 conn.commit()
                 log.info(f"Initialized SQLite lock database: {self.db_path}")
         except Exception as e:
@@ -55,16 +53,14 @@ class SQLiteLockManager:
                     )
                 with sqlite3.connect(self.db_path) as conn:
                     conn.execute("PRAGMA journal_mode=WAL")
-                    conn.execute(
-                        """
+                    conn.execute("""
                         CREATE TABLE IF NOT EXISTS locks (
                             lock_name TEXT PRIMARY KEY,
                             worker_pid INTEGER,
                             acquired_at REAL,
                             expires_at REAL
                         )
-                    """
-                    )
+                    """)
                     conn.commit()
                     log.info(f"Recreated SQLite lock database: {self.db_path}")
             except Exception as recreate_error:
