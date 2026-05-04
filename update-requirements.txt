@@ -1,4 +1,5 @@
 fastapi[standard]
 fastapi-utils[all]
+gunicorn
 prometheus-fastapi-instrumentator
 wled
